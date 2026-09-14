@@ -29,6 +29,10 @@ older review brief are retained history. They are not the current build contract
 
 ## Start here
 
+Active local checkout: `/Users/jad/Desktop/math-workbench-airlift`, branch
+`unity-airlift`. Make future edits here; the earlier Documents checkout is retained
+as an inactive copy. See the [source-control guide](docs/source-control.md).
+
 Review the PRD and visual reference, then implement Phase 1 of the vetted plan:
 prove a native passthrough scene and grabbable object on the physical Quest before
 production art or stretch content. Account/licensing, USB authorization, physical

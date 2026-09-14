@@ -2,6 +2,9 @@
 
 Last updated: September 14, 2026 (America/Chicago).
 
+Active checkout: `/Users/jad/Desktop/math-workbench-airlift`.
+Working branch: `unity-airlift`. Use this Desktop copy for all future edits.
+
 This is the operational checkpoint and handoff record, not a replacement for the
 [vetted plan](plans/2026-09-13-unity-vet/plan.md). No working Unity game or Quest
 build has been demonstrated yet. Development is paused at the user's request
@@ -75,6 +78,12 @@ while progress documentation is established.
 
 - Added this log and a README entry so progress can be resumed without relying
   on the chat transcript. Formal ticket-tracker setup awaits location confirmation.
+- Saved the log in commit `ec4456e` and pushed `unity-airlift` before cloning the
+  repository into `/Users/jad/Desktop/math-workbench-airlift` at the owner's
+  request. Verified the clone contains that commit and installed its local LFS
+  hook. The original Documents checkout is retained, not deleted or moved.
+- Updated the active plan's workspace paths and README in the Desktop clone.
+  This changes the working location only, not the product or toolchain decisions.
 
 ## Working agreements for future updates
 

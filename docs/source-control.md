@@ -2,6 +2,12 @@
 
 Use a private GitHub repository for this project. Keep the baseline on `main` and perform the Unity build on `unity-airlift`.
 
+Active checkout: `/Users/jad/Desktop/math-workbench-airlift`. Cloned from GitHub
+on September 14 at the owner's request after saving the progress log. The original
+`/Users/jad/Documents/Claude/Projects/Nerdy/hackathon_workbench` remains intact
+but is inactive; avoid editing both copies. Progress-log changes are on
+`unity-airlift`, not yet merged into `main`.
+
 Commit requirements, plans, mockups, scripts, Unity `Assets` with their `.meta` files, `Packages` (including the lock file), and `ProjectSettings`. Do not commit generated caches, builds, credentials, or signing keys. The Unity project is planned under `unity/`; the LFS patterns target binary assets there. Extend the patterns if that location changes or new binary formats are added.
 
 Before each commit, inspect `git status` and `git diff`. Commit a small, named milestone and push to GitHub to back it up; a local commit alone is not an off-device backup. Never force-push shared history or discard uncommitted work without explicit approval. Keep asset redistribution rights in mind even for a private repository.

@@ -68,7 +68,9 @@ controller baseline, no third lesson, optional Cargo Grid, server-only API key.
 
 ## Setup & commands
 
-Project root: `/Users/jad/Documents/Claude/Projects/Nerdy/hackathon_workbench`.
+Project root: `/Users/jad/Desktop/math-workbench-airlift`.
+Workspace location updated September 14 at the owner's request; the original
+Documents checkout is retained but is no longer the active working copy.
 All paths below are relative to this root. Unity project: `unity/`.
 Backend: `backend/`. Evidence: `artifacts/` (ignored by Git); concise reports:
 `docs/qa/`. Execution branch: `unity-airlift` after checking for an existing repo.
@@ -490,7 +492,7 @@ models were unavailable in this environment.
 ## Handoff prompt
 
 Implement `docs/plans/2026-09-13-unity-vet/plan.md` in
-`/Users/jad/Documents/Claude/Projects/Nerdy/hackathon_workbench`. Read it and
+`/Users/jad/Desktop/math-workbench-airlift`. Read it and
 `research.md` completely; preserve the original design history. Begin Phase 1
 with real installed-tool/account/device evidence and create the named wrappers.
 Check Git state before initializing and working on `unity-airlift`. Execute
