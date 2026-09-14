@@ -7,6 +7,9 @@ working Unity application**. The native device proof is the first implementation
 
 ## Current documents
 
+For the latest setup status, completed work, blockers, and next-session handoff,
+start with the [progress and R&D log](docs/PROGRESS.md).
+
 | Document | Purpose |
 |---|---|
 | [PRD](prd.md) | Product promise, audience assumptions, learner journey, user stories, pedagogy, and testing decisions |

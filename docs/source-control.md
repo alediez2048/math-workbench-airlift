@@ -12,7 +12,7 @@ When the Editor is available, verify Visible Meta Files and Force Text serializa
 
 - Git, GitHub CLI authentication, Git LFS, and Unity Hub are available.
 - Node 22 is installed at `/opt/homebrew/opt/node@22/bin/node`; the existing default Node version and shell configuration were not changed. Homebrew updated shared dependencies as part of installation.
-- The user reports the Unity Editor download is underway. Editor completion and Android modules remain unverified.
+- Updated checkpoint: the user reports editor installation complete. Local inspection found `6000.6.0f1`; Android modules are absent/unselected. This differs from the planned 6.3 LTS family. See [the progress log](PROGRESS.md) for current blockers and next actions.
 - Android Build Support, Android SDK & NDK Tools, and OpenJDK should be installed through Unity Hub for the selected Editor. Android Studio is not required for this workflow.
 - Meta Quest Developer Hub is an optional device-management and capture companion. Its license and account onboarding remain user-owned.
 - Editor automation is not configured. Review Unity's current authorized agentic-access terms and its official Unity CLI/Pipeline route before enabling any bridge; earlier third-party bridge suggestions are provisional.
