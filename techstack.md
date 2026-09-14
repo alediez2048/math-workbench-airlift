@@ -1,6 +1,10 @@
 # Technology stack — Math Workbench: Airlift
 
 Draft v0.2 · September 14, 2026 · scaffold created; XR/device validation pending.
+
+Checkpoint update: native safe APK built and installed on Quest 3S; owner confirms
+passthrough, tracking and grab. Full physical QA and product validation remain
+pending; [device proof](docs/qa/device-proof.md) records the exact evidence.
 The [vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md) owns exact phase
 order and contracts. This document explains what to reuse and what to build.
 

@@ -52,7 +52,8 @@ All times are America/Chicago (CDT). Gates are targets, not completed milestones
 - **Duration/performance:** 6–8 minutes and 72 Hz are design targets, not measurements.
 - **Readiness:** Unity scaffold, Android tools, and authorized ADB are verified;
   Meta team/account setup is owner-reported. Provider access and release licensing
-  remain unresolved; no APK or headset interaction acceptance has passed.
+  remain unresolved. Safe APK build/install and owner-confirmed passthrough,
+  tracking and grab have passed basic checks; full physical QA remains open.
 
 ## Human, automation, and budget boundaries
 

@@ -3,8 +3,10 @@
 Unity / Meta Quest 3S educational game · implementation kickoff · September 14, 2026.
 
 The repository contains documentation, schematic mockups, and a newly created
-Universal 3D project in `unity/`. It is **not yet a working XR game**. The native
-passthrough/grabbable-cube device proof is the first implementation gate.
+Universal 3D project in `unity/`. A native test app is installed on Quest 3S;
+the owner confirmed passthrough, controller tracking, and grabbing the cube.
+It is **not yet a learning game**: onboarding, storytelling and fraction logic
+remain to build. See the [milestone evidence and remaining QA](docs/qa/device-proof.md).
 
 ## Current documents
 
@@ -42,5 +44,6 @@ comfort, and submission rights need the owner's participation.
 Unity 6000.6.0f1 and its Android tools are installed, and the Quest 3S has an
 authorized ADB connection. Unity's official Pipeline package is configured;
 Meta XR import is complete; the first proof scene is saved and an Android test
-build has been queued. See [toolchain evidence](docs/qa/toolchain.md).
+build succeeded and was installed after the credential safeguard was verified.
+See [toolchain evidence](docs/qa/toolchain.md).
 No cloud project, paid service, or contest submission has been created by this kickoff.

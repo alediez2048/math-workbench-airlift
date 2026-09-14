@@ -62,6 +62,11 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 ## Working method
 
+- Setup/basic-interaction checkpoint is complete: safe APK installed; owner
+  confirms passthrough, tracked controllers and grabbing. See `docs/qa/device-proof.md`
+  for remaining Phase 1 QA; do not claim full acceptance or a completed lesson.
+- Next product work includes cargo-role briefing, guided grab, replayable help,
+  and the whole-to-halves interaction. Preserve DeviceProof as a regression scene.
 - Work in `/Users/jad/Desktop/math-workbench-airlift`, branch `unity-airlift`.
   Read `docs/PROGRESS.md` for current state; do not repeat completed setup.
 - Use Unity's official CLI/Pipeline for editor automation. Do not install a

@@ -6,21 +6,20 @@ Active checkout: `/Users/jad/Desktop/math-workbench-airlift`.
 Working branch: `unity-airlift`. Use this Desktop copy for all future edits.
 
 This is the operational checkpoint and handoff record, not a replacement for the
-[vetted plan](plans/2026-09-13-unity-vet/plan.md). No working Unity game or Quest
-build has been demonstrated yet. The owner resumed implementation and requested
-continuous documentation updates. Unity scaffold creation is complete; XR setup
-and first physical acceptance are in progress, not passed.
+[vetted plan](plans/2026-09-13-unity-vet/plan.md). The setup/basic-interaction
+checkpoint is closed at the owner's request: safe APK built and installed;
+owner confirmed passthrough, controllers, and successful cube grabbing. The
+lesson is not built and full Phase 1 QA remains incomplete.
 
 ## Resume here
 
-1. Check the queued Android build result through official Unity Pipeline
-   `build_status`. Resolve any build errors; do not repeat completed Android/SDK setup.
-2. Inspect the saved proof scene and build report; the builder is in
-   `unity/AgentScripts/`. Editor connection and builder execution are verified.
-3. Install the successfully built APK and ask the owner to test the physical Quest 3S.
-   ADB authorization is verified; the actual XR application is not.
-4. Record outcomes in `docs/qa/`, then proceed to the first fraction task only
-   after device proof. Tracker location remains undecided and is not a setup blocker.
+1. Read [device-proof evidence](qa/device-proof.md); do not repeat completed setup.
+2. Finish carry-forward Phase 1 checks: ten grabs/releases, comfort/reach,
+   pause/resume, and a ten-second capture. Review recorded build warnings.
+3. Next product slice: cargo-role briefing and guided first grab, then one whole,
+   equal halves and building one-half. Include replayable help and chapter purpose.
+4. No additional implementation was authorized by closing this checkpoint;
+   resume the next slice when requested. Formal ticket setup remains undecided.
 
 ## Workstream checkpoint
 
@@ -35,8 +34,8 @@ and first physical acceptance are in progress, not passed.
 | Unity setup | Editor and scaffold verified | Hub 3.20.1; `6000.6.0f1` Apple Silicon. Universal 3D project created at `unity/`; URP 17.6.0. Provisional 6.6 deviation recorded in plan. Authentication is not a determination of license eligibility. |
 | Meta Quest Developer Hub | Download verified; onboarding owner-reported | 6.5.0 ZIP checksum verified. Owner reports authentication, phone pairing, developer team/account verification and Developer Mode complete. App version not independently confirmed. |
 | Android toolchain | Verified installed for 6.6 | Android Build Support, SDK/NDK Tools, OpenJDK 17.0.18; bundled ADB 1.0.41 / platform-tools 36.0.0. Owner handled module license/onboarding in Hub. |
-| Physical device proof | Connection verified; app proof pending | ADB reports authorized Quest 3S, correcting earlier Quest 3 assumption. No APK, passthrough, ten-grab, pause/resume or capture acceptance yet. |
-| Game/backend implementation | Proof scene and setup scripts created | Meta SDK 205, OpenXR 1.18.0 and Meta OpenXR 2.6.1 resolved. Official editor status ready; scene/configuration scripts executed successfully. Android proof build queued. No lesson, product tests, backend or tutor endpoint. |
+| Physical device proof | Basic interaction confirmed; full QA pending | Safe APK built/installed; owner confirms passthrough, controllers and grabbing. Ten-grab, pause/resume, reach and capture checks remain open. |
+| Game/backend implementation | Proof scene and setup/build-safety code created | Meta SDK 205, OpenXR 1.18.0 and Meta OpenXR 2.6.1 pinned. No lesson, onboarding, product tests, backend or tutor endpoint. |
 | Rights, release and submission | Open | Account authentication does not resolve Unity eligibility, asset redistribution, contest rights, or submission consent. No entry submitted and no new paid service authorized. |
 
 ## Dated activity log
@@ -126,8 +125,6 @@ and first physical acceptance are in progress, not passed.
   skills review and [toolchain checkpoint](qa/toolchain.md). Earlier planning
   documents and dated research remain historical rather than being rewritten.
 
-## Update rules
-
 ### September 14 — first custom code and test scene
 
 - Added versioned `CreateDeviceProof.cs` and `ConfigureQuestProof.cs` under
@@ -140,7 +137,23 @@ and first physical acceptance are in progress, not passed.
 - Queued the first development APK build through official Unity Pipeline.
   Build completion, installation, grabs and capture are not yet demonstrated.
 
-### Ongoing update policy
+### September 14 — safe APK and owner-confirmed interaction
+
+- Safe non-development build completed with zero errors and nine warnings in
+  197.256 seconds. Credential safeguard execution and absence of the local token
+  from unpacked APK contents were verified; exact artifact hash is in device-proof.md.
+- Installed through ADB and launched successfully after owner reauthorized USB.
+  Owner confirmed seeing the room, tracked controllers and successfully grabbing
+  the orange cube. Earlier failed grab attempt was resolved during the same test.
+- Initial scene/setup/docs were backed up in `0fa9c80`. Closing checkpoint includes
+  the build safeguard, evidence, generated build-state changes and ignore rules.
+  SDK-generated test metadata and action-binding artifacts were removed by build
+  hooks; keep them ignored rather than treating them as product source.
+- Owner approved purposeful cargo storytelling and guided onboarding with replayable
+  help; these are the next product work, not features already built.
+- Checkpoint closed is setup/basic interaction only; remaining QA is explicit.
+
+## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not
   overwrite dated history. Keep the checkpoint table current.
@@ -161,5 +174,6 @@ status before acting. Do not reinitialize Git or repeat completed downloads.
 Use the installed 6.6 proof candidate and inspect current editor/package state.
 Do not block on formal ticket setup or re-download completed Android modules.
 Pause for new licenses, account decisions, purchases and physical headset actions.
-The next implementation acceptance gate is the physical Quest cube proof, not
-production art or additional lessons.
+Complete remaining physical QA before full device-proof signoff. The next product
+slice is onboarding plus the first fraction interaction, not production art or
+additional lessons. Preserve the working proof scene as a regression reference.

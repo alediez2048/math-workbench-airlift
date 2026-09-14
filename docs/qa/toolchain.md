@@ -1,6 +1,7 @@
 # Toolchain checkpoint
 
-September 14, 2026. This records setup, **not a passed device build**.
+September 14, 2026. A device build/install and basic interaction are confirmed;
+full physical QA and release acceptance are still pending.
 
 | Component | Observed state |
 |---|---|
@@ -16,8 +17,8 @@ September 14, 2026. This records setup, **not a passed device build**.
 | Automation | Official Unity CLI 1.0.0-beta.9; Pipeline 0.7.0-exp.1 configured in project |
 | XR packages | Core/Interaction/OVR integration 205.0.0, OpenXR 1.18.0, Meta OpenXR 2.6.1 resolved; editor reports ready |
 | Proof scene | `Assets/Airlift/Scenes/DeviceProof.unity` generated successfully by versioned builder |
-| Android configuration | ARM64, IL2CPP, Vulkan, mobile URP, OpenXR/Meta/Touch, required passthrough; first build queued |
-| Product tests / APK | No product tests or physical acceptance yet; APK build result pending |
+| Android configuration | ARM64, IL2CPP, Vulkan, mobile URP, OpenXR/Meta/Touch, required passthrough; successful device build |
+| Product tests / APK | Safe APK installed; owner confirms passthrough/controllers/grab. No product tests; remaining QA in device-proof.md |
 
 Evidence commands: `unity editors -i --format json`, project
 `ProjectSettings/ProjectVersion.txt`, `Packages/manifest.json`, bundled
@@ -29,7 +30,8 @@ Device identifiers and account details are intentionally omitted.
 The original candidate was Unity 6.3 LTS. Use the already installed 6.6 editor
 for the first compatibility proof to avoid another installation blocking setup.
 Freeze the editor and exact package lock only after actual Quest acceptance.
-Do not describe this provisional tuple as validated. A previously started 6.3
+This tuple has basic build/grab evidence, not full release validation. Keep it
+pinned while remaining QA is completed. A previously started 6.3
 editor download is separate; inspect before resuming it and do not downgrade
 or remove either editor automatically.
 
@@ -60,9 +62,9 @@ conversation. This does not authorize purchases. Submission rights remain separa
 
 ## First physical acceptance checklist
 
-- [ ] XR package tuple resolves and compiles without errors.
-- [ ] One rig, passthrough, controllers, and one reusable SDK-grabbable cube.
-- [ ] ARM64 APK builds and fresh-installs on the owned Quest 3S.
+- [x] XR package tuple resolves and compiles without errors.
+- [x] One rig, passthrough, controllers, and one reusable SDK-grabbable cube created.
+- [x] ARM64 APK builds and fresh-installs on the owned Quest 3S.
 - [ ] Owner sees passthrough, completes ten grabs, and checks reachable placement.
 - [ ] Pause/resume restores a usable scene.
 - [ ] Readable ten-second capture saved with private surroundings excluded.

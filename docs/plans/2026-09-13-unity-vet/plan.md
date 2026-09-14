@@ -17,6 +17,12 @@ conditional. This is a plan review, not evidence that the game has been built.
 
 ### September 14 implementation amendments
 
+- Closing checkpoint: safe non-development APK built/installed; owner confirmed
+  passthrough, tracked controllers and cube grabbing. This closes setup/basic
+  interaction, not the full Phase 1 QA gate. Remaining checks and artifact hash
+  are in [device-proof.md](../../qa/device-proof.md).
+- Owner approved cargo-role briefing, guided first grab, replayable help and
+  chapter purpose as part of the flagship onboarding; none is implemented yet.
 - Owned headset: **Quest 3S**, with authorized ADB observed; corrects the original
   Quest 3 description. Test on this actual device.
 - Use installed **6000.6.0f1 Apple Silicon + URP 17.6.0** for the initial proof.

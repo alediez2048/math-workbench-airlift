@@ -42,6 +42,15 @@ not needed to fulfill this product promise.
 
 ## Experience and learning progression
 
+### Onboarding and purpose (owner approved September 14; not yet implemented)
+
+Introduce the learner's role preparing an aircraft delivery, explain why cargo
+needs correctly sized straps, and guide the first grab before asking a math
+question. Establish one whole, demonstrate equal halves, then ask the learner
+to build one-half. Every chapter introduces its practical purpose and provides
+replayable instructions/help. This is part of the flagship, not a separate
+lesson or a new onboarding platform. The current cube scene contains none of it.
+
 | Chapter | Tasks | Experience |
 |---|---|---|
 | Build | T01–T03 | Establish one whole, make equal halves, then assemble three fourths against the same ruler. |
