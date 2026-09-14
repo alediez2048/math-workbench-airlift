@@ -2,6 +2,12 @@
 
 September 14, 2026 · recommendation only; no new installs or integrations performed.
 
+**Implementation update:** the review below is historical. Unity's official
+CLI 1.0.0-beta.9 and Pipeline 0.7.0-exp.1 are now configured. Use that route
+instead of the proposed third-party MCP trial. The 3D interaction-design skill
+is being used for reach and comfort heuristics; physical validation is pending.
+No new skill framework was installed. See [toolchain](qa/toolchain.md).
+
 ## Recommendation
 
 Keep a small set: **3d-interaction-design** for spatial interaction review, **RAP**

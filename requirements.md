@@ -1,6 +1,6 @@
 # Requirements — Math Workbench: Airlift
 
-Draft v0.1 · September 14, 2026 · implementation not started in this directory.
+Draft v0.2 · September 14, 2026 · Unity scaffold created; feature acceptance pending.
 
 This is the acceptance contract, not a progress report. It derives from the
 [vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md), which remains
@@ -16,13 +16,14 @@ mathematical result is a release blocker even inside an optional feature.
 
 The baseline is one complete 6–8 minute fraction lesson, **The Cut**, organized
 into three chapters. It is not three independent lessons. **Cargo Grid** is the
-only conditional second lesson. No third lesson or second hackathon challenge.
+only conditional second lesson. No third implemented lesson or second hackathon
+challenge. Café and garden concepts are documented options only, not release scope.
 
 ## Functional requirements
 
 | ID | Priority | Requirement | Acceptance evidence |
 |---|---|---|---|
-| FR-01 | Must | Run a native standalone Quest 3 APK with passthrough, a single rig, and controllers. | Fresh install, launch, passthrough, ten grabs, pause/resume, readable 10-second capture on physical Quest. |
+| FR-01 | Must | Run a native standalone Quest 3S APK with passthrough, a single rig, and controllers. | Fresh install, launch, passthrough, ten grabs, pause/resume, readable 10-second capture on the owned physical Quest 3S. |
 | FR-02 | Must | Place the workbench once from player pose, then world-lock it. Offer explicit recenter and seated height adjustment. | Turning/moving the head does not drag the board. Recenter while holding waits for release, preserves arrangement, and invalidates pending support. |
 | FR-03 | Must | Provide six ordered task assets T01–T06, task instruction replay, reset, pause, and end-of-lesson replay. | Complete every task offline without reload or dead end; replay/reset does not mix attempts. |
 | FR-04 | Must | Establish a visible fixed whole, equal partitions, and a connected 0–1 number line. | Halves/fourths/eighths are exact; all comparison lanes have the same whole length. |

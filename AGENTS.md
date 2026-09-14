@@ -10,8 +10,9 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 ## Platform contract
 
-- Native Unity application for standalone Meta Quest 3.
-- Unity 6.3 LTS Apple Silicon, Universal 3D/URP; freeze the proven patch/package tuple.
+- Native Unity application for the owned standalone Meta Quest 3S (ADB verified).
+- Current compatibility proof: Unity 6000.6.0f1 Apple Silicon, Universal 3D/URP.
+  This is a recorded deviation from candidate 6.3 LTS, not a proven release tuple.
 - Unity OpenXR plus Unity OpenXR: Meta; do not add the deprecated Oculus XR
   Plugin.
 - Use compatible Meta XR All-in-One/Core/Interaction SDK packages and lock their
@@ -61,6 +62,15 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 ## Working method
 
+- Work in `/Users/jad/Desktop/math-workbench-airlift`, branch `unity-airlift`.
+  Read `docs/PROGRESS.md` for current state; do not repeat completed setup.
+- Use Unity's official CLI/Pipeline for editor automation. Do not install a
+  third-party editor bridge without a fresh authorization/compatibility review.
+- Update the progress log after meaningful work and align this file, CLAUDE.md,
+  the authoritative plan, and affected product documents when decisions change.
+  Label verified, owner-reported, planned, and blocked states explicitly.
+- Preserve historical documents as history. Record tests and device evidence,
+  not claims that generated files demonstrate a working game.
 - Implement vertical slices; do not create several partially working lessons.
 - Preserve imported vendor packages and user changes.
 - Keep custom architecture small: lesson director, task data, fraction math,

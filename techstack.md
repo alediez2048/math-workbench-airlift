@@ -1,6 +1,6 @@
 # Technology stack — Math Workbench: Airlift
 
-Draft v0.1 · September 14, 2026 · choices are planned, not installed/validated.
+Draft v0.2 · September 14, 2026 · scaffold created; XR/device validation pending.
 The [vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md) owns exact phase
 order and contracts. This document explains what to reuse and what to build.
 
@@ -8,13 +8,13 @@ order and contracts. This document explains what to reuse and what to build.
 
 | Layer | Selection | Version / verification policy |
 |---|---|---|
-| Engine | Unity 6.3 LTS, Apple Silicon editor | Select stable patch in Hub; prove on device, then freeze. |
+| Engine | Unity 6000.6.0f1, Apple Silicon editor | Installed proof candidate, provisional deviation from 6.3 LTS; prove on device, then freeze. |
 | Rendering | Universal 3D / URP | Use editor-compatible version; simple opaque materials, limited effects. |
 | XR platform | Unity OpenXR + Unity OpenXR: Meta | Pin compatible package tuple; no deprecated Oculus XR Plugin. |
 | XR interactions | Meta XR All-in-One/Core/Interaction and Building Blocks | Reuse rig, passthrough, controllers, grab, ray, haptics; no duplicate rigs. |
 | Snapping | Meta Snap behind a thin adapter | Experimental: trial contention/reset first; fallback to existing grab-release events and nearest valid slot. |
 | Application | C#, task assets, prefabs, world-space UI | Small deterministic lesson model; avoid a general-purpose game framework. |
-| Target | Standalone Android Quest 3 APK | ARM64, IL2CPP; editor-bundled SDK/NDK/OpenJDK. Record proven graphics API. |
+| Target | Standalone Android Quest 3S APK | Owned device ADB-authorized; ARM64, IL2CPP; installed editor-bundled SDK/NDK/OpenJDK. Graphics API unproven. |
 | Tutor transport | HTTPS POST via Unity client → small Vercel proxy | One request in flight; no provider secret in Unity. |
 | Model | Claude Haiku 4.5, `claude-haiku-4-5-20251001` | Candidate; verify account access, freeze model/prompt configuration. |
 | Proxy | Node 22, built-in fetch/test, pinned Ajv 8 | Fixed request/response schema; no agent orchestration library. |
@@ -112,6 +112,14 @@ failed tests. APK build output is `artifacts/airlift.apk`; package ID is
 test Unity flow and actual controller behavior separately.
 
 ## Optional development accelerator, not a runtime dependency
+
+**September 14 superseding decision:** use
+[Unity's official CLI/Pipeline](https://docs.unity.com/en-us/unity-production-pipeline/local-tools-cli).
+CLI 1.0.0-beta.9 created the project and configured Pipeline 0.7.0-exp.1. This
+replaces the third-party bridge recommendation below. Editor operations still
+need verification; do not install a third-party bridge without a fresh review.
+
+Historical recommendation:
 
 [MCP for Unity](https://github.com/CoplayDev/unity-mcp) is a third-party MIT editor
 bridge worth a bounded trial **after device proof**, not a requirement. It documents

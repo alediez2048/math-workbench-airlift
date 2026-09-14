@@ -14,6 +14,7 @@ node_modules/
 .vs/
 .idea/
 *.csproj
+*.slnx
 *.sln
 *.suo
 *.user
@@ -30,3 +31,7 @@ node_modules/
 *.p12
 *.pfx
 *.pem
+# Local crash diagnostics and Meta developer-agent connection settings.
+mono_crash.*
+/unity/Assets/Resources/DevAgentSettings.asset
+/unity/Assets/Resources/DevAgentSettings.asset.meta

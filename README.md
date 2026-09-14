@@ -1,9 +1,10 @@
 # Math Workbench: Airlift
 
-Unity / Meta Quest 3 educational game · planning and design package · September 14, 2026.
+Unity / Meta Quest 3S educational game · implementation kickoff · September 14, 2026.
 
-The project currently contains documentation and schematic mockups, **not a
-working Unity application**. The native device proof is the first implementation gate.
+The repository contains documentation, schematic mockups, and a newly created
+Universal 3D project in `unity/`. It is **not yet a working XR game**. The native
+passthrough/grabbable-cube device proof is the first implementation gate.
 
 ## Current documents
 
@@ -38,5 +39,8 @@ prove a native passthrough scene and grabbable object on the physical Quest befo
 production art or stretch content. Account/licensing, USB authorization, physical
 comfort, and submission rights need the owner's participation.
 
-No Unity packages, editor bridges, additional skills, cloud services, or paid
-assets were installed by this documentation task. No submission was made.
+Unity 6000.6.0f1 and its Android tools are installed, and the Quest 3S has an
+authorized ADB connection. Unity's official Pipeline package is configured;
+Meta XR import is complete; the first proof scene is saved and an Android test
+build has been queued. See [toolchain evidence](docs/qa/toolchain.md).
+No cloud project, paid service, or contest submission has been created by this kickoff.

@@ -7,21 +7,20 @@ Working branch: `unity-airlift`. Use this Desktop copy for all future edits.
 
 This is the operational checkpoint and handoff record, not a replacement for the
 [vetted plan](plans/2026-09-13-unity-vet/plan.md). No working Unity game or Quest
-build has been demonstrated yet. Development is paused at the user's request
-while progress documentation is established.
+build has been demonstrated yet. The owner resumed implementation and requested
+continuous documentation updates. Unity scaffold creation is complete; XR setup
+and first physical acceptance are in progress, not passed.
 
 ## Resume here
 
-1. Confirm the ticket location: proposed local Markdown under `docs/tickets/`;
-   GitHub Issues is the alternative. Neither tracker has been configured yet.
-2. Check the in-progress `6000.3.24f1` Apple Silicon editor download before
-   restarting anything. This follows the planned 6.3 LTS family; the existing
-   `6000.6.0f1` installation is retained. Completion and compatibility remain unverified.
-3. Have the owner review/accept Android module licenses, then add Android Build
-   Support, its SDK/NDK tools, and OpenJDK for the chosen editor. The attempted
-   combined install stopped before downloading because acceptance was required.
-4. Verify Quest developer mode, USB connection and debugging authorization with
-   the owner; then build the minimal passthrough/grabbable-cube proof.
+1. Check the queued Android build result through official Unity Pipeline
+   `build_status`. Resolve any build errors; do not repeat completed Android/SDK setup.
+2. Inspect the saved proof scene and build report; the builder is in
+   `unity/AgentScripts/`. Editor connection and builder execution are verified.
+3. Install the successfully built APK and ask the owner to test the physical Quest 3S.
+   ADB authorization is verified; the actual XR application is not.
+4. Record outcomes in `docs/qa/`, then proceed to the first fraction task only
+   after device proof. Tracker location remains undecided and is not a setup blocker.
 
 ## Workstream checkpoint
 
@@ -30,14 +29,14 @@ while progress documentation is established.
 | Research and planning | Draft/vetting complete; execution gates open | [Plan](plans/2026-09-13-unity-vet/plan.md), [research](plans/2026-09-13-unity-vet/research.md). Native Unity, one fraction flagship, conditional Cargo Grid. Not proof of feasibility on this device. |
 | Product documentation | Drafts complete | [PRD](../prd.md), [requirements](../requirements.md), [constraints](../constraints.md), [tech stack](../techstack.md). Keep aligned with the authoritative plan. |
 | Mockup development | Reference package complete | Five interactive views, seven PNG references, [recorded browser checks](mockups/verification.md). No Unity interactions or live AI implemented. |
-| Skills/reuse research | Initial review complete; automation route unresolved | [Skills review](skills-review.md). Reuse Meta components. Earlier third-party editor-bridge suggestions remain provisional pending current Unity authorization review. |
+| Skills/reuse research | Official automation route selected | [Skills review](skills-review.md). Unity CLI/Pipeline configured; third-party bridge suggestion superseded. 3D interaction skill used for reach/comfort heuristics, not physical validation. |
 | Source control | Verified complete for initial baseline | Private [repository](https://github.com/alediez2048/math-workbench-airlift); `main` and `unity-airlift` pushed at `367a7f485350b0e36cf88eced5e73d94e5dcf0dc`. 35 initial files. Ignore rules, LFS filters and local hook configured. Working branch: `unity-airlift`. |
 | Terminal dependencies | Verified installed | Git 2.50.1, Git LFS 3.7.1, authenticated GitHub CLI, Node 22.23.2. Node 22 is side-by-side at `/opt/homebrew/opt/node@22/bin/node`; default Node and shell configuration unchanged. |
-| Unity setup | Partially complete | Hub 3.20.1 installed earlier. Editor `6000.6.0f1` found locally; owner reports installation complete and account authenticated. Android absent; editor family differs from plan. Authentication is not a determination of license eligibility. |
-| Meta Quest Developer Hub | Download verified; onboarding owner-reported | Version 6.5.0 ZIP downloaded and checksum verified. Owner subsequently reports launching it and authenticating. App version, developer-account verification and device readiness have not been independently confirmed. |
-| Android toolchain | Not installed in checked editor | Sibling `PlaybackEngines/` contains MacStandaloneSupport and WebGLSupport only. `modules.json` marks Android, JDK and SDK/NDK modules unselected. No separate Android download was started. |
-| Physical device proof | Not started / unverified | No recorded APK, authorized ADB device, passthrough, controller grab, pause/resume or capture result. Owner must participate in physical checks. |
-| Game/backend implementation | Not started in repository | No `unity/`, `backend/`, runtime lesson code, game test harness, installed XR packages, or deployed tutor endpoint at this checkpoint. |
+| Unity setup | Editor and scaffold verified | Hub 3.20.1; `6000.6.0f1` Apple Silicon. Universal 3D project created at `unity/`; URP 17.6.0. Provisional 6.6 deviation recorded in plan. Authentication is not a determination of license eligibility. |
+| Meta Quest Developer Hub | Download verified; onboarding owner-reported | 6.5.0 ZIP checksum verified. Owner reports authentication, phone pairing, developer team/account verification and Developer Mode complete. App version not independently confirmed. |
+| Android toolchain | Verified installed for 6.6 | Android Build Support, SDK/NDK Tools, OpenJDK 17.0.18; bundled ADB 1.0.41 / platform-tools 36.0.0. Owner handled module license/onboarding in Hub. |
+| Physical device proof | Connection verified; app proof pending | ADB reports authorized Quest 3S, correcting earlier Quest 3 assumption. No APK, passthrough, ten-grab, pause/resume or capture acceptance yet. |
+| Game/backend implementation | Proof scene and setup scripts created | Meta SDK 205, OpenXR 1.18.0 and Meta OpenXR 2.6.1 resolved. Official editor status ready; scene/configuration scripts executed successfully. Android proof build queued. No lesson, product tests, backend or tutor endpoint. |
 | Rights, release and submission | Open | Account authentication does not resolve Unity eligibility, asset redistribution, contest rights, or submission consent. No entry submitted and no new paid service authorized. |
 
 ## Dated activity log
@@ -86,8 +85,6 @@ while progress documentation is established.
 - Updated the active plan's workspace paths and README in the Desktop clone.
   This changes the working location only, not the product or toolchain decisions.
 
-## Working agreements for future updates
-
 ### September 14 — additional download attempt
 
 - Installed Unity's official CLI `1.0.0-beta.9` via its Homebrew cask, following
@@ -105,7 +102,45 @@ while progress documentation is established.
   use Hub's module workflow for that editor, or resume the official CLI module
   workflow only after explicit approval of the applicable agreements.
 
+### September 14 — device readiness and implementation kickoff
+
+- Owner completed Android module installation in Hub. Installed modules, bundled
+  Java and ADB were checked; earlier Android-blocked entries are historical.
+- Owner completed headset setup, phone pairing, Meta developer team creation,
+  account verification, Developer Mode and USB approval. Authorized ADB was
+  observed; hardware reports **Quest 3S**, not Quest 3. No device ID is stored here.
+- Selected the already installed Unity 6000.6.0f1 for the first compatibility
+  proof, explicitly noting deviation from candidate 6.3 LTS. No editor removed.
+- Created `unity/` using official CLI, Universal 3D, arm64, `--no-cloud`, without
+  nested version control. Configured Pipeline 0.7.0-exp.1. A local editor endpoint
+  was briefly reachable, but subsequent command discovery found no instance;
+  editor was reopened as a separate macOS app instance. It remained running and
+  its package-manager log confirmed Core and Interaction downloads. Do not count
+  this as a verified automation smoke test or a diagnosed startup failure.
+- Owner explicitly authorized accepting the Meta SDK license by importing Core
+  and Interaction. Added pinned package requests and the official Meta registry
+  to the manifest; resolution and compilation still need verification.
+- Cargo theme confirmed. Café/equal-sharing and garden/multiplication-area are
+  [paper-only future concepts](future-lessons.md), not additional build commitments.
+- Updated active product docs, both agent instruction files, plan amendments,
+  skills review and [toolchain checkpoint](qa/toolchain.md). Earlier planning
+  documents and dated research remain historical rather than being rewritten.
+
 ## Update rules
+
+### September 14 — first custom code and test scene
+
+- Added versioned `CreateDeviceProof.cs` and `ConfigureQuestProof.cs` under
+  `unity/AgentScripts/`; these are development tools, not runtime lesson code.
+- Generated and saved Meta passthrough, controller interaction rig, stationary
+  workbench, 12 cm cube and SDK grab interaction. Used the interaction-design
+  skill for reachable placement; actual comfort and reach remain unverified.
+- Configured ARM64 IL2CPP/Vulkan, mobile URP, OpenXR/Meta/Touch profiles,
+  controllers-only and required passthrough, without camera-frame access.
+- Queued the first development APK build through official Unity Pipeline.
+  Build completion, installation, grabs and capture are not yet demonstrated.
+
+### Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not
   overwrite dated history. Keep the checkpoint table current.
@@ -123,7 +158,8 @@ while progress documentation is established.
 
 Read this file, `AGENTS.md`, the vetted plan and its research, then check Git
 status before acting. Do not reinitialize Git or repeat completed downloads.
-Resolve the ticket location and editor version first. Continue setup only when
-the owner resumes it; pause for licenses, account decisions and headset actions.
+Use the installed 6.6 proof candidate and inspect current editor/package state.
+Do not block on formal ticket setup or re-download completed Android modules.
+Pause for new licenses, account decisions, purchases and physical headset actions.
 The next implementation acceptance gate is the physical Quest cube proof, not
 production art or additional lessons.

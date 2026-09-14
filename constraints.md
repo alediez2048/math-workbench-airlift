@@ -8,7 +8,7 @@ Draft v0.1 · September 14, 2026. Corrected filename for the requested
 | Area | Constraint | Consequence |
 |---|---|---|
 | Delivery | Deadline September 18, 2026, 11:59 PM Central; internal target 6 PM. | Work backward from a functioning release and captured evidence. |
-| Platform | User prefers Unity; target is the owned standalone Quest 3. | Native APK, no parallel WebXR/SceneView/Snapchat implementation. No silent platform pivot. |
+| Platform | User prefers Unity; owned headset verified as standalone Quest 3S. | Native APK, no parallel WebXR/SceneView/Snapchat implementation. No silent platform pivot. |
 | Scope | One fraction flagship in three chapters; one gated multiplication lesson at most. | Reuse one scene, rig, task engine, representation model, and support pipeline. |
 | Interaction | Controllers; stationary, world-locked bench; explicit recenter. | No required hands, voice, locomotion, spatial room scan, or camera-frame access. |
 | Math | Fixed equal whole; quantity conservation; deterministic evaluation. | No LLM grading, freeform mesh cutting, answer-aware snapping, or visual proportions that contradict numbers. |
@@ -40,18 +40,19 @@ All times are America/Chicago (CDT). Gates are targets, not completed milestones
 
 - **Learner:** age-10 Grade 4 learner who can count and has encountered equal parts.
   This is a design persona, not evidence of age suitability or a tested cohort.
-- **Theme:** aircraft cargo straps, based on the user's interest in relevant
-  airplane examples. The art direction remains a draft.
-- **Toolchain:** Unity 6.3 LTS Apple Silicon is the candidate family. No exact
+- **Theme:** aircraft cargo straps confirmed by the owner; detailed art remains
+  a draft. Café and garden are future concepts only, not implementation scope.
+- **Toolchain:** installed 6000.6.0f1 Apple Silicon is the provisional proof
+  candidate, a recorded deviation from 6.3 LTS. No exact
   patch/package combination is accepted until it works on this physical Quest.
 - **Backend:** Vercel and Claude Haiku 4.5 are proposed defaults, subject to account
   access, current service availability, and owner-approved limits.
 - **Ergonomics:** a 0.4 m unit whole and enlarged piece handles are starting values.
   A browser mockup cannot establish reach, text legibility, or comfort.
 - **Duration/performance:** 6–8 minutes and 72 Hz are design targets, not measurements.
-- **Readiness:** the latest inspected project is documentation-only. Editor install,
-  Meta verification, USB authorization, provider access, and release licensing
-  are unverified; do not mistake generated files for passing those gates.
+- **Readiness:** Unity scaffold, Android tools, and authorized ADB are verified;
+  Meta team/account setup is owner-reported. Provider access and release licensing
+  remain unresolved; no APK or headset interaction acceptance has passed.
 
 ## Human, automation, and budget boundaries
 
@@ -61,8 +62,8 @@ decision. Code generation can create C#, data, tests, editor utilities, and the
 proxy. Scene assembly is shared. No editor-control connection is currently proven.
 
 No precise “percent coding versus manual” is defensible before the first slice.
-Track actual work instead. An optional editor bridge gets a short evaluation only
-after device proof; it cannot become a prerequisite to getting the first APK running.
+Track actual work instead. Use official Unity CLI/Pipeline; a third-party bridge
+is not a prerequisite and requires fresh review before adoption.
 
 No new purchases, charges, public inference, or submission are authorized by this
 document. Keep inference disabled if credentials or usable cost controls are absent.
@@ -87,7 +88,7 @@ a runtime dependency or permission to redistribute it.
 
 ## Explicit non-goals
 
-No second reading/language entry, third math lesson, browser port, mobile AR Lens,
+No second reading/language entry, third implemented math lesson, browser port, mobile AR Lens,
 flight simulator, multiplayer, accounts, classroom dashboard, database, rewards
 economy, open-world environment, automatic room placement, or new orchestration framework.
 No empirical efficacy, mastery, long-term retention, or superiority-to-2D claim.

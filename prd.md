@@ -19,7 +19,8 @@ parts), what stays fixed (the whole and total length), and why the relationship
 matters. A visually impressive VR worksheet is insufficient: the physical action
 must reveal the mathematics, and errors must create useful opportunities to reason.
 
-The creator has five days and a Quest 3. They want an immersive game, prefer Unity,
+The creator has five days and a Quest 3S, identified through ADB after initial
+planning described it as Quest 3. They want an immersive game, prefer Unity,
 and want existing infrastructure to absorb tracking and interaction complexity.
 
 ## Solution and audience
@@ -119,7 +120,7 @@ No learning-style categories; no claim that all students learn best in VR.
 Tests verify observable behavior through public interfaces: preserved quantity,
 correct comparisons, wrong-answer persistence, progression, and recovery. Do not
 couple them to private fields or vendor implementation details. There is no
-existing test suite to extend; this is a documentation-only starting point.
+existing product test suite to extend; the Unity scaffold is only a starting point.
 
 Test pure math, placement/progression, schema validation, evidence routing, timeout
 races, and reset separately; then test scene flow and backend integration. Physical
@@ -140,6 +141,11 @@ or browser port. Cargo Grid is a conditional second lesson only if the Wednesday
 gate passes; it must reuse the same infrastructure and fit a five-hour cap.
 
 ## Further notes and visual references
+
+The owner confirmed the cargo theme on September 14. Keep the experience mixed
+reality: a virtual cargo workbench and miniature aircraft in the real room, not a
+fully virtual port or hangar. Two alternative future settings are recorded in
+[future lesson concepts](docs/future-lessons.md). They are options on paper only.
 
 The [interactive mockups](docs/mockups/index.html) show arrival, fraction assembly,
 equivalence, comparison/repair, and completion. Their navigation and design notes

@@ -7,13 +7,33 @@ Status: independent challenge and requirements gap pass completed; fixes applied
 
 ## Summary
 
-Proceed with Unity for a native Quest 3 mixed-reality fraction lesson, subject to
+Proceed with Unity for a native Quest 3S mixed-reality fraction lesson, subject to
 a physical device proof. Reuse Meta's rig, grab, ray, passthrough, and candidate
 snap components. Build the learning rules and visible adaptive scaffold in C#
 with a small server proxy. The baseline is one coherent lesson; Cargo Grid is
 conditional. This is a plan review, not evidence that the game has been built.
 
 ## Decisions and assumptions
+
+### September 14 implementation amendments
+
+- Owned headset: **Quest 3S**, with authorized ADB observed; corrects the original
+  Quest 3 description. Test on this actual device.
+- Use installed **6000.6.0f1 Apple Silicon + URP 17.6.0** for the initial proof.
+  Android SDK/NDK/OpenJDK are installed. This supersedes D2's 6.3-only setup
+  requirement provisionally, not the requirement to freeze a physically proven tuple.
+- Universal 3D project exists in `unity/`. Official Unity CLI/Pipeline is the
+  automation route. No XR acceptance or product test has passed yet.
+  See [toolchain](../../qa/toolchain.md).
+- Owner confirmed cargo theme and requested café/division and garden/area
+  alternatives on paper only; see [future concepts](../../future-lessons.md).
+  Release scope is unchanged; no full virtual port or hangar is planned.
+- Owner authorized Meta XR Core/Interaction SDK license acceptance and import.
+  This is not consent to purchases or hackathon submission.
+- Update PROGRESS.md, AGENTS.md, CLAUDE.md and affected product documents after
+  meaningful work. Preserve earlier research/plans as dated history.
+
+The review-time assumptions below remain historical where amended above.
 
 No new user preference is needed to complete this review. Six defaults are
 explicitly **assumed — not in brief**: A1 aircraft-straps theme; A2 age-10 Grade 4
@@ -75,7 +95,8 @@ All paths below are relative to this root. Unity project: `unity/`.
 Backend: `backend/`. Evidence: `artifacts/` (ignored by Git); concise reports:
 `docs/qa/`. Execution branch: `unity-airlift` after checking for an existing repo.
 
-Phase 1 installs Hub, a stable **6.3 LTS Apple Silicon** patch, Android Build
+Phase 1 uses **6000.6.0f1 Apple Silicon** for the compatibility proof per the
+September 14 amendment, Android Build
 Support, bundled SDK/NDK/OpenJDK, and a suitable activated Unity license. Use
 Universal 3D and the Quest/Android build profile, ARM64 + IL2CPP. Import Meta
 All-in-One once through the official package workflow; keep only needed samples.
