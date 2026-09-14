@@ -14,11 +14,12 @@ while progress documentation is established.
 
 1. Confirm the ticket location: proposed local Markdown under `docs/tickets/`;
    GitHub Issues is the alternative. Neither tracker has been configured yet.
-2. Resolve editor-version drift: the installed editor is `6000.6.0f1`; the
-   approved planning baseline is a 6.3 LTS patch. Do not silently change the plan
-   or uninstall the existing editor. Owner decision plus compatibility evidence
-   is needed before creating the production project and selecting modules.
-3. Add Android Build Support, its SDK/NDK tools, and OpenJDK for the chosen editor.
+2. Check the in-progress `6000.3.24f1` Apple Silicon editor download before
+   restarting anything. This follows the planned 6.3 LTS family; the existing
+   `6000.6.0f1` installation is retained. Completion and compatibility remain unverified.
+3. Have the owner review/accept Android module licenses, then add Android Build
+   Support, its SDK/NDK tools, and OpenJDK for the chosen editor. The attempted
+   combined install stopped before downloading because acceptance was required.
 4. Verify Quest developer mode, USB connection and debugging authorization with
    the owner; then build the minimal passthrough/grabbable-cube proof.
 
@@ -86,6 +87,25 @@ while progress documentation is established.
   This changes the working location only, not the product or toolchain decisions.
 
 ## Working agreements for future updates
+
+### September 14 — additional download attempt
+
+- Installed Unity's official CLI `1.0.0-beta.9` via its Homebrew cask, following
+  [Unity's documentation](https://docs.unity.com/en-us/unity-cli/use-unity-cli).
+  No editor-control bridge or project package was configured.
+- A dry run resolved the 6.3 stream to `6000.3.24f1`, arm64. Editor plus Android
+  and child modules totals 8,794,993,129 download bytes (approximately 8.8 GB).
+- Attempted the combined install without `--accept-eula`. It exited with code 6:
+  module licenses require acceptance. No agreements were accepted by the agent.
+- Started the editor-only installation using
+  `unity install 6000.3.24f1 -a arm64 --non-interactive --no-banner`.
+  The CLI entered its download phase. This is an in-progress operation, not a
+  completed installation or build proof. Existing 6.6 was not removed or changed.
+- Android tools are still pending owner license review. After the editor finishes,
+  use Hub's module workflow for that editor, or resume the official CLI module
+  workflow only after explicit approval of the applicable agreements.
+
+## Update rules
 
 - Update this log after each meaningful milestone, failure or decision; do not
   overwrite dated history. Keep the checkpoint table current.
