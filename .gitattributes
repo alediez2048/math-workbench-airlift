@@ -1,0 +1,20 @@
+* text=auto
+*.md text eol=lf
+*.cs text eol=lf
+*.json text eol=lf
+*.unity text eol=lf
+*.prefab text eol=lf
+*.asset text eol=lf
+*.meta text eol=lf
+# Large game assets use LFS; documentation screenshots remain ordinary Git files.
+unity/Assets/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.blend filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.glb filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.psd filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.png filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.tga filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.exr filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.wav filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+unity/Assets/**/*.ogg filter=lfs diff=lfs merge=lfs -text

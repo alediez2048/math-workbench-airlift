@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Airlift — game design reference</title>
+  <link rel="stylesheet" href="mockups.css">
+  <script src="mockups.js" defer></script>
+</head>
+<body>
+<main>
+  <header class="masthead">
+    <div><p class="eyebrow">MATH WORKBENCH / QUEST 3</p><h1>Airlift<span>Small pieces. Real meaning.</span></h1></div>
+    <p class="draft">DESIGN REFERENCE 01<br><span>Not a Unity or headset capture</span></p>
+  </header>
+  <nav aria-label="Reference scenes" class="scene-nav">
+    <button data-view="arrival" aria-pressed="true"><span>01</span> Arrival</button>
+    <button data-view="build" aria-pressed="false"><span>02</span> Build</button>
+    <button data-view="equivalence" aria-pressed="false"><span>03</span> Equivalence</button>
+    <button data-view="compare" aria-pressed="false"><span>04</span> Compare & repair</button>
+    <button data-view="departure" aria-pressed="false"><span>05</span> Departure</button>
+  </nav>
+  <div class="workspace">
+    <section class="stage-wrap" aria-label="Schematic first-person game scene">
+      <div class="stage-top"><span id="chapter">ARRIVAL / PLACE THE WORKBENCH</span><span>ROOM CONTEXT · SCHEMATIC</span></div>
+      <svg id="scene" viewBox="0 0 1000 650" role="img" aria-labelledby="scene-title scene-desc"></svg>
+      <div class="stage-bottom"><span>CONTROLLERS · WORLD-LOCKED BENCH</span><span>NO TIMER · NO SCORE</span></div>
+    </section>
+    <aside class="notes">
+      <p class="eyebrow">DESIGN INTENT</p><h2 id="view-title">A workshop within reach.</h2>
+      <p id="view-description"></p>
+      <ol id="annotations"></ol>
+      <div class="invariant"><span>KEEP TRUE</span><p id="invariant"></p></div>
+    </aside>
+  </div>
+  <section class="interaction" aria-label="Mockup reviewer controls">
+    <div class="interaction-heading"><h2>Explore this reference</h2><p>Browser controls below stand in for controller actions. No live AI.</p></div>
+    <div id="controls"></div>
+    <p id="feedback" role="status" aria-live="polite">Choose a view to inspect the lesson.</p>
+  </section>
+  <footer><span>One flagship · Three chapters · Six tasks</span><a href="README.md">Reference notes</a><a href="../../prd.md">Product brief</a></footer>
+</main>
+</body>
+</html>
