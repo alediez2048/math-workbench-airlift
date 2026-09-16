@@ -1,5 +1,37 @@
 # Cargo environment checkpoint — in progress
 
+## September 16 (late evening, 3) — duplicate grab interactor fix: owner-reported PASS
+
+- CURRENT installed APK: artifacts/qa/cargo-20260916-144706/airlift-cargo.apk, SHA-256 9f69a09c... (build.json); 57 checks + scan passed; md5 6929c4fe verified on device. Supersedes 143730.
+- Owner reported 143730 felt identical. Cause: two grab interactors per hand → one squeeze
+  = two grab points → two-hand transformer with coincident points. Extras disabled.
+- Check: 1. One-hand carry: handle glued to hand, table turns to face you as you carry it
+  around, no jump on release. 2. Two-hand: twist to any angle, stretch to resize.
+  3. Practice strap and fraction pieces still grab normally.
+
+## September 16 (late evening, 2) — carry fix build
+
+- CURRENT installed APK: artifacts/qa/cargo-20260916-143730/airlift-cargo.apk, SHA-256 ce1860e3... (build.json); 56 checks + scan passed; md5 8de8b9ab verified on device. Supersedes 142801.
+- Owner reported on 142801: handle works; one-hand move jumps; cannot turn the table.
+- Fix under check: one hand now carries with the grabbed point glued to the hand and the
+  table turning to face you as you move it around yourself (wrist tilt ignored). Two hands
+  still turn freely and resize. Check: 1. Carry to your left and right: the table should
+  swing round to face you, no jumps. 2. Raise/lower by hand height. 3. Two-hand twist to
+  set an angle; two-hand stretch to resize. 4. Release: no jump unless below 0.35 m or above
+  1.4 m, where it clamps.
+
+## September 16 (late evening) — table handle build for owner check
+
+- CURRENT installed APK: artifacts/qa/cargo-20260916-142801/airlift-cargo.apk, SHA-256 96818c56... (see build.json); 54 checks + scan passed; md5 345dd783 verified on device 14:31. Supersedes 140241.
+- Owner check: 1. Yellow handle visible on the table's front edge. 2. Grab it with one hand
+  and carry the table left/right, closer/farther, higher/lower; it should turn to face you
+  and stay level when released. 3. Grab it with both hands and pull apart / push together:
+  table grows/shrinks (limits 0.5x-2x); everything including the card scales together.
+  4. Hold a strap, then try the handle: it should refuse. 5. While holding the handle, try
+  a strap: it should refuse. 6. After resizing, run the halves loop: ruler snap, Split and
+  Submit still work at the new size. 7. Practice grab still works in this build (please
+  confirm grip vs trigger if you can).
+
 ## September 16 (evening) — toy-look build: owner-reported PASS on look and feel
 
 - CURRENT installed APK: artifacts/qa/cargo-20260916-140241/airlift-cargo.apk, SHA-256 6490440791b4a08c92bf1265830c4973700fe16a53e3ea78d42cac40ec43a9ea; 48 checks + scan passed. Supersedes 131831 (installed 14:13 after an ADB server restart; md5 142a655e verified on the device; launched).

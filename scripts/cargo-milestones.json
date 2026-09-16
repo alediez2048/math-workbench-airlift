@@ -33,6 +33,10 @@
         {
           "mode": "editor",
           "filter": "RoundedBoxMeshTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "TableAdjustRulesTests"
         }
       ],
       "requiredAssets": [

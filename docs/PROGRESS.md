@@ -231,6 +231,21 @@ lesson is not built and full Phase 1 QA remains incomplete.
 - Owner reviewed on the headset and accepted the look. Committed; no push.
 - Next owner request: in-app move and resize of the table (design pending approval).
 
+### September 16 — table carry handle (owner accepted on headset)
+
+- Yellow handle on the front edge: one hand carries the table (stays level, turns to
+  face you), two hands resize it 0.5x-2x. Refused while a piece is held; piece grabs
+  pause while the handle is held; settles level and within the height band on release.
+  Built on the Meta SDK's OneGrabFree and TwoGrabPlane transformers. TableAdjustRules
+  5/5, CargoTerminalLayoutTests 8/8. Build cargo-20260916-142801 (SHA-256 96818c56...): 54 checks, scan passed; installed on the Quest 14:31 (md5 verified) for the owner's check.
+- Owner headset check: works, but one-hand carry jumped and could not turn. Replaced the
+  wrist-driven SDK transformer with a face-the-player carry rule (TableCarryTransformer,
+  TableAdjustRules 7/7). Build cargo-20260916-143730 (SHA-256 ce1860e3...): 56 checks, scan passed; installed (md5 verified) for the owner's carry check.
+- Second owner check still "the same": root cause found in the rig, not the handle: two
+  active controller grab interactors per hand made one squeeze two grab points. Extra
+  interactors disabled; test added. Build cargo-20260916-144706 (SHA-256 9f69a09c...): 57 checks, scan passed; installed (md5 verified) for the owner's check.
+- Owner confirmed on build 144706: carry, rotate, resize and strap grabs work. Committed; no push.
+
 ## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not

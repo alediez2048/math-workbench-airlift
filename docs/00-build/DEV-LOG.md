@@ -1,5 +1,58 @@
 # Cargo Crew development log
 
+## 2026-09-16 — Table handle: carry and resize the whole table (OWNER ACCEPTED on headset)
+
+- Owner ask after accepting the toy look: move the table elsewhere and make it bigger or
+  smaller from inside the app (only the Meta-button system recenter existed). Owner chose
+  Option 1, a carry handle, over buttons or an adjust mode.
+- **Handle:** yellow rounded bar on the deck's front edge (Table handle, z -0.412). Its
+  Grabbable targets the station root, MaxGrabPoints 2. One hand: SDK OneGrabFreeTransformer
+  with X/Z rotation locked (carry + yaw). Two hands: SDK TwoGrabPlaneTransformer on the table
+  plane (planar move, yaw, uniform scale 0.5x-2x). Interactable created by QuickActionsAPI.
+- **Gate/settle:** new runtime TableHandle on the director: disables the handle interactable
+  while the practice strap or any fraction piece is held; disables the four piece
+  interactables while the handle is held; on release levels the table (yaw only), clamps
+  height to ComfortPlacement's 0.35-1.4 m band and clamps scale. Pure rules in
+  TableAdjustRules (5 tests). CargoLessonDirector gains AnyPieceHeld.
+- Orientation text now ends "Move the table by its yellow handle; two hands resize it."
+- Layout test TableHandleWiredToStationRoot added (CargoTerminalLayoutTests now 8).
+- Contract change: CLAUDE.md "place once, then world-lock; explicit recenter only with
+  released pieces" becomes "player may carry/resize by the handle; refused while a piece
+  is held". Meta-button recenter remains the fallback.
+- **Build:** artifacts/qa/cargo-20260916-142801/airlift-cargo.apk, SHA-256 96818c56...; 54 checks across 12 suites; credential scan passed; 0 errors / 10 warnings. Installed on the Quest 14:31 (md5 345dd783 verified on device) and launched for the owner's check.
+- **Owner headset check (build 142801):** handle visible and works, but one-hand carrying
+  "jumps to a different place" and the table cannot be turned. Cause: OneGrabFreeTransformer
+  applies the full wrist rotation to the root and then flattens pitch/roll, so with the
+  handle 0.41 m from the pivot a small wrist tilt swings the centre by ~0.2 m, and wrist yaw
+  is too limited to turn the table. Fix: new TableCarryTransformer (one hand): the grabbed
+  point stays in the hand and the table yaws to keep its front edge toward the head, eased
+  by slerp; wrist tilt/twist ignored. Pure rule TableAdjustRules.CarryPose (2 more tests,
+  7 total). Two-hand plane transformer unchanged (free rotation + resize).
+- **Build:** artifacts/qa/cargo-20260916-143730/airlift-cargo.apk, SHA-256 ce1860e3...; 56 checks across 12 suites; scan passed; 0 errors. Installed on the Quest (md5 8de8b9ab verified on device) for the owner's carry check.
+- **Owner headset check (build 143730): "feels exactly the same".** Verified the installed
+  APK (md5 8de8b9ab) and the scene contain the carry transformer; the device log showed
+  TwoGrabPlaneTransformer running during a one-hand carry. **Root cause:** CargoCrew has two
+  active ControllerGrabInteractors per hand (OVRComprehensiveInteractionRig's plus a
+  standalone "[BuildingBlock] Controller Interactions" block; Onboarding has the same pair).
+  With MaxGrabPoints 2 on the handle, one squeeze produced two coincident grab points, so the
+  two-hand transformer ran (planar translate only, degenerate rotation/scale, jumps on
+  release). The practice strap (MaxGrabPoints 1) hid this. Fix: disable the two extra
+  interactors (AgentScripts/DisableDuplicateGrabInteractors.cs); test
+  ExactlyOneActiveGrabInteractorPerHand added (CargoTerminalLayoutTests now 9). Note for the
+  open grip defect: competing interactors is a candidate explanation worth re-checking.
+- **Build:** artifacts/qa/cargo-20260916-144706/airlift-cargo.apk, SHA-256 9f69a09c...; 57 checks across 12 suites; scan passed; 0 errors. Installed on the Quest (md5 6929c4fe verified on device) for the owner's check.
+- **Owner-reported (headset, build 144706):** "it works now... exactly what I was looking
+  for." One-hand carry, two-hand rotate/resize and strap grabs all confirmed. Accepted and
+  committed; no push.
+
+### Why
+
+Direct manipulation matches how the straps already work and needs no buttons or modes,
+which the owner had just asked to remove. Targeting the station root keeps the card,
+props and pieces together, and because all lesson geometry is station-local, resizing
+changes nothing mathematical. The held-piece gate preserves the plan's rule that the
+table never moves under a piece in the hand.
+
 ## 2026-09-16 — Toy look, centred pad, station controls removed (OWNER ACCEPTED on headset)
 
 - Owner asks after the halves acceptance: (1) centre the measuring pad on the board,

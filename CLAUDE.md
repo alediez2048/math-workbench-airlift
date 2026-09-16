@@ -1,5 +1,14 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## September 16 evening: table carry handle ACCEPTED by owner on headset
+
+Owner approved Option 1: a yellow handle on the table's front edge. One hand carries the table
+(yaw only, level on release), two hands resize it 0.5x-2x, both via Meta SDK transformers
+targeting the station root. Refused while any piece is held. This supersedes the older
+"place once then world-lock; recenter only with released pieces" line: the player may carry
+and resize the table by the handle; it is still refused while a piece is held.
+Owner found one-hand carry jumpy and un-turnable on build 142801; replaced with TableCarryTransformer (grab point stays in hand, table turns to face the player). Installed APK: artifacts/qa/cargo-20260916-143730 (SHA-256 ce1860e3..., 56 checks + scan). Second check felt identical; root cause is two active controller grab interactors per hand in the rig (one squeeze = two grab points). Extras disabled in CargoCrew. Installed APK: artifacts/qa/cargo-20260916-144706 (SHA-256 9f69a09c..., 57 checks + scan). Owner confirmed carry, two-hand rotate/resize and strap grabs on build 144706; committed. Next: quarters and equivalence chapters inside Cargo Crew.
+
 ## September 16 late afternoon: toy-look polish pass ACCEPTED by owner on headset
 
 After the halves acceptance the owner asked for a centred measuring pad, removal of the

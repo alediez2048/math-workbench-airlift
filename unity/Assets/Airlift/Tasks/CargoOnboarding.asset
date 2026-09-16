@@ -19,7 +19,7 @@ MonoBehaviour:
   orientation: 'The orange piece is a strap. The outlined pad is the measuring station.
 
 
-    Watch the demo, then try it yourself. Never lean on the virtual surface.'
+    Watch the demo, then try it yourself. Never lean on the virtual surface. Move the table by its yellow handle; two hands resize it.'
   demonstration: 'Watch the example strap move from the tray to the pad.
 
 

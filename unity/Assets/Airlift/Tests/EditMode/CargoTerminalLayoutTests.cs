@@ -74,5 +74,28 @@ namespace Airlift.Tests
             var raw=d.GetComponentsInChildren<MeshFilter>(true).Where(f=>f.sharedMesh==null||f.sharedMesh.name=="Cube").Select(f=>f.name).ToArray();
             Assert.That(raw,Is.Empty,"raw primitive cubes remain: "+string.Join(", ",raw));
         }
+        [Test] public void TableHandleWiredToStationRoot()
+        {
+            var d=Find<OnboardingDirector>();var handle=d.GetComponent<TableHandle>();
+            Assert.That(handle,Is.Not.Null,"TableHandle component");
+            Assert.That(handle.stationRoot,Is.EqualTo(d.transform));
+            Assert.That(handle.grabbable,Is.Not.Null);Assert.That(handle.grabbable.Transform,Is.EqualTo(d.transform),"handle moves the whole table");
+            Assert.That(handle.grabbable.MaxGrabPoints,Is.EqualTo(2),"two hands resize");
+            var bar=handle.grabbable.transform;
+            Assert.That(bar.GetComponent<TableCarryTransformer>(),Is.Not.Null,"one-hand carry rule");Assert.That(bar.GetComponent<TableCarryTransformer>().head,Is.EqualTo(d.head));Assert.That(bar.GetComponent<Oculus.Interaction.OneGrabFreeTransformer>(),Is.Null,"wrist-driven transformer removed");
+            Assert.That(bar.GetComponent<Oculus.Interaction.TwoGrabPlaneTransformer>(),Is.Not.Null);
+            Assert.That(bar.GetComponent<Collider>(),Is.Not.Null);
+            Assert.That(handle.handleInteractable,Is.Not.Null);Assert.That(handle.handleInteractable.transform.IsChildOf(bar),Is.True);
+            Assert.That(handle.pieceInteractables.Length,Is.GreaterThanOrEqualTo(4),"practice strap + whole + two halves");
+            Assert.That(handle.pieceInteractables,Has.None.EqualTo(handle.handleInteractable));
+            Assert.That(handle.placement,Is.Not.Null);Assert.That(handle.lesson,Is.Not.Null);
+            Assert.That(d.content.orientation.ToLower(),Does.Contain("handle"));
+        }
+        [Test] public void ExactlyOneActiveGrabInteractorPerHand()
+        {
+            var active=Object.FindObjectsByType<Oculus.Interaction.GrabInteractor>(FindObjectsInactive.Include)
+                .Where(g=>g.gameObject.scene.path=="Assets/Airlift/Scenes/CargoCrew.unity" && g.gameObject.activeInHierarchy).ToArray();
+            Assert.That(active.Length,Is.EqualTo(2),"one squeeze must yield one grab point: "+string.Join(", ",active.Select(a=>a.transform.parent.parent.name+"/"+a.name)));
+        }
     }
 }

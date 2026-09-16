@@ -81,6 +81,7 @@ namespace Airlift.Lessons
         }
 
         bool AnyHeld => whole.held || halfA.held || halfB.held;
+        public bool AnyPieceHeld => active && AnyHeld;
 
         void OnPointer(PieceView view, PointerEvent evt)
         {

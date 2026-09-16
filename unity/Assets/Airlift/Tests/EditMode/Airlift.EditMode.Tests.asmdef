@@ -1,6 +1,15 @@
 {
   "name": "Airlift.EditMode.Tests",
-  "references": ["Airlift.Runtime", "Unity.TextMeshPro", "Unity.ugui"],
-  "includePlatforms": ["Editor"],
-  "optionalUnityReferences": ["TestAssemblies"]
+  "references": [
+    "Airlift.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.ugui",
+    "Oculus.Interaction"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
 }
