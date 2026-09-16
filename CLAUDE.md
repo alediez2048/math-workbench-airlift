@@ -1,5 +1,14 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## September 16 late afternoon: toy-look polish pass ACCEPTED by owner on headset
+
+After the halves acceptance the owner asked for a centred measuring pad, removal of the
+Raise/Lower/Recenter buttons, and a playful rounded "toy" look. Implemented in CargoCrew
+only via generated RoundedBoxMesh assets, retuned materials, lighting, pill buttons and
+layout changes; math, colliders and snapping unchanged. Previews: artifacts/toy-look-*.png.
+Toy-look APK artifacts/qa/cargo-20260916-140241 (SHA-256 64904407...3a9ea, 48 checks + scan) is installed on the Quest (md5 verified 14:13) and awaiting owner review. Owner accepted the look on the headset (build 140241) and it is committed. Owner's next request before
+more fraction chapters: in-app table move and resize (design pending owner approval). See DEV-LOG.
+
 ## September 16 afternoon: owner-reported grab + halves loop working; committed
 
 Owner reported on the installed build 18273ac6: practice grab and manipulation works, and
@@ -162,7 +171,7 @@ assets, commit/push or skipping owner font comparison implied.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (1745 symbols, 2394 relationships, 28 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (1960 symbols, 2896 relationships, 53 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

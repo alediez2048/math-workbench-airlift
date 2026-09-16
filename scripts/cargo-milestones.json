@@ -29,6 +29,10 @@
         {
           "mode": "editor",
           "filter": "OnboardingPlacementTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "RoundedBoxMeshTests"
         }
       ],
       "requiredAssets": [

@@ -17,6 +17,12 @@ Use simple silhouettes and matte surfaces. Learning objects are the visual focus
 Avoid military cockpit clutter, generic sci-fi neon, chrome, rainbow panels,
 tiny labels, heavy gradients, excessive glass and full-screen instructions.
 
+September 16 realisation: the owner chose a playful toy direction ("Hasbro, Lego").
+Implemented as rounded generated blocks with satin plastic materials, a warm key light with
+soft shadows, pill-shaped buttons on a rounded card, sticker-style fraction labels and a
+brighter palette (orange 255/168/78, mint 88/222/190, cream, yellow 255/214/92, slate
+58/78/118). Board props remain simple original geometry; no purchased assets.
+
 Three priorities: mathematical truth → physical comfort/readability → visual polish.
 Polish must reinforce the first two. The current blue/orange proof is an interaction
 baseline, not a finished art direction. P1-02 reviews alternatives before adoption.

@@ -219,6 +219,18 @@ lesson is not built and full Phase 1 QA remains incomplete.
   numbers not reported, so the grip root cause stays open; override retained.
 - Owner authorized commit of all work in progress. No push.
 
+### September 16 — toy look, centred pad, station controls removed (owner accepted)
+
+- Owner-requested polish after the halves acceptance. CargoCrew only: measuring
+  pad and ruler at the deck centre, tray row forward, Raise/Lower/Recenter
+  buttons removed, every raw cube replaced by a generated rounded block, satin
+  materials, warm light with shadows, pill buttons, sticker labels, navy ruler
+  marks on the pad's front rim, cream cut faces on the halves.
+- Automated: RoundedBoxMeshTests 7/7, CargoTerminalLayoutTests 7/7 (three new).
+  Desktop previews in artifacts/toy-look-*.png. Build cargo-20260916-140241 (SHA-256 64904407...3a9ea): 48 checks, scan passed; installed on the Quest for owner review (installed 14:13 after an ADB server restart; md5 142a655e verified on the device; launched).
+- Owner reviewed on the headset and accepted the look. Committed; no push.
+- Next owner request: in-app move and resize of the table (design pending approval).
+
 ## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not

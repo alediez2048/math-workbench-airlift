@@ -1,5 +1,18 @@
 # Cargo environment checkpoint — in progress
 
+## September 16 (evening) — toy-look build: owner-reported PASS on look and feel
+
+- CURRENT installed APK: artifacts/qa/cargo-20260916-140241/airlift-cargo.apk, SHA-256 6490440791b4a08c92bf1265830c4973700fe16a53e3ea78d42cac40ec43a9ea; 48 checks + scan passed. Supersedes 131831 (installed 14:13 after an ADB server restart; md5 142a655e verified on the device; launched).
+- Changes: pad/ruler centred, tray forward, station buttons gone, rounded blocks, satin
+  materials, shadows, pill buttons, sticker labels, navy ruler marks on the front rim,
+  cream cut faces on halves, pieces resting on surfaces. Math/colliders unchanged.
+- Owner check: 1. Board appears at desk height, pad in the middle of the board. 2. No
+  Raise/Lower/Recenter buttons; card and buttons rounded. 3. Practice grab still works
+  (report grip vs trigger if possible). 4. Start fractions: read 0 / 1/2 / 1 on the pad's
+  front rim; whole docks and snaps; Split shows the cream cut faces; Submit reads
+  1/2 + 1/2 = 1. 5. Look and feel: does it read as playful/toy-like? What still feels
+  blocky or flat? 6. Any piece clipping into the deck or pad when released.
+
 ## September 16 (afternoon, later) — owner-reported PASS on grab and halves loop
 
 - Build 18273ac6 (below). Owner: practice strap grabs and moves; Start fractions, Split

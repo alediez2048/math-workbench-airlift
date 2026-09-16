@@ -49,5 +49,30 @@ namespace Airlift.Tests
             foreach(var text in new[]{d.content.overview,d.content.orientation,d.content.demonstration,d.content.practice,d.content.retry,d.content.ready})
                 Assert.That(d.body.GetPreferredValues(text,d.body.rectTransform.rect.width,1000).y,Is.LessThanOrEqualTo(d.body.rectTransform.rect.height));
         }
+        [Test] public void StationControlsRemoved()
+        {
+            var d=Find<OnboardingDirector>();
+            var names=d.GetComponentsInChildren<Button>(true).Select(b=>b.name).ToArray();
+            Assert.That(names.Intersect(new[]{"Raise station","Lower station","Recenter"}),Is.Empty);
+            Assert.That(d.content.orientation,Does.Not.Contain("Adjust the station"));
+        }
+        [Test] public void MeasuringPadCenteredOnBoard()
+        {
+            var d=Find<OnboardingDirector>();var lesson=d.GetComponent<Airlift.Lessons.CargoLessonDirector>();
+            Assert.That(d.content.targetPosition.x,Is.EqualTo(0f).Within(1e-4f));
+            Assert.That(Mathf.Abs(d.content.targetPosition.z),Is.LessThanOrEqualTo(0.05f));
+            Assert.That(lesson.ruler.localPosition.x,Is.EqualTo(0f).Within(1e-4f));
+            Assert.That(lesson.ruler.localPosition.z,Is.EqualTo(d.content.targetPosition.z).Within(1e-4f));
+            // Tray pieces start clear of the pad so the release check cannot fire from the tray.
+            foreach(var view in new[]{lesson.whole,lesson.halfA,lesson.halfB})
+                Assert.That(Vector3.Distance(view.trayPosition,d.content.targetPosition),Is.GreaterThan(d.content.placementRadius),view.id);
+            Assert.That(Vector3.Distance(d.content.trayPosition,d.content.targetPosition),Is.GreaterThan(d.content.placementRadius));
+        }
+        [Test] public void BoardObjectsAreRoundedNotRawCubes()
+        {
+            var d=Find<OnboardingDirector>();
+            var raw=d.GetComponentsInChildren<MeshFilter>(true).Where(f=>f.sharedMesh==null||f.sharedMesh.name=="Cube").Select(f=>f.name).ToArray();
+            Assert.That(raw,Is.Empty,"raw primitive cubes remain: "+string.Join(", ",raw));
+        }
     }
 }

@@ -19,7 +19,7 @@ MonoBehaviour:
   orientation: 'The orange piece is a strap. The outlined pad is the measuring station.
 
 
-    Watch the demo, then try it yourself. Adjust the station below if needed. Never lean on the virtual surface.'
+    Watch the demo, then try it yourself. Never lean on the virtual surface.'
   demonstration: 'Watch the example strap move from the tray to the pad.
 
 
@@ -39,8 +39,8 @@ MonoBehaviour:
 
 
     Choose Start fractions, replay the demo, or return to lessons.'
-  trayPosition: {x: -0.13, y: 0.08, z: -0.08}
-  targetPosition: {x: 0.13, y: 0.08, z: 0.12}
+  trayPosition: {x: -0.13, y: 0.047, z: -0.17}
+  targetPosition: {x: 0, y: 0.063, z: 0.02}
   demonstrationSeconds: 4
   placementRadius: 0.16
   boardDistance: 0.65

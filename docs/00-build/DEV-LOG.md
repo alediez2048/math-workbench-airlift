@@ -1,5 +1,44 @@
 # Cargo Crew development log
 
+## 2026-09-16 — Toy look, centred pad, station controls removed (OWNER ACCEPTED on headset)
+
+- Owner asks after the halves acceptance: (1) centre the measuring pad on the board,
+  (2) remove Raise/Lower/Recenter station buttons, (3) a playful, polished look
+  ("Hasbro, Lego") instead of sharp blocky primitives. Design approved in chat.
+- **Layout:** pad and ruler now at the deck centre (x 0, z 0.02); tray row moved forward
+  (z -0.17) so tray pieces sit outside the placement radius. Pieces rest on the surfaces
+  (tray y 0.047, docked y 0.063) instead of floating 3 cm above them.
+- **Controls:** three station buttons deleted from the lesson canvas; orientation text no
+  longer says "Adjust the station below". Startup placement is unchanged. The system
+  Meta-button recenter still works.
+- **Look:** new runtime `RoundedBoxMesh` (pure, 7 EditMode tests incl. an orientation test
+  against Unity's own cube) replaces every raw cube on the board with an exact-size rounded
+  block; halves keep one flat cream cut face so docked halves still read as two pieces.
+  Materials retuned to satin plastic in a warmer palette plus CargoYellow; warm key light,
+  soft shadows, trilight ambient; pill buttons and rounded card via a generated 9-slice
+  sprite; fraction labels on cream sticker plates; ruler marks moved to the pad's front rim
+  in navy so docked pieces cannot hide them. 24 mesh assets under Assets/Airlift/Meshes.
+- Editor scripts: ApplyToyLook, RefineToyLook, PolishRulerMarks, RefreshRoundedMeshes,
+  PreviewToyLook. Layout tests added: StationControlsRemoved, MeasuringPadCenteredOnBoard,
+  BoardObjectsAreRoundedNotRawCubes (CargoTerminalLayoutTests now 7).
+- Desktop previews: artifacts/toy-look-practice.png, toy-look-fractions.png,
+  toy-look-closeup.png. Not headset evidence. Build/device status: see below.
+- **Build:** artifacts/qa/cargo-20260916-140241/airlift-cargo.apk, SHA-256 6490440791b4a08c92bf1265830c4973700fe16a53e3ea78d42cac40ec43a9ea; 48 checks passed (11 suites); credential scan passed; 0 errors / 10 warnings. Installed on the Quest for owner review (installed 14:13 after an ADB server restart; md5 142a655e verified on the device; launched).
+- **Owner-reported (headset, build 140241):** "absolutely brilliant", loves the new look and
+  feel, reads as Fisher-Price/Hasbro/Lego, smoother and more polished. Accepted.
+- Owner's next ask before further fraction chapters: move the table to another location and
+  make it bigger/smaller from inside the app (today only the Meta-button system recenter).
+  Design pending owner approval; see the next entry when it exists.
+- Onboarding scene untouched (regression reference). Committed after acceptance; no push.
+
+### Why
+
+The owner's playful-toy direction is a polish pass on top of an accepted core loop, so it
+had to preserve every mathematical invariant: piece lengths, colliders and ruler snapping
+are unchanged and only meshes, materials, light and layout moved. Rounded meshes are
+generated, not purchased, keeping the no-new-assets constraint. Centring the pad and
+lowering pieces onto the surfaces make the whole/halves comparison the visual focus.
+
 ## 2026-09-16 — Owner-reported: grabbing works, halves loop completed; committed
 
 - Build under test: artifacts/qa/cargo-20260916-131831/airlift-cargo.apk, SHA-256
