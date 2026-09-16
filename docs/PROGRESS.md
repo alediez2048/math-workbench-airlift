@@ -1,6 +1,21 @@
 # Project progress and R&D log
 
-Last updated: September 14, 2026 (America/Chicago).
+## Current status — September 16, 2026
+
+Owner paused work for Claude Code handoff. Read [current handoff](00-build/HANDOFF-2026-09-16.md).
+Cargo visuals and stationary placement were owner-observed; practice grab fails.
+Installed APK is VendorGrabProof, not CargoCrew; cube invisible and prefab lacks
+controller-grab support, so that comparison is invalid. No fix or ticket acceptance.
+Voice deferred in favor of functional whole/halves. Older sections below are history.
+
+September 15 handoff: new progress is recorded in [docs/00-build/DEV-LOG.md](00-build/DEV-LOG.md).
+This file retains earlier history. Owner has now confirmed catalog, briefing,
+grab/place and replay on the headset; see the specific [updated QA](qa/onboarding.md).
+Fraction implementation is paused for review of [the new plan](00-build/PLAN.md).
+Earlier statements below about undecided tickets or all onboarding QA pending
+describe their original checkpoint, not the latest status.
+
+Last updated: September 15, 2026 (America/Chicago).
 
 Active checkout: `/Users/jad/Desktop/math-workbench-airlift`.
 Working branch: `unity-airlift`. Use this Desktop copy for all future edits.
@@ -16,10 +31,15 @@ lesson is not built and full Phase 1 QA remains incomplete.
 1. Read [device-proof evidence](qa/device-proof.md); do not repeat completed setup.
 2. Finish carry-forward Phase 1 checks: ten grabs/releases, comfort/reach,
    pause/resume, and a ten-second capture. Review recorded build warnings.
-3. Next product slice: cargo-role briefing and guided first grab, then one whole,
-   equal halves and building one-half. Include replayable help and chapter purpose.
-4. No additional implementation was authorized by closing this checkpoint;
-   resume the next slice when requested. Formal ticket setup remains undecided.
+3. Onboarding-first slice is now authored: three-card catalog, cargo-role briefing,
+   demonstration and required grab/place practice. See [onboarding QA](qa/onboarding.md)
+   for build status and the next physical checks. Arithmetic is not connected yet.
+4. Owner authorized this implementation after the setup checkpoint. Two future
+   topic cards are disabled previews only. Formal ticket setup remains undecided.
+5. September 16 afternoon: owner reports practice grabbing and the whole/halves
+   fraction chapter working on the Quest (build 18273ac6). See
+   [DEV-LOG](00-build/DEV-LOG.md) newest entry and [cargo QA](qa/cargo-CC-P1-02.md).
+   Grip-vs-trigger readout still unreported; temporaries remain in the build.
 
 ## Workstream checkpoint
 
@@ -35,7 +55,7 @@ lesson is not built and full Phase 1 QA remains incomplete.
 | Meta Quest Developer Hub | Download verified; onboarding owner-reported | 6.5.0 ZIP checksum verified. Owner reports authentication, phone pairing, developer team/account verification and Developer Mode complete. App version not independently confirmed. |
 | Android toolchain | Verified installed for 6.6 | Android Build Support, SDK/NDK Tools, OpenJDK 17.0.18; bundled ADB 1.0.41 / platform-tools 36.0.0. Owner handled module license/onboarding in Hub. |
 | Physical device proof | Basic interaction confirmed; full QA pending | Safe APK built/installed; owner confirms passthrough, controllers and grabbing. Ten-grab, pause/resume, reach and capture checks remain open. |
-| Game/backend implementation | Proof scene and setup/build-safety code created | Meta SDK 205, OpenXR 1.18.0 and Meta OpenXR 2.6.1 pinned. No lesson, onboarding, product tests, backend or tutor endpoint. |
+| Game/backend implementation | Grab and whole/halves chapter owner-reported working on device (Sept 16) | 12/12 onboarding flow tests pass; layout/reference check passes; Android build succeeded with zero errors and ten warnings. September 15 install and launch command succeeded after USB authorization recovery. Fraction drafts remain unwired/untested. No backend or tutor endpoint. See [QA](qa/onboarding.md). |
 | Rights, release and submission | Open | Account authentication does not resolve Unity eligibility, asset redistribution, contest rights, or submission consent. No entry submitted and no new paid service authorized. |
 
 ## Dated activity log
@@ -153,6 +173,52 @@ lesson is not built and full Phase 1 QA remains incomplete.
   help; these are the next product work, not features already built.
 - Checkpoint closed is setup/basic interaction only; remaining QA is explicit.
 
+### September 14 — onboarding-first implementation
+
+- Owner requested three separate topic cards before entering a lesson, and
+  explicitly prioritized context, demonstration and guided practice over jumping
+  directly into arithmetic. Cargo Crew is the only available onboarding path;
+  café/division and garden/multiplication are disabled Coming soon previews.
+- Authored a pure progression model, editable content, Meta-event director,
+  scene-generation/check scripts and 12 passing EditMode tests. Imported Unity's
+  bundled TMP resources after the first scene-generation attempt found them missing.
+- Created Onboarding as a separate scene, preserving DeviceProof. Catalog render
+  inspected and all instruction pages fit their text region. Non-development
+  build `build_e54958879ec6` succeeded in 75.613 seconds, zero errors and ten
+  warnings. APK hash and warnings are in qa/onboarding.md; known local developer
+  token scan passed. ADB lists no headset, so install/physical QA remain pending.
+- Updated agent instructions, plan amendment, PRD, requirements, constraints,
+  stack and future concepts to reflect the approved menu/onboarding scope.
+- Changes are not yet committed; previous committed/pushed checkpoint is fd7895f.
+
+### September 15 — connection recovered; onboarding deployed
+
+- Owner reported Developer Mode unexpectedly off, then an enablement error.
+  Headset browser internet access and no pending update were owner-confirmed.
+  Developer Mode was restored but USB remained unauthorized without a prompt.
+- Reconnects, host ADB restart and headset restart did not resolve it. Owner
+  updated Developer Hub; its Bluetooth discovery failed despite Mac Bluetooth
+  and app Bluetooth permission being enabled. No factory reset or key deletion.
+- Owner toggled Developer Mode off/on with USB attached, then saw and approved
+  USB debugging. ADB authorization was verified; onboarding APK installation and
+  launch command succeeded. Visible UI and interaction acceptance remain pending.
+- Changes remain uncommitted pending the requested physical slice check.
+
+### September 16 — grab fixed by owner report; first fraction chapter runs on device
+
+- Claude Code root-caused the Unity test-runner stalls to a dirty-scene Save alert
+  and fixed startup placement to wait for a tracked head (four new tests).
+- Built and installed cargo-20260916-131831 (SHA-256 18273ac6...2732): 38 checks
+  and credential scan passed. Contains a temporary practice input readout and a
+  temporary grip-or-trigger practice grab override plus the code-complete
+  whole/halves chapter (CargoLessonModel, RulerLayout, CargoLessonDirector).
+- Owner initially saw nothing: the app was not running (Quest home shell, no
+  crash). Launched over ADB; focus, tracking, passthrough and controllers OK.
+- **Owner-reported:** grabbing and manipulating the practice strap works; the
+  Cargo Crew halves chapter completes with 1/2 + 1/2 = 1. Grip-vs-trigger
+  numbers not reported, so the grip root cause stays open; override retained.
+- Owner authorized commit of all work in progress. No push.
+
 ## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not
@@ -175,5 +241,6 @@ Use the installed 6.6 proof candidate and inspect current editor/package state.
 Do not block on formal ticket setup or re-download completed Android modules.
 Pause for new licenses, account decisions, purchases and physical headset actions.
 Complete remaining physical QA before full device-proof signoff. The next product
-slice is onboarding plus the first fraction interaction, not production art or
-additional lessons. Preserve the working proof scene as a regression reference.
+slice is getting the authored onboarding onto the headset and checking its flow,
+then the first fraction interaction. Do not start additional lessons. Preserve
+the working proof scene as a regression reference. See qa/onboarding.md.

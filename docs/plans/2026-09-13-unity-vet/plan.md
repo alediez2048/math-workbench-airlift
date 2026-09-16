@@ -1,5 +1,10 @@
 # Math Workbench: Airlift — vetted execution plan
 
+September 15 revision for owner review: [Cargo Crew implementation plan](../../00-build/PLAN.md)
+and [revision research](fraction-expansion-research.md) extend this same RAP run.
+The historical approved plan below is preserved; the new package is draft and
+implementation is paused until owner review. Do not execute both plans concurrently.
+
 Mode: revision · Size: XL · RAP tier: Deep · September 13, 2026.
 Evidence: [research.md](research.md). Request and original brief: [brief.md](brief.md).
 This plan supersedes `../../../UNITY_PLAN.md`; that file remains design history.
@@ -21,15 +26,24 @@ conditional. This is a plan review, not evidence that the game has been built.
   passthrough, tracked controllers and cube grabbing. This closes setup/basic
   interaction, not the full Phase 1 QA gate. Remaining checks and artifact hash
   are in [device-proof.md](../../qa/device-proof.md).
-- Owner approved cargo-role briefing, guided first grab, replayable help and
-  chapter purpose as part of the flagship onboarding; none is implemented yet.
+- Owner prioritized onboarding before arithmetic implementation: Arithmetic
+  Lessons opens with three topic cards. Cargo Crew / Fractions opens briefing,
+  orientation, a demonstration, guided grab/place practice and replayable help.
+  Neighborhood Café / Division and Community Garden / Multiplication are disabled
+  Coming soon cards only. This explicitly supersedes the earlier no-menu-preview
+  restriction without authorizing two more implemented lessons.
+- Onboarding source and a separate Onboarding scene are now authored; 12 pure
+  flow tests and editor layout/reference checks pass. Physical onboarding QA
+  remains pending; see [onboarding evidence](../../qa/onboarding.md). The arithmetic
+  task is intentionally not connected yet. Preserve DeviceProof unchanged.
 - Owned headset: **Quest 3S**, with authorized ADB observed; corrects the original
   Quest 3 description. Test on this actual device.
 - Use installed **6000.6.0f1 Apple Silicon + URP 17.6.0** for the initial proof.
   Android SDK/NDK/OpenJDK are installed. This supersedes D2's 6.3-only setup
   requirement provisionally, not the requirement to freeze a physically proven tuple.
 - Universal 3D project exists in `unity/`. Official Unity CLI/Pipeline is the
-  automation route. No XR acceptance or product test has passed yet.
+  automation route. Basic cube interaction is owner-confirmed; full XR acceptance
+  remains open. Onboarding flow tests and Android build pass, not physical QA.
   See [toolchain](../../qa/toolchain.md).
 - Owner confirmed cargo theme and requested café/division and garden/area
   alternatives on paper only; see [future concepts](../../future-lessons.md).

@@ -1,5 +1,10 @@
 # Constraints — Math Workbench: Airlift
 
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 Draft v0.1 · September 14, 2026. Corrected filename for the requested
 “constraings.md.” Derived from the [authoritative plan](docs/plans/2026-09-13-unity-vet/plan.md).
 
@@ -41,7 +46,8 @@ All times are America/Chicago (CDT). Gates are targets, not completed milestones
 - **Learner:** age-10 Grade 4 learner who can count and has encountered equal parts.
   This is a design persona, not evidence of age suitability or a tested cohort.
 - **Theme:** aircraft cargo straps confirmed by the owner; detailed art remains
-  a draft. Café and garden are future concepts only, not implementation scope.
+  a draft. Café and garden are future concepts with disabled preview cards only,
+  not additional implemented lessons. Onboarding precedes arithmetic in the MVP.
 - **Toolchain:** installed 6000.6.0f1 Apple Silicon is the provisional proof
   candidate, a recorded deviation from 6.3 LTS. No exact
   patch/package combination is accepted until it works on this physical Quest.

@@ -1,5 +1,10 @@
 # Requirements — Math Workbench: Airlift
 
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 Draft v0.2 · September 14, 2026 · Unity scaffold created; feature acceptance pending.
 
 This is the acceptance contract, not a progress report. It derives from the
@@ -17,7 +22,9 @@ mathematical result is a release blocker even inside an optional feature.
 The baseline is one complete 6–8 minute fraction lesson, **The Cut**, organized
 into three chapters. It is not three independent lessons. **Cargo Grid** is the
 only conditional second lesson. No third implemented lesson or second hackathon
-challenge. Café and garden concepts are documented options only, not release scope.
+challenge. Café and garden have owner-approved disabled Coming soon cards, not
+implemented lessons. The opening title is Arithmetic Lessons; Cargo Crew opens
+the flagship onboarding. See [onboarding acceptance](docs/qa/onboarding.md).
 
 ## Functional requirements
 

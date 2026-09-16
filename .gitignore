@@ -10,6 +10,8 @@
 [Rr]ecordings/
 /artifacts/
 node_modules/
+__pycache__/
+*.pyc
 .DS_Store
 .vs/
 .idea/

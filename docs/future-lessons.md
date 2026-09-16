@@ -1,4 +1,4 @@
-# Future lesson concepts — not implementation scope
+# Future lesson concepts — preview cards only
 
 September 14, 2026. Owner requested two options with different subjects and
 settings, explicitly without committing to implement them during this build.
@@ -10,8 +10,14 @@ settings, explicitly without committing to implement them during this build.
 
 Both could reuse controller grab/place, task progression, and feedback systems.
 They would need their own standards alignment, authored tasks, art references,
-and physical validation before being authorized. Do not add menus, placeholder
-levels, assets, or framework abstractions just to accommodate these ideas now.
+and physical validation before being authorized.
+
+Later September 14 decision: the owner explicitly requested an opening screen
+titled **Arithmetic Lessons** with three topic cards. Cargo Crew / Fractions
+opens the onboarding MVP; Neighborhood Café / Division and Community Garden /
+Multiplication are disabled, labeled **Coming soon**. This supersedes the earlier
+restriction against menu placeholders, but does not authorize either future
+lesson's implementation, environment assets, or a general lesson framework.
 
 The cargo fraction lesson remains the only guaranteed lesson. These concepts
 neither replace nor bypass the existing conditional Cargo Grid checkpoint.

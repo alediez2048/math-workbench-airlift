@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "scene": "Assets/Airlift/Scenes/CargoCrew.unity",
+  "baseline": [
+    {
+      "mode": "editor",
+      "filter": "OnboardingFlowTests"
+    }
+  ],
+  "tickets": {
+    "CC-P1-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "ComfortPlacementTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "TypographyAssetTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "FractionGlyphCoverageTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "CargoTerminalLayoutTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "OnboardingPlacementTests"
+        }
+      ],
+      "requiredAssets": [
+        "Assets/Airlift/Fonts/AirliftStyle.asset"
+      ],
+      "requiredCueIds": []
+    },
+    "CC-P1-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CargoBaselineTests"
+        },
+        {
+          "mode": "playmode",
+          "filter": "CargoBaselineTestsSceneTests"
+        }
+      ],
+      "requiredAssets": [
+        "Assets/Airlift/Scenes/CargoCrew.unity"
+      ],
+      "requiredCueIds": []
+    },
+    "CC-P1-04": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CargoLessonModelTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "RulerLayoutTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    }
+  },
+  "phaseEnds": {
+    "1": "CC-P1-10",
+    "2": "CC-P2-08",
+    "3": "CC-P3-06",
+    "4": "CC-P4-04"
+  }
+}

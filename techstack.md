@@ -1,5 +1,10 @@
 # Technology stack — Math Workbench: Airlift
 
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 Draft v0.2 · September 14, 2026 · scaffold created; XR/device validation pending.
 
 Checkpoint update: native safe APK built and installed on Quest 3S; owner confirms
@@ -49,6 +54,13 @@ game: correct quantities, deliberate error states, pedagogy, state recovery, and
 the link between a student's action and a visible explanation.
 
 ## Minimal architecture
+
+Current onboarding slice: `OnboardingFlow` owns deterministic stage transitions;
+`OnboardingContent` is editable ScriptableObject copy and placement configuration;
+`OnboardingDirector` connects Meta grab events and ray-operated Unity UI. Unity's
+bundled TMP Essential Resources provide fonts; keep their included font license.
+There is no new tracking system, narration service or lesson framework. Fraction
+model drafts are separate and not connected to this scene.
 
 ```text
 Meta grab / ray events

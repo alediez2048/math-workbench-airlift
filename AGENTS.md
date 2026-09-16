@@ -1,5 +1,48 @@
 # Math Workbench: Airlift — instructions for Codex
 
+## September 16 handoff checkpoint
+
+Implementation is paused at owner's request for Claude Code review. Read
+`docs/00-build/HANDOFF-2026-09-16.md` before any continuation. Practice grabbing
+remains broken; no verified cause/fix. Installed app is the invalid vendor cube
+control experiment, NOT CargoCrew. Preserve uncommitted work; no commit/push.
+Earlier successful onboarding evidence does not establish current acceptance.
+
+
+## September 16 owner priority override
+
+Owner explicitly deferred AI/spoken guidance and associated audio captions, replay,
+and mute work. Preserve existing written instructions and fraction labels. Immediate
+implementation priority: fix practice grabbing, then deliver the P1-04/P1-05 core
+loop: open Cargo Crew, see a stable reachable board, grab a whole labeled 1, split
+into two equal pieces labeled 1/2, and manipulate those pieces against a fixed whole.
+P1-03/provider work is deferred and is not a dependency of this demo. P1-02.5 and
+remaining visual polish must not block this core loop. This overrides historical
+sequential/AI-first requirements below; deferred tickets are not accepted or complete.
+No new purchases, child-data processing, commits, pushes, or submission authorized.
+Physical grab/split acceptance remains required; contest AI requirements remain an
+unresolved release consideration, not a reason to block local arithmetic development.
+
+September 15 continuation: owner authorized CC-P1-02 after reviewing the successful
+baseline build. Batch P1-01 device review with P1-02; neither is device-accepted.
+P1-02 is the active ticket. No authorization to purchase, commit/push or skip font review.
+
+September 15 implementation authorization: owner approved **CC-P1-01 only** using
+`docs/00-build/PLAN.md` and its ticket as the current execution contract. Preserve
+historical plans below; do not execute their obsolete phases. Headset reviews are
+batched at meaningful checkpoints; code-complete is not device-accepted. Stop
+after this ticket for review. No commit/push or paid service authorization implied.
+
+September 15 owner update: core AI spoken guidance and the dedicated style guide are
+now included in the draft review package: `docs/00-build/AI-VOICE-GUIDE.md` and
+`docs/00-build/STYLE-GUIDE.md`. Earlier voice-deferred text below is historical for
+this proposed revision. Finish owner review before implementing a ticket.
+
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 This is a five-day Unity/Meta Quest hackathon build. Deadline: Friday,
 September 18, 2026 at 11:59 PM CDT. Internal submission target: 6:00 PM.
 
@@ -30,6 +73,9 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 - P0 is one polished 6–8 minute flagship: The Cut.
 - Cargo Grid is authorized only by the Wednesday gate in the vetted plan.
+- Owner-approved opening: Arithmetic Lessons with Cargo Crew / Fractions plus
+  disabled Coming soon cards for café/division and garden/multiplication.
+  Preview cards do not authorize additional implemented lessons.
 - No Till, third lesson, browser port, dashboard, accounts, multiplayer, flight
   simulator, runtime mesh slicing, or reward economy.
 - “Cutting” swaps exact prebuilt segment prefabs; it does not modify mesh geometry.
@@ -65,8 +111,9 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 - Setup/basic-interaction checkpoint is complete: safe APK installed; owner
   confirms passthrough, tracked controllers and grabbing. See `docs/qa/device-proof.md`
   for remaining Phase 1 QA; do not claim full acceptance or a completed lesson.
-- Next product work includes cargo-role briefing, guided grab, replayable help,
-  and the whole-to-halves interaction. Preserve DeviceProof as a regression scene.
+- Current slice is onboarding first: catalog, mission briefing, orientation,
+  demonstrated grab/place, required practice and replayable help. See
+  `docs/qa/onboarding.md`; arithmetic is not wired yet. Preserve DeviceProof.
 - Work in `/Users/jad/Desktop/math-workbench-airlift`, branch `unity-airlift`.
   Read `docs/PROGRESS.md` for current state; do not repeat completed setup.
 - Use Unity's official CLI/Pipeline for editor automation. Do not install a
@@ -91,3 +138,47 @@ If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 Reliable release APK > correct flagship lesson > visible AI adaptation >
 legibility and world payoff > submission evidence > Cargo Grid > hands > voice.
+
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
+
+This project is indexed by GitNexus as **math-workbench-airlift** (1745 symbols, 2394 relationships, 28 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+
+> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
+
+## Always Do
+
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
+
+## Never Do
+
+- NEVER edit a function, class, or method without first running `impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
+- NEVER commit changes without running `detect_changes()` to check affected scope.
+
+## Resources
+
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/math-workbench-airlift/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/math-workbench-airlift/clusters` | All functional areas |
+| `gitnexus://repo/math-workbench-airlift/processes` | All execution flows |
+| `gitnexus://repo/math-workbench-airlift/process/{name}` | Step-by-step execution trace |
+
+## CLI
+
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+
+<!-- gitnexus:end -->

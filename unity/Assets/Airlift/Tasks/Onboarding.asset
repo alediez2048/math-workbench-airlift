@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 869bc7110f9684e3483ae6545f9935d1, type: 3}
+  m_Name: Onboarding
+  m_EditorClassIdentifier: Airlift.Runtime::Airlift.Onboarding.OnboardingContent
+  overview: 'Join the cargo crew preparing an aircraft delivery. Different packages need different strap lengths.
+
+
+    First: learn to pick up and place a strap. Later: build and compare fractions of one whole.
+
+
+    This MVP includes onboarding only.'
+  orientation: 'The orange piece is a cargo strap. The outlined pad is its measuring station.
+
+
+    Stay comfortably seated or standing. Bring a controller to the strap; hold the middle-finger grip to lift it, then let go to release.
+
+
+    Choose Watch demo to see the movement first.'
+  demonstration: 'DEMONSTRATION
+
+
+    Watch the striped example strap lift from the tray and move onto the outlined pad.
+
+
+    You will make the same movement with the orange strap. This is practice, not a math question.'
+  practice: 'YOUR TURN
+
+
+    Touch the orange strap with either controller. Hold the grip under your middle finger, move it over the outlined pad, then release.
+
+
+    Choose Help / replay demo whenever you need it.'
+  retry: "The strap is back in the tray. Hold the grip while moving, then release above the outlined pad. There is no penalty\u2014try again, or replay the demonstration."
+  ready: 'You picked up the strap and placed it at the measuring station.
+
+
+    This strap will represent one whole. Next, the cargo crew will ask for equal parts of that whole.
+
+
+    Onboarding complete. The fraction activity is not included in this build yet.'
+  trayPosition: {x: -0.13, y: 0.08, z: -0.08}
+  targetPosition: {x: 0.13, y: 0.08, z: 0.12}
+  demonstrationSeconds: 4
+  placementRadius: 0.16
+  boardDistance: 0.65
+  boardBelowEyes: 0.5

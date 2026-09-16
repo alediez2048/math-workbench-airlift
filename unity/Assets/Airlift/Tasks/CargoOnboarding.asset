@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 869bc7110f9684e3483ae6545f9935d1, type: 3}
+  m_Name: CargoOnboarding
+  m_EditorClassIdentifier: Airlift.Runtime::Airlift.Onboarding.OnboardingContent
+  overview: 'Join the Cargo Crew. Help prepare parcels for an aircraft delivery.
+
+
+    First, practise moving a strap to the measuring pad. Fraction activities come next; this build is onboarding only.'
+  orientation: 'The orange piece is a strap. The outlined pad is the measuring station.
+
+
+    Watch the demo, then try it yourself. Adjust the station below if needed. Never lean on the virtual surface.'
+  demonstration: 'Watch the example strap move from the tray to the pad.
+
+
+    Next, you will try the same movement. This is controller practice, not a fraction question.'
+  practice: 'Touch the orange strap with a controller.
+
+
+    Hold the grip under your middle finger. Move the strap above the pad, then release.
+
+
+    Need help? Replay the demo.'
+  retry: 'Try again: hold the grip while moving, then release above the pad. You can replay the demo.'
+  ready: 'You moved the strap to the measuring station.
+
+
+    It will represent one whole in the fraction activity.
+
+
+    Choose Start fractions, replay the demo, or return to lessons.'
+  trayPosition: {x: -0.13, y: 0.08, z: -0.08}
+  targetPosition: {x: 0.13, y: 0.08, z: 0.12}
+  demonstrationSeconds: 4
+  placementRadius: 0.16
+  boardDistance: 0.65
+  boardBelowEyes: 0.5

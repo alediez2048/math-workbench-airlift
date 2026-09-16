@@ -1,5 +1,10 @@
 # PRD — Math Workbench: Airlift
 
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 Draft v0.1 · September 14, 2026 · working title and art direction.
 
 **Product promise:** make fraction relationships tangible by preparing cargo
@@ -42,14 +47,23 @@ not needed to fulfill this product promise.
 
 ## Experience and learning progression
 
-### Onboarding and purpose (owner approved September 14; not yet implemented)
+### Onboarding and purpose (September 14 MVP)
 
-Introduce the learner's role preparing an aircraft delivery, explain why cargo
-needs correctly sized straps, and guide the first grab before asking a math
-question. Establish one whole, demonstrate equal halves, then ask the learner
-to build one-half. Every chapter introduces its practical purpose and provides
-replayable instructions/help. This is part of the flagship, not a separate
-lesson or a new onboarding platform. The current cube scene contains none of it.
+Open with **Arithmetic Lessons** and three separate topic cards: Cargo Crew /
+Fractions, Neighborhood Café / Division, and Community Garden / Multiplication.
+Only Cargo Crew is available; the others explicitly say Coming soon and cannot
+open. These are three topics, not the three chapters of the flagship.
+
+Inside Cargo Crew, explain the aircraft delivery mission and why strap lengths
+matter. Orient the player to the workbench, show a striped demonstration strap
+moving, then require a real grab and release onto the outlined measuring pad.
+Offer replayable help and a return to the menu. Finish with an honest introduction
+to one whole, stating that the fraction activity is not in this build yet.
+
+The separate Onboarding scene and source are authored, not yet physically accepted.
+See [verification](docs/qa/onboarding.md). Written instructions and an in-world
+demonstration are the first iteration; narration, music and richer animation are
+later polish. Halves and the first arithmetic task follow onboarding acceptance.
 
 | Chapter | Tasks | Experience |
 |---|---|---|

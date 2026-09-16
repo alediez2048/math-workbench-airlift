@@ -1,0 +1,6 @@
+{
+  "name": "Airlift.EditMode.Tests",
+  "references": ["Airlift.Runtime", "Unity.TextMeshPro", "Unity.ugui"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

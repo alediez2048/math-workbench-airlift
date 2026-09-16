@@ -1,12 +1,19 @@
 # Math Workbench: Airlift
 
+September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
+is paused for owner review.** This draft does not silently replace the approved
+baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+
 Unity / Meta Quest 3S educational game · implementation kickoff · September 14, 2026.
 
 The repository contains documentation, schematic mockups, and a newly created
 Universal 3D project in `unity/`. A native test app is installed on Quest 3S;
 the owner confirmed passthrough, controller tracking, and grabbing the cube.
-It is **not yet a learning game**: onboarding, storytelling and fraction logic
-remain to build. See the [milestone evidence and remaining QA](docs/qa/device-proof.md).
+It is **not yet a complete learning game**. The new onboarding scene includes a
+three-card catalog, cargo briefing, demonstration and grab/place practice;
+arithmetic is not connected yet. See [onboarding status](docs/qa/onboarding.md)
+and the [earlier device checkpoint](docs/qa/device-proof.md).
 
 ## Current documents
 
@@ -36,9 +43,9 @@ Active local checkout: `/Users/jad/Desktop/math-workbench-airlift`, branch
 `unity-airlift`. Make future edits here; the earlier Documents checkout is retained
 as an inactive copy. See the [source-control guide](docs/source-control.md).
 
-Review the PRD and visual reference, then implement Phase 1 of the vetted plan:
-prove a native passthrough scene and grabbable object on the physical Quest before
-production art or stretch content. Account/licensing, USB authorization, physical
+The initial cube proof is complete. Next install and test the onboarding APK
+using the checks in `docs/qa/onboarding.md`; do not redo the completed toolchain
+setup. Account/licensing, USB authorization, physical
 comfort, and submission rights need the owner's participation.
 
 Unity 6000.6.0f1 and its Android tools are installed, and the Quest 3S has an
