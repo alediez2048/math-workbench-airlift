@@ -1,5 +1,16 @@
 # Cargo Crew — phased ticket backlog
 
+## September 16 (evening) — Phase 0 added, voice un-deferred (draft for owner approval)
+
+Owner accepted the Cargo workbench (toy look, carry handle, whole/halves) and re-scoped:
+Phase 0 "Nerdy welcome" comes before more fraction work. Nine new tickets CC-P0-01..09
+(see PHASE-0-NERDY-WELCOME.md). Absorbed: P1-02.5 → P0-01; P1-03 → P0-04/P0-07;
+P4-01 → P0-08; P4-02/P4-03 (adult) → P0-05/P0-07. P4-04 remains. Then P1-06..P1-10,
+Phase 2, Phase 3 in order. Accepted so far by owner report: P1-01/P1-02 outcomes,
+P1-04, P1-05 and the P1-06 rebuild check on the headset (tickets not formally closed).
+Status: **38 tickets; Phase 0 draft awaiting owner approval; none formally accepted.**
+
+
 ## September 16 handoff status
 
 Implementation paused for owner-requested Claude Code handoff; see

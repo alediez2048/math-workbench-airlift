@@ -1,7 +1,14 @@
 # Cargo Crew fraction experience — implementation plan
 
 
-## September 16 owner priority override
+## September 16 (evening) owner re-scoping: Phase 0 Nerdy welcome
+
+Owner un-deferred voice and added Phase 0 (launcher, two-way voice welcome, Nerdy-branded
+lesson cards, per-lesson workbenches, guide in the workbench) before further fraction
+chapters. Decisions: two-way voice for adult testers, OpenAI, app identity "Nerdy"
+(`com.nerdy.vr`). Draft awaiting owner approval; see PHASE-0-NERDY-WELCOME.md.
+
+## September 16 owner priority override (historical after the evening re-scoping)
 
 Owner explicitly deferred AI/spoken guidance and associated audio captions, replay,
 and mute work. Preserve existing written instructions and fraction labels. Immediate
@@ -134,6 +141,19 @@ Future server environment names and tests are documented in P1-03 and SERVER-VER
 before authorized setup; no keys or values belong in docs or APK.
 
 ## Phases
+
+### Phase 0 — Nerdy welcome: launcher, voice guide, lesson cards · Size XL · 9 tickets
+
+Owner-requested September 16 after accepting the Cargo workbench. See
+[PHASE-0-NERDY-WELCOME.md](PHASE-0-NERDY-WELCOME.md) for the flow, architecture, privacy
+gate, branding and cut line. CC-P0-01 through CC-P0-09. Goal: Quest Library "Nerdy" icon
+→ voice welcome (two-way, adult testers) → three Nerdy cards → per-lesson workbench with
+the guide. Absorbs P1-02.5 (launcher), P1-03 (guide transport/meaning), P4-01 (gate,
+pulled forward), P4-02/P4-03 (adult spoken input). Voice deferral of September 16 is
+superseded by owner decision. Phase 1 resumes at P1-06 after P0-09 acceptance.
+Tests: AppIdentityTests, NerdyStyleTests, GuideContextTests, GuideRoutingTests,
+WelcomeFlowTests, CatalogTests, CoreAIGuideTests, PrivacyGateTests, proxy contract tests.
+Acceptance: owner runs Library → welcome → cards → Cargo workbench with live guide.
 
 ### Phase 1 — AI-guided whole-and-halves chapter · Size XL · 10 tickets
 

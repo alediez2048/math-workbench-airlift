@@ -246,6 +246,12 @@ lesson is not built and full Phase 1 QA remains incomplete.
   interactors disabled; test added. Build cargo-20260916-144706 (SHA-256 9f69a09c...): 57 checks, scan passed; installed (md5 verified) for the owner's check.
 - Owner confirmed on build 144706: carry, rotate, resize and strap grabs work. Committed; no push.
 
+### September 16 — owner re-scoping: Phase 0 Nerdy welcome (plan drafted)
+
+- Owner wants launcher, two-way voice welcome, Nerdy cards and per-lesson workbenches
+  before more fraction chapters. Plan and nine tickets drafted in docs/00-build;
+  awaiting owner approval, logo, OpenAI key and hosting choice. Nothing implemented.
+
 ## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not

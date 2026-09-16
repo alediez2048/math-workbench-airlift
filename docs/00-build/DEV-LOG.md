@@ -1,5 +1,18 @@
 # Cargo Crew development log
 
+## 2026-09-16 — Owner re-scoping: Phase 0 "Nerdy welcome" (plan drafted, awaiting approval)
+
+- After accepting the workbench, the owner asked for the foundation first: findable Nerdy
+  launcher with logo, two-way voice welcome by a Nerdy AI guide (age band, interests, goal),
+  three Nerdy-branded lesson cards, per-lesson workbenches, guide inside the Cargo workbench.
+  Owner chose: two-way voice (adult testers), OpenAI, identity "Nerdy" / `com.nerdy.vr`.
+- Written: PHASE-0-NERDY-WELCOME.md (flow, architecture, privacy gate, branding from the
+  owner's Live Learning Style Guide, ticket table, cut line) and tickets CC-P0-01..09.
+  PLAN.md, TICKETS.md, CLAUDE.md, AGENTS.md updated; absorbed tickets annotated.
+- Needed from owner: logo file, OpenAI key with Realtime access and a spend cap (out of
+  band), proxy hosting choice, rights confirmation for the Nerdy name/logo, and approval
+  of the plan. No implementation started.
+
 ## 2026-09-16 — Table handle: carry and resize the whole table (OWNER ACCEPTED on headset)
 
 - Owner ask after accepting the toy look: move the table elsewhere and make it bigger or
