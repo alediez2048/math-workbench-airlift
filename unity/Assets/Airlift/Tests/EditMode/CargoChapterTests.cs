@@ -46,20 +46,39 @@ namespace Airlift.Tests
             Assert.That(all[TopItUp].LockedPieces, Is.EqualTo(new[] { 2 }));
         }
 
-        [Test] public void ChapterCopyIsShortAsciiAndUsesCrateLanguage()
+        [Test] public void BedCellsMatchContractAndTarget()
+        {
+            var all = CargoChapter.All;
+            Assert.That(all[BigTruck].BedCells, Is.EqualTo(new[] { 8 }));
+            Assert.That(all[TwoPickups].BedCells, Is.EqualTo(new[] { 4, 4 }));
+            Assert.That(all[FourVans].BedCells, Is.EqualTo(new[] { 2, 2, 2, 2 }));
+            Assert.That(all[SameShare].BedCells, Is.EqualTo(new[] { 4 }));
+            Assert.That(all[TopItUp].BedCells, Is.EqualTo(new[] { 8 }));
+            foreach (var c in all)
+            {
+                Assert.That(c.BedCells.Length, Is.EqualTo(c.VehicleCount), c.Id);
+                int sum = 0; foreach (int b in c.BedCells) sum += b;
+                Assert.That(sum, Is.LessThanOrEqualTo(PlacementState.CellsPerWhole), c.Id);
+                Assert.That(new FractionValue(sum, PlacementState.CellsPerWhole), Is.EqualTo(c.Target), c.Id + ": full beds are the target");
+            }
+        }
+
+        [Test] public void ChapterCopyIsShortAsciiAndDescribesTrucksAtTheDock()
         {
             foreach (var c in CargoChapter.All)
             {
                 foreach (var text in new[] { c.Title, c.Story, c.Task, c.Accepted, c.Expression })
                 {
                     Assert.That(string.IsNullOrWhiteSpace(text), Is.False, c.Id);
-                    Assert.That(text.ToLowerInvariant(), Does.Not.Contain("strap"), c.Id);
+                    string lower = text.ToLowerInvariant();
+                    foreach (var banned in new[] { "strap", "floor", "aircraft", "airplane", "plane", "jet" })
+                        Assert.That(lower, Does.Not.Contain(banned), c.Id + ": " + text);
                     foreach (char ch in text) Assert.That(ch < 128, Is.True, c.Id + ": non-ASCII in " + text);
                 }
                 Assert.That(c.Task.Split('.').Length, Is.LessThanOrEqualTo(2), c.Id + " task is one sentence");
             }
-            Assert.That(CargoChapter.All[FourVans].Story, Is.EqualTo("Four delivery vans pulled in. Each van fits one quarter of a container."));
-            Assert.That(CargoChapter.All[TwoPickups].Accepted, Is.EqualTo("Both pickups are loaded."));
+            Assert.That(CargoChapter.All[FourVans].Story, Is.EqualTo("Four delivery vans backed up to the dock. Each van fits one quarter of a container."));
+            Assert.That(CargoChapter.All[BigTruck].Story, Does.Contain("cranes"));
         }
 
         [Test] public void EveryChapterStartsWithFixedPieceIds()
@@ -85,6 +104,115 @@ namespace Airlift.Tests
             Assert.Throws<System.ArgumentOutOfRangeException>(() => m.StartChapter(5));
         }
 
+        // ---- beds ----
+
+        [Test] public void BedGeometryPerChapter()
+        {
+            var vans = At(FourVans);
+            Assert.That(vans.BedCount, Is.EqualTo(4));
+            for (int b = 0; b < 4; b++)
+            {
+                Assert.That(vans.BedStartCell(b), Is.EqualTo(2 * b));
+                Assert.That(vans.BedCapacity(b), Is.EqualTo(2));
+                Assert.That(vans.BedFill(b), Is.EqualTo(0));
+            }
+            Assert.That(vans.BedAtCell(0), Is.EqualTo(0));
+            Assert.That(vans.BedAtCell(3), Is.EqualTo(1));
+            Assert.That(vans.BedAtCell(7), Is.EqualTo(3));
+            Assert.That(vans.BedAtCell(8), Is.EqualTo(-1));
+            Assert.That(vans.BedAtCell(-1), Is.EqualTo(-1));
+            Assert.That(vans.BedStartCell(4), Is.EqualTo(-1));
+
+            var pickups = At(TwoPickups);
+            Assert.That(pickups.BedCount, Is.EqualTo(2));
+            Assert.That(pickups.BedStartCell(1), Is.EqualTo(4));
+            Assert.That(pickups.BedAtCell(4), Is.EqualTo(1));
+
+            var one = At(SameShare);
+            Assert.That(one.BedCount, Is.EqualTo(1));
+            Assert.That(one.BedCapacity(0), Is.EqualTo(4));
+            Assert.That(one.BedAtCell(3), Is.EqualTo(0));
+            Assert.That(one.BedAtCell(4), Is.EqualTo(-1), "cells 4-8 are not needed in chapter 4");
+        }
+
+        [Test] public void DockIntoAChosenBedPacksFromItsStart()
+        {
+            var m = At(FourVans);
+            m.Split(false, m.Generation);
+            Assert.That(m.Dock("quarter-1", false, 3), Is.True);
+            Assert.That(m.BedOf("quarter-1"), Is.EqualTo(3));
+            Assert.That(m.StartCell("quarter-1"), Is.EqualTo(6), "StartCell is global");
+            Assert.That(m.Dock("quarter-2", false, 0), Is.True);
+            Assert.That(m.DockedIndex("quarter-2"), Is.EqualTo(0), "docked index runs left to right across beds");
+            Assert.That(m.DockedIndex("quarter-1"), Is.EqualTo(1));
+            Assert.That(m.BedFill(3), Is.EqualTo(2));
+            Assert.That(m.Dock("quarter-3", false, 3), Is.False);
+            Assert.That(m.LastFeedback, Is.EqualTo("This van is already full."));
+            Assert.That(m.Dock("quarter-3", false, 4), Is.False, "bad bed");
+            Assert.That(m.Dock("quarter-3", false, -1), Is.False, "outside the beds");
+            Assert.That(m.Dock("quarter-3", true, 1), Is.False, "held");
+            Assert.That(m.Dock("quarter-1", false, 1), Is.False, "already docked");
+            Assert.That(m.Dock("nope", false, 1), Is.False, "unknown");
+            Assert.That(m.Dock("quarter-3", false), Is.True, "first bed with room");
+            Assert.That(m.BedOf("quarter-3"), Is.EqualTo(1));
+        }
+
+        [Test] public void UndockShiftsTheRestOfThatBed()
+        {
+            var m = At(SameShare);
+            m.Dock("quarter-1", false, 0); m.Dock("quarter-2", false, 0);
+            Assert.That(m.StartCell("quarter-2"), Is.EqualTo(2));
+            Assert.That(m.Undock("quarter-1"), Is.True);
+            Assert.That(m.StartCell("quarter-2"), Is.EqualTo(0));
+            Assert.That(m.BedFill(0), Is.EqualTo(2));
+            Assert.That(m.BedOf("quarter-1"), Is.EqualTo(-1));
+            Assert.That(m.Undock("quarter-1"), Is.False, "not docked");
+        }
+
+        [Test] public void CrateLongerThanTheBedIsRefusedWithASizeMessage()
+        {
+            var vans = At(FourVans);
+            Assert.That(vans.Dock("half-1", false, 0), Is.False);
+            Assert.That(vans.LastFeedback, Is.EqualTo("That crate is too long for this van. Split it first."));
+            Assert.That(vans.IsDocked("half-1"), Is.False);
+            Assert.That(vans.Dock("half-2", false), Is.False, "no van bed fits a half crate");
+            Assert.That(vans.LastFeedback, Is.EqualTo("That crate is too long for this van. Split it first."));
+
+            var pickups = At(TwoPickups);
+            Assert.That(pickups.Dock("whole", false, 1), Is.False);
+            Assert.That(pickups.LastFeedback, Is.EqualTo("That crate is too long for this pickup. Split it first."));
+            Assert.That(pickups.RulerCount, Is.EqualTo(0));
+        }
+
+        [Test] public void FullSingleBedSaysSo()
+        {
+            var m = At(SameShare);
+            Assert.That(m.Dock("quarter-1", false), Is.True);
+            Assert.That(m.Dock("quarter-2", false), Is.True);
+            Assert.That(m.Dock("quarter-3", false), Is.False);
+            Assert.That(m.LastFeedback, Is.EqualTo("This pickup is already full."));
+
+            var top = At(TopItUp);
+            Assert.That(top.Dock("quarter-1", false), Is.True);
+            Assert.That(top.Dock("quarter-2", false), Is.True);
+            Assert.That(top.Dock("quarter-3", false), Is.False, "the truck bed cannot exceed 8 cells");
+            Assert.That(top.LastFeedback, Is.EqualTo("This big truck is already full."));
+            Assert.That(top.RulerQuantity, Is.EqualTo(new FractionValue(1, 1)));
+        }
+
+        [Test] public void FirstFitSkipsFullBeds()
+        {
+            var m = At(FourVans);
+            m.Split(false, m.Generation);
+            Assert.That(m.Dock("quarter-1", false, 0), Is.True);
+            Assert.That(m.Dock("quarter-2", false, 2), Is.True);
+            Assert.That(m.Dock("quarter-3", false), Is.True);
+            Assert.That(m.BedOf("quarter-3"), Is.EqualTo(1));
+            Assert.That(m.Dock("quarter-4", false), Is.True);
+            Assert.That(m.BedOf("quarter-4"), Is.EqualTo(3));
+            Assert.That(m.StartCell("quarter-4"), Is.EqualTo(6));
+        }
+
         // ---- split ----
 
         [Test] public void SplitRefusedWhenChapterDoesNotAllowIt()
@@ -102,14 +230,13 @@ namespace Airlift.Tests
         [Test] public void FourVansSplitFollowsLineageAndConservesCells()
         {
             var m = At(FourVans);
-            Assert.That(m.Dock("half-1", false), Is.True);
             int gen = m.Generation;
             Assert.That(m.Split(true, gen), Is.False, "held refuses");
             Assert.That(m.Split(false, gen - 1), Is.False, "stale refuses");
             Assert.That(m.Split(false, gen), Is.True);
             Assert.That(m.Generation, Is.GreaterThan(gen));
             Assert.That(m.PieceIds, Is.EqualTo(new[] { "quarter-1", "quarter-2", "quarter-3", "quarter-4" }), "half-1 -> q1,q2; half-2 -> q3,q4");
-            Assert.That(m.RulerCount, Is.EqualTo(0), "split undocks unlocked pieces");
+            Assert.That(m.RulerCount, Is.EqualTo(0));
             int cells = 0;
             foreach (var id in m.PieceIds) { cells += m.Piece(id).Cells; Assert.That(m.Piece(id).Notation.ToString(), Is.EqualTo("1/4")); }
             Assert.That(cells, Is.EqualTo(PlacementState.CellsPerWhole));
@@ -133,9 +260,17 @@ namespace Airlift.Tests
             Assert.That(CargoLessonModel.PieceId(4, 3), Is.EqualTo("quarter-3"));
         }
 
-        // ---- dock / undock ----
+        [Test] public void VehicleNamesInFeedback()
+        {
+            Assert.That(CargoLessonModel.VehicleName(CargoChapter.All[FourVans], 2), Is.EqualTo("Van 3"));
+            Assert.That(CargoLessonModel.VehicleName(CargoChapter.All[TwoPickups], 1), Is.EqualTo("Pickup 2"));
+            Assert.That(CargoLessonModel.VehicleName(CargoChapter.All[SameShare], 0), Is.EqualTo("The pickup"));
+            Assert.That(CargoLessonModel.VehicleName(CargoChapter.All[TopItUp], 0), Is.EqualTo("The big truck"));
+        }
 
-        [Test] public void DockRefusesUnknownHeldDuplicateAndOverfull()
+        // ---- dock / undock basics ----
+
+        [Test] public void DockRefusesUnknownHeldAndDuplicate()
         {
             var m = At(SameShare);
             Assert.That(m.Dock("nope", false), Is.False);
@@ -144,26 +279,21 @@ namespace Airlift.Tests
             Assert.That(m.Dock("quarter-1", false), Is.True);
             Assert.That(m.Dock("quarter-1", false), Is.False);
             Assert.That(m.Undock("quarter-1"), Is.True);
-            Assert.That(m.Undock("quarter-1"), Is.False, "not docked");
-
-            var top = At(TopItUp);
-            Assert.That(top.Dock("quarter-1", false), Is.True);
-            Assert.That(top.Dock("quarter-2", false), Is.True);
-            Assert.That(top.Dock("quarter-3", false), Is.False, "floor cannot exceed 8 cells");
-            Assert.That(top.RulerQuantity, Is.EqualTo(new FractionValue(1, 1)));
         }
 
-        [Test] public void TopItUpHalfIsLockedAtCellZero()
+        [Test] public void TopItUpHalfIsLockedInBedZeroAtCellZero()
         {
             var m = At(TopItUp);
             Assert.That(m.IsLocked("half-1"), Is.True);
             Assert.That(m.IsLocked("quarter-1"), Is.False);
-            Assert.That(m.IsDocked("half-1"), Is.True);
+            Assert.That(m.BedOf("half-1"), Is.EqualTo(0));
             Assert.That(m.StartCell("half-1"), Is.EqualTo(0));
+            Assert.That(m.BedFill(0), Is.EqualTo(4), "fill includes the locked half");
             Assert.That(m.RulerQuantity, Is.EqualTo(new FractionValue(1, 2)));
             Assert.That(m.Dock("half-1", false), Is.False, "locked refuses dock");
+            Assert.That(m.Dock("half-1", false, 0), Is.False, "locked refuses bed dock");
             Assert.That(m.Undock("half-1"), Is.False, "locked refuses undock");
-            Assert.That(m.Dock("quarter-3", false), Is.True);
+            Assert.That(m.Dock("quarter-3", false, 0), Is.True);
             Assert.That(m.StartCell("quarter-3"), Is.EqualTo(4));
             m.ResetPieces();
             Assert.That(m.IsDocked("half-1"), Is.True, "reset keeps locked piece");
@@ -173,65 +303,75 @@ namespace Airlift.Tests
 
         // ---- submit ----
 
-        [Test] public void EmptyFloorFeedback()
+        [Test] public void EmptyFeedback()
         {
             var m = At(FourVans);
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("The container floor is empty. Load crates from 0, then check."));
+            Assert.That(m.LastFeedback, Is.EqualTo(CargoLessonModel.EmptyFloorFeedback));
+            Assert.That(CargoLessonModel.EmptyFloorFeedback.ToLowerInvariant(), Does.Not.Contain("floor"));
+        }
+
+        [Test] public void TwoPickupsNamesTheEmptyPickup()
+        {
+            var m = At(TwoPickups);
+            m.Split(false, m.Generation);
+            Assert.That(m.Dock("half-1", false, 1), Is.True);
+            Assert.That(m.Submit(), Is.False);
+            Assert.That(m.LastFeedback, Is.EqualTo("Pickup 1 is still empty."));
+            Assert.That(m.IsDocked("half-1"), Is.True, "wrong load stays docked and editable");
         }
 
         [Test] public void TwoPickupsRefusesTheUnsplitWhole()
         {
             var m = At(TwoPickups);
-            Assert.That(m.Dock("whole", false), Is.True);
+            Assert.That(m.Dock("whole", false), Is.False, "a whole crate does not fit a pickup bed");
             Assert.That(m.Submit(), Is.False);
             Assert.That(m.ChapterComplete, Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills the container, but the pickups need halves. Split the crate first."));
-            Assert.That(m.IsDocked("whole"), Is.True, "wrong load stays docked and editable");
-            Assert.That(m.Undock("whole"), Is.True);
+            Assert.That(CargoLessonModel.Evaluate(CargoChapter.All[TwoPickups], new int[0], new[] { 1 }, out var feedback), Is.False);
+            Assert.That(feedback, Is.EqualTo("That fills a whole container, but the pickups need halves. Split the crate first."));
         }
 
-        [Test] public void FourVansUnderTargetNamesTheRemainder()
+        [Test] public void FourVansAcceptsOnlyWhenEveryVanIsFull()
         {
             var m = At(FourVans);
             m.Split(false, m.Generation);
-            m.Dock("quarter-1", false); m.Dock("quarter-2", false); m.Dock("quarter-3", false);
+            m.Dock("quarter-1", false, 0); m.Dock("quarter-2", false, 1); m.Dock("quarter-3", false, 3);
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills 3/4 of the container. 1/4 more fits."));
-            m.Dock("quarter-4", false);
+            Assert.That(m.LastFeedback, Is.EqualTo("Van 3 is still empty."));
+            Assert.That(m.ChapterComplete, Is.False);
+            m.Dock("quarter-4", false, 2);
             Assert.That(m.Submit(), Is.True);
             Assert.That(m.Expression, Is.EqualTo("1/4 + 1/4 + 1/4 + 1/4 = 1"));
         }
 
         [Test] public void FourVansRefusesUnsplitHalves()
         {
-            var m = At(FourVans);
-            m.Dock("half-1", false); m.Dock("half-2", false);
-            Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Does.StartWith("That fills the container, but "));
-            Assert.That(m.RulerCount, Is.EqualTo(2));
+            Assert.That(CargoLessonModel.Evaluate(CargoChapter.All[FourVans], new int[0], new[] { 2, 2 }, out var feedback), Is.False);
+            Assert.That(feedback, Does.StartWith("That fills a whole container, but "));
         }
 
-        [Test] public void SameShareAcceptsExactlyTwoQuarters()
+        [Test] public void SameShareSingleHalfSizeBedTakesExactlyTwoQuarters()
         {
             var m = At(SameShare);
+            Assert.That(m.Submit(), Is.False);
+            Assert.That(m.LastFeedback, Is.EqualTo(CargoLessonModel.EmptyFloorFeedback));
             m.Dock("quarter-4", false);
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills 1/4 of the container. 1/4 more fits."));
-            m.Dock("quarter-2", false); m.Dock("quarter-3", false);
-            Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That is more than this pickup takes. It needs 1/2 of a container."));
-            Assert.That(m.RulerCount, Is.EqualTo(3), "over-full load stays editable");
-            m.Undock("quarter-3");
+            Assert.That(m.LastFeedback, Is.EqualTo("The pickup has room for 1/4 of a container more."));
+            m.Dock("quarter-2", false);
+            Assert.That(m.Dock("quarter-3", false), Is.False, "a third quarter does not fit the half-size bed");
             Assert.That(m.Submit(), Is.True);
+            Assert.That(m.RulerQuantity, Is.EqualTo(new FractionValue(1, 2)));
             Assert.That(m.LastFeedback, Is.EqualTo(CargoChapter.All[SameShare].Accepted + " 2/4 = 1/2"));
         }
 
-        [Test] public void SameShareRefusesAHalfPiece()
+        [Test] public void SameShareVerdictsForHalfAndTooMany()
         {
             var chapter = CargoChapter.All[SameShare];
-            Assert.That(CargoLessonModel.Evaluate(chapter, new int[0], new[] { 2 }, out var feedback), Is.False);
-            Assert.That(feedback, Is.EqualTo("That fills 1/2 of the container, but this pickup's boxes must be quarters."));
+            Assert.That(CargoLessonModel.Evaluate(chapter, new int[0], new[] { 2 }, out var half), Is.False);
+            Assert.That(half, Is.EqualTo("That fills 1/2 of a container, but this pickup's boxes must be quarters."));
+            Assert.That(CargoLessonModel.Evaluate(chapter, new int[0], new[] { 4, 4, 4 }, out var over), Is.False);
+            Assert.That(over, Is.EqualTo("That is more than this pickup takes. It needs 1/2 of a container."));
             Assert.That(CargoLessonModel.Evaluate(chapter, new int[0], new[] { 4, 4 }, out _), Is.True);
         }
 
@@ -239,21 +379,23 @@ namespace Airlift.Tests
         {
             var m = At(TopItUp);
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills 1/2 of the container. 1/2 more fits."));
+            Assert.That(m.LastFeedback, Is.EqualTo("The big truck has room for 1/2 of a container more."));
             m.Dock("quarter-1", false);
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills 3/4 of the container. 1/4 more fits."));
+            Assert.That(m.LastFeedback, Is.EqualTo("The big truck has room for 1/4 of a container more."));
             m.Dock("quarter-2", false);
             Assert.That(m.Submit(), Is.True);
             Assert.That(m.Expression, Is.EqualTo("1/2 + 1/4 + 1/4 = 1"));
             Assert.That(m.AllChaptersComplete, Is.True);
         }
 
-        [Test] public void EvaluateReducesDisplayedFractions()
+        [Test] public void EvaluatePacksBedsAndReducesDisplayedFractions()
         {
-            var chapter = CargoChapter.All[FourVans];
-            CargoLessonModel.Evaluate(chapter, new int[0], new[] { 4, 4 }, out var feedback);
-            Assert.That(feedback, Is.EqualTo("That fills 1/2 of the container. 1/2 more fits."));
+            Assert.That(CargoLessonModel.Evaluate(CargoChapter.All[BigTruck], new int[0], new[] { 2, 2 }, out var truck), Is.True, "two halves fill the big truck");
+            Assert.That(CargoLessonModel.Evaluate(CargoChapter.All[BigTruck], new int[0], new[] { 4, 4, 4 }, out truck), Is.False);
+            Assert.That(truck, Is.EqualTo("The big truck has room for 1/4 of a container more."), "6/8 left over as 2/8 shows reduced");
+            Assert.That(CargoLessonModel.Evaluate(CargoChapter.All[TopItUp], new[] { 2 }, new int[0], out var top), Is.False);
+            Assert.That(top, Is.EqualTo("The big truck has room for 1/2 of a container more."));
         }
 
         // ---- reset / restart / next ----
@@ -267,6 +409,7 @@ namespace Airlift.Tests
             m.ResetPieces();
             Assert.That(m.Generation, Is.GreaterThan(gen));
             Assert.That(m.RulerCount, Is.EqualTo(0));
+            Assert.That(m.BedFill(0), Is.EqualTo(0));
             Assert.That(m.PieceIds, Is.EquivalentTo(new[] { "half-1", "half-2" }));
         }
 
@@ -294,6 +437,7 @@ namespace Airlift.Tests
             int gen = m.Generation;
             Assert.That(m.NextChapter(), Is.True);
             Assert.That(m.ChapterIndex, Is.EqualTo(TwoPickups));
+            Assert.That(m.BedCount, Is.EqualTo(2));
             Assert.That(m.Generation, Is.GreaterThan(gen));
             Assert.That(m.ChapterComplete, Is.False);
             Assert.That(m.Expression, Is.EqualTo(""));
@@ -304,27 +448,31 @@ namespace Airlift.Tests
             var m = new CargoLessonModel();
             var seen = new List<string>();
 
-            m.Dock("whole", false);
+            Assert.That(m.Dock("whole", false, 0), Is.True);
             Assert.That(m.Submit(), Is.True); seen.Add(m.Chapter.Id);
             Assert.That(m.NextChapter(), Is.True);
 
             Assert.That(m.Split(false, m.Generation), Is.True);
-            m.Dock("half-1", false); m.Dock("half-2", false);
+            Assert.That(m.Dock("half-1", false, 0), Is.True);
+            Assert.That(m.Dock("half-2", false, 1), Is.True);
             Assert.That(m.Submit(), Is.True); seen.Add(m.Chapter.Id);
             Assert.That(m.NextChapter(), Is.True);
 
             Assert.That(m.Split(false, m.Generation), Is.True);
-            foreach (var id in new[] { "quarter-1", "quarter-2", "quarter-3", "quarter-4" }) m.Dock(id, false);
+            string[] quarters = { "quarter-1", "quarter-2", "quarter-3", "quarter-4" };
+            for (int b = 0; b < 4; b++) Assert.That(m.Dock(quarters[b], false, b), Is.True);
             Assert.That(m.Submit(), Is.True); seen.Add(m.Chapter.Id);
             Assert.That(m.NextChapter(), Is.True);
 
-            m.Dock("quarter-1", false); m.Dock("quarter-2", false);
+            Assert.That(m.Dock("quarter-1", false, 0), Is.True);
+            Assert.That(m.Dock("quarter-2", false, 0), Is.True);
             Assert.That(m.Submit(), Is.True); seen.Add(m.Chapter.Id);
             Assert.That(m.AllChaptersComplete, Is.False);
             Assert.That(m.NextChapter(), Is.True);
 
             Assert.That(m.IsLastChapter, Is.True);
-            m.Dock("quarter-3", false); m.Dock("quarter-4", false);
+            Assert.That(m.Dock("quarter-3", false, 0), Is.True);
+            Assert.That(m.Dock("quarter-4", false, 0), Is.True);
             Assert.That(m.Submit(), Is.True); seen.Add(m.Chapter.Id);
             Assert.That(m.AllChaptersComplete, Is.True);
             Assert.That(m.NextChapter(), Is.False, "no chapter after the last");

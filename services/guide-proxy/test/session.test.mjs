@@ -79,6 +79,11 @@ test('voice actions are grounded: tool results decide what happened and whether 
   assert.match(cfg.instructions, /Dock 7/);
   for (const word of ['crates', 'one container', 'trucks', 'pickups', 'vans']) assert.ok(cfg.instructions.includes(word), 'story word ' + word);
   assert.match(cfg.instructions, /Never give real loading or safety advice/);
+  assert.match(cfg.instructions, /Cranes unload full crates/);
+  assert.match(cfg.instructions, /backed up to the dock/);
+  assert.match(cfg.instructions, /drive away only after check_load accepts/);
+  const everything = JSON.stringify(cfg);
+  assert.doesNotMatch(everything, /aircraft|airplane|plane\b|container floor/i, 'no aircraft or container floor anywhere in the session');
   // Existing rules stay.
   assert.match(cfg.instructions, /English only/);
   assert.match(cfg.instructions, /Be brief/);

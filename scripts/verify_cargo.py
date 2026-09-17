@@ -39,6 +39,33 @@ def validate_tests(result):
         raise RuntimeError('Missing, zero, failed or skipped required tests.')
     return total
 
+def order_suites(baseline, selected):
+    # PlayMode suites return zero results once any EditMode suite has run in the same editor session
+    # (observed 2026-09-15/16), so every PlayMode suite, baseline included, runs first.
+    suites = list(baseline) + list(selected)
+    return sorted(suites, key=lambda suite: 0 if suite['mode'] == 'playmode' else 1)
+
+def should_retry_playmode(mode, result, attempts):
+    summary = {k.lower(): v for k, v in result.get('summary', result.get('Summary', {})).items()}
+    return mode == 'playmode' and summary.get('total', 0) <= 0 and attempts == 0
+
+def reload_script_domain():
+    # Verified recovery for a PlayMode run that reports zero tests: request a script-domain reload,
+    # then wait until the editor reports ready again.
+    command('run_script', '--file', str(PROJECT/'AgentScripts/ReloadAfterStalledTests.cs'),
+            '--entry', 'ReloadAfterStalledTests.Run', '--timeout_ms', '60000')
+    time.sleep(10)
+    deadline = time.monotonic() + 180
+    while time.monotonic() < deadline:
+        try:
+            status = command('editor_status')
+            if status.get('status') == 'ready' and not status.get('compiling') and not status.get('domainReloadInProgress'):
+                return
+        except (RuntimeError, ValueError, subprocess.SubprocessError):
+            pass
+        time.sleep(3)
+    raise RuntimeError('Editor did not return to ready after the script-domain reload.')
+
 def run_tests(mode, name):
     command('run_tests', mode, name, 'testName', 'false', 'true', '300')
     deadline = time.monotonic() + 360
@@ -103,9 +130,6 @@ def main():
                     suite['filter'].removesuffix('SceneTests') in requested]
         if any(not any(s['filter'] == name for s in selected) for name in requested):
             raise RuntimeError('Unknown suite; update the milestone manifest in its owning ticket.')
-    # PlayMode suites return zero results when run after many EditMode suites in one editor
-    # session (observed 2026-09-15/16); running them first is the verified working order.
-    selected.sort(key=lambda suite: 0 if suite['mode'] == 'playmode' else 1)
     for ticket in tickets.values():
         for asset in ticket['requiredAssets']:
             if not (PROJECT/asset).is_file(): raise RuntimeError('Required milestone asset missing: '+asset)
@@ -123,8 +147,12 @@ def main():
     evidence = ROOT/'artifacts/qa'/time.strftime('cargo-%Y%m%d-%H%M%S')
     evidence.mkdir(parents=True, exist_ok=False)
     completed = []
-    for suite in manifest['baseline'] + selected:
+    for suite in order_suites(manifest['baseline'], selected):
         result = run_tests(suite['mode'], suite['filter'])
+        if should_retry_playmode(suite['mode'], result, 0):
+            print(f"RETRY {suite['filter']}: zero PlayMode results; reloading the script domain once", flush=True)
+            reload_script_domain()
+            result = run_tests(suite['mode'], suite['filter'])
         (evidence/(suite['filter']+'.json')).write_text(json.dumps(result, indent=2))
         report = ET.Element('testsuite', name=suite['filter'])
         for case in result.get('results', []):

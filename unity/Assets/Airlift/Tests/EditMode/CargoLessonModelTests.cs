@@ -16,6 +16,8 @@ namespace Airlift.Tests
             Assert.That(m.PieceIds, Is.EquivalentTo(new[] { "whole" }));
             Assert.That(m.Piece("whole").Notation.ToString(), Is.EqualTo("1/1"));
             Assert.That(m.Piece("whole").Cells, Is.EqualTo(PlacementState.CellsPerWhole));
+            Assert.That(m.BedCount, Is.EqualTo(1));
+            Assert.That(m.BedCapacity(0), Is.EqualTo(PlacementState.CellsPerWhole));
             Assert.That(m.ChapterComplete, Is.False);
             Assert.That(m.Expression, Is.EqualTo(""));
         }
@@ -27,6 +29,7 @@ namespace Airlift.Tests
             Assert.That(m.LastFeedback, Is.EqualTo(CargoLessonModel.EmptyFloorFeedback));
             Assert.That(m.Dock("whole", held: true), Is.False);
             Assert.That(m.Dock("whole", held: false), Is.True);
+            Assert.That(m.BedOf("whole"), Is.EqualTo(0));
             Assert.That(m.RulerQuantity, Is.EqualTo(new FractionValue(1, 1)));
             Assert.That(m.Submit(), Is.True);
             Assert.That(m.ChapterComplete, Is.True);
@@ -55,11 +58,12 @@ namespace Airlift.Tests
         {
             var m = new CargoLessonModel(); m.StartChapter(TwoPickups); m.Split(false, m.Generation);
             Assert.That(m.Dock("half-1", false), Is.True);
+            Assert.That(m.BedOf("half-1"), Is.EqualTo(0));
             Assert.That(m.RulerQuantity, Is.EqualTo(new FractionValue(1, 2)));
             Assert.That(m.Submit(), Is.False);
-            Assert.That(m.LastFeedback, Is.EqualTo("That fills 1/2 of the container. 1/2 more fits."));
+            Assert.That(m.LastFeedback, Is.EqualTo("Pickup 2 is still empty."));
             Assert.That(m.ChapterComplete, Is.False);
-            Assert.That(m.IsDocked("half-1"), Is.True, "a wrong load stays on the floor");
+            Assert.That(m.IsDocked("half-1"), Is.True, "a wrong load stays in the bed");
             Assert.That(m.Undock("half-1"), Is.True);
             Assert.That(m.RulerCount, Is.EqualTo(0));
         }
@@ -71,11 +75,12 @@ namespace Airlift.Tests
             Assert.That(m.Dock("half-1", false), Is.True);
             Assert.That(m.StartCell("half-2"), Is.EqualTo(0));
             Assert.That(m.StartCell("half-1"), Is.EqualTo(4));
+            Assert.That(m.BedOf("half-1"), Is.EqualTo(1));
             Assert.That(m.Dock("half-1", false), Is.False, "no duplicate docking");
             Assert.That(m.Submit(), Is.True);
             Assert.That(m.ChapterComplete, Is.True);
             Assert.That(m.Expression, Is.EqualTo("1/2 + 1/2 = 1"));
-            Assert.That(m.LastFeedback, Is.EqualTo("Both pickups are loaded. 1/2 + 1/2 = 1"));
+            Assert.That(m.LastFeedback, Is.EqualTo(m.Chapter.Accepted + " 1/2 + 1/2 = 1"));
         }
 
         [Test] public void PiecesFromAnotherWholeCannotMix()

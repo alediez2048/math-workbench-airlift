@@ -19,8 +19,9 @@ namespace Airlift.Welcome
                 Description = "Dock 7: split crates into equal chunks so every vehicle leaves loaded.",
                 Facts = new[] {
                     "Cargo Crew is a fractions lesson set at Dock 7, a busy harbor, on a toy cargo table.",
-                    "The learner is the load planner: ships bring full crates, and they split crates into equal chunks so each vehicle gets its share of one container.",
-                    "The container floor is a ruler from 0 to 1 that stands for one whole container, so equal chunks line up.",
+                    "The learner is the load planner: cranes unload full crates from the ship, and the learner splits crates into equal chunks so each vehicle gets its share of one container.",
+                    "Trucks, pickups and vans back up to the dock in front of the learner. Their beds sit side by side over a ruler from 0 to 1 that stands for one whole container, so equal chunks line up.",
+                    "Crates load straight into the beds. After the app accepts a load, the vehicles drive away with their crates.",
                     "Five chapters: Big truck (one full container), Two pickups (halves), Four vans (quarters), Same share with smaller boxes (2/4 = 1/2), and Top it up (1/2 + 1/4 + 1/4 = 1).",
                     "It works by voice: split it, load it, put everything back, next chapter, start this chapter over, show me the demo, back to the lessons.",
                     "The yellow handle at the front moves the whole table; two hands resize it." } },

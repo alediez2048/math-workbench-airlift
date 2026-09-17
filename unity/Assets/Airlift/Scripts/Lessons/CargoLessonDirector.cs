@@ -19,7 +19,8 @@ namespace Airlift.Lessons
 
     /// Presentation adapter for the Dock 7 chapters. All arithmetic decisions come from CargoLessonModel;
     /// this class maps grabs, releases, buttons and voice tools to model commands and mirrors the model
-    /// back into a pool of crate views, the story card and the vehicle bay.
+    /// back into a pool of crate views, the story card and the vehicle bay. Crates are dropped into the beds
+    /// of vehicles backed up over the container cells; an accepted load drives the vehicles away.
     public sealed class CargoLessonDirector : MonoBehaviour
     {
         [System.Serializable]
@@ -39,9 +40,11 @@ namespace Airlift.Lessons
         public const string ClosedReason = "The cargo lesson is not open.";
         public const string NoSplitReason = "There is nothing to split in this chapter.";
         public const string SplitDoneReason = "The crates are already split as far as this chapter needs.";
-        public const string NotCompleteReason = "Load this container correctly first.";
+        public const string NotCompleteReason = "Load the vehicles correctly first.";
         public const string LastChapterReason = "That was the last chapter.";
         public const string LoadedReason = "This load is already checked. Go to the next chapter or start this one over.";
+        public const string NoVehicleReason = "No vehicle is parked at that part of the dock in this chapter.";
+        public const string NoFitReason = "That crate does not fit there.";
 
         public Transform stationRoot;
         public Transform ruler;
@@ -67,14 +70,12 @@ namespace Airlift.Lessons
         public TMP_Text expressionLine;
         public TMP_Text sayHints;
         public GameObject[] hideWhileActive;
-        public float dispatchDelay = 1.2f;
 
         readonly CargoLessonModel model = new CargoLessonModel();
         readonly List<CargoChapter> completed = new List<CargoChapter>();
         bool active;
         float bodyBaseSize;
         string feedback = "";
-        Coroutine dispatch;
 
         // ---- public state ----
         public bool AnyPieceHeld => active && AnyHeld;
@@ -117,7 +118,6 @@ namespace Airlift.Lessons
         {
             active = true;
             foreach (var view in Views()) view.held = false;
-            StopDispatch();
             if (model.AllChaptersComplete) { completed.Clear(); model.StartChapter(0); }
             else if (model.ChapterComplete) model.NextChapter();
             else model.RestartChapter();
@@ -131,7 +131,6 @@ namespace Airlift.Lessons
         public void Exit()
         {
             active = false;
-            StopDispatch();
             SetActiveObjects(false);
             if (body != null && bodyBaseSize > 0) body.fontSize = bodyBaseSize;
             if (expressionLine != null) expressionLine.text = "";
@@ -142,16 +141,9 @@ namespace Airlift.Lessons
         /// Development and editor preview only: jump straight to a chapter. Not wired to any button or tool.
         public void JumpToChapter(int index)
         {
-            StopDispatch();
             model.StartChapter(index);
             feedback = "";
             if (active) ShowChapter();
-        }
-
-        void StopDispatch()
-        {
-            if (dispatch != null) StopCoroutine(dispatch);
-            dispatch = null;
         }
 
         void SetActiveObjects(bool on)
@@ -184,24 +176,64 @@ namespace Airlift.Lessons
             yield return null; // let the SDK finish transferring ownership before we move the piece
             if (!active || view.held) yield break;
             if (model.IsLocked(view.id)) { SnapDocked(); yield break; }
-            Vector3 local = stationRoot.InverseTransformPoint(view.piece.position);
-            if (RulerLayout.InDockZone(ruler.localPosition, local) && model.Dock(view.id, false))
+            DropAt(view.id, stationRoot.InverseTransformPoint(view.piece.position));
+        }
+
+        /// A released crate at a station-local position: the container cell under its centre picks the vehicle bed.
+        /// Returns true when the model docked it. Outside the dock zone it stays where it was put; a refused drop
+        /// on the dock goes back to the tray and the card shows why. Public for tests and editor drives.
+        public bool DropAt(string id, Vector3 stationLocal)
+        {
+            var view = ViewOf(id);
+            if (!active || view?.piece == null || model.Piece(id) == null || model.IsLocked(id)) return false;
+            int cell = RulerLayout.CellAt(ruler.localPosition, stationLocal);
+            if (cell < 0) { Refresh(); return false; }
+            if (model.ChapterComplete) return RefuseDrop(view, LoadedReason);
+            int bed = model.BedAtCell(cell);
+            if (bed < 0) return RefuseDrop(view, NoVehicleReason);
+            if (model.Dock(id, false, bed))
             {
                 SnapDocked();
                 feedback = "";
+                Refresh();
+                return true;
             }
-            Refresh();
+            return RefuseDrop(view, string.IsNullOrEmpty(model.LastFeedback) ? NoFitReason : model.LastFeedback);
         }
 
-        /// Locked crates cannot be grabbed. TableHandle re-enables every piece after a carry, so the lock is
-        /// re-applied each frame; unlocked crates only have their behaviour switched back on.
+        bool RefuseDrop(PieceView view, string reason)
+        {
+            view.piece.localPosition = view.trayPosition;
+            view.piece.localRotation = Quaternion.identity;
+            feedback = reason;
+            Refresh();
+            return false;
+        }
+
+        PieceView ViewOf(string id)
+        {
+            foreach (var view in Views()) if (view.id == id) return view;
+            return null;
+        }
+
+        /// Transforms of the crates currently loaded in the beds (locked ones included): they ride away.
+        List<Transform> DockedCargo()
+        {
+            var cargo = new List<Transform>();
+            foreach (var view in Views())
+                if (view.piece != null && view.piece.gameObject.activeSelf && model.IsDocked(view.id)) cargo.Add(view.piece);
+            return cargo;
+        }
+
+        /// Locked crates, and crates loaded into an accepted (departing) vehicle, cannot be grabbed.
+        /// TableHandle re-enables every piece after a carry, so the rule is re-applied each frame.
         void LateUpdate()
         {
             if (!active) return;
             foreach (var view in Views())
             {
                 if (view.interactables == null || view.piece == null || !view.piece.gameObject.activeInHierarchy) continue;
-                bool locked = model.IsLocked(view.id);
+                bool locked = model.IsLocked(view.id) || (model.ChapterComplete && model.IsDocked(view.id));
                 foreach (var behaviour in view.interactables)
                 {
                     if (behaviour == null) continue;
@@ -258,8 +290,7 @@ namespace Airlift.Lessons
             if (ok)
             {
                 if (!completed.Contains(model.Chapter)) completed.Add(model.Chapter);
-                if (vehicles != null) vehicles.MarkLoaded();
-                if (model.AllChaptersComplete) Dispatch();
+                if (vehicles != null) vehicles.DriveAway(DockedCargo());
             }
             Refresh();
             return new LessonActionResult(ok, model.LastFeedback);
@@ -284,7 +315,6 @@ namespace Airlift.Lessons
             if (!model.ChapterComplete) return Refuse(NotCompleteReason);
             if (model.IsLastChapter) return Refuse(LastChapterReason);
             if (!model.NextChapter()) return Refuse(NotCompleteReason);
-            StopDispatch();
             feedback = "";
             ShowChapter();
             return new LessonActionResult(true, TitleFor(model.Chapter) + ". " + model.Chapter.Story);
@@ -294,7 +324,6 @@ namespace Airlift.Lessons
         {
             if (!active) return new LessonActionResult(false, ClosedReason);
             if (AnyHeld) return Refuse(HeldReason);
-            StopDispatch();
             model.RestartChapter();
             feedback = "";
             ShowChapter();
@@ -308,21 +337,6 @@ namespace Airlift.Lessons
             return new LessonActionResult(false, reason);
         }
 
-        void Dispatch()
-        {
-            if (vehicles == null) return;
-            if (!Application.isPlaying || !isActiveAndEnabled) { vehicles.DispatchAll(); return; }
-            StopDispatch();
-            dispatch = StartCoroutine(DispatchLater());
-        }
-
-        IEnumerator DispatchLater()
-        {
-            yield return new WaitForSeconds(dispatchDelay);
-            dispatch = null;
-            if (active && vehicles != null) vehicles.DispatchAll();
-        }
-
         // ---- presentation ----
         void ShowChapter()
         {
@@ -332,7 +346,8 @@ namespace Airlift.Lessons
             Refresh();
         }
 
-        /// Activates exactly the views whose ids exist in the model; locked pieces sit docked, the rest wait in the tray.
+        /// Activates exactly the views whose ids exist in the model (restoring crates that drove away); locked pieces
+        /// sit docked in their bed, the rest wait in the tray.
         void LayoutPieces()
         {
             var ids = new HashSet<string>(model.PieceIds);

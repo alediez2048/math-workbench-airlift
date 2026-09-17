@@ -91,7 +91,7 @@ namespace Airlift.Tests
             Assert.That((string)o["say"], Is.EqualTo("one line"));
             Assert.That((string)o["step"], Is.EqualTo("chapter3_four_vans"));
             Assert.That((string)o["on_table_now"], Is.EqualTo(step.OnTableNow));
-            Assert.That((bool)o["can_grab_now"], Is.True);
+            Assert.That((bool)o["can_grab_now"], Is.False, "accepted vans drive away with their crates");
             Assert.That((string)o["instruction"], Is.EqualTo("Four delivery vans pulled in."));
             Assert.That((int)o["chapter"], Is.EqualTo(3));
             Assert.That((string)o["chapter_title"], Is.EqualTo(chapter.Title));

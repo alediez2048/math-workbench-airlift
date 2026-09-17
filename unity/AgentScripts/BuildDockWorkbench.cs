@@ -19,7 +19,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // Phase 1R (Dock 7) workbench, CargoCrew only. Idempotent: every object it creates is found by name and
-// replaced. Adds the quarter crates and locked marks to the piece pool, the container floor skin on the
+// replaced. Round 2 (2026-09-16 night): vehicles back up over the container cells and drive away with the load,
+// the dock-edge strip replaces the container floor, and two cranes replace the parked aircraft (migrated). Adds the quarter crates and locked marks to the piece pool, the container floor skin on the
 // ruler, the vehicle bay, the story card lines, CanvasGroup button rows (voice-first fallback), UiPressLog on
 // every lesson/HUD button, and removes the double-wired Pause/Music listeners on the Guide HUD.
 // Run: unity command run_script --file AgentScripts/BuildDockWorkbench.cs --entry BuildDockWorkbench.Run
@@ -27,9 +28,12 @@ public static class BuildDockWorkbench
 {
     const string ScenePath = "Assets/Airlift/Scenes/CargoCrew.unity";
     const string MeshFolder = "Assets/Airlift/Meshes";
-    public static readonly Vector3 QuarterTrayOrigin = new Vector3(-0.265f, 0.047f, -0.17f);
+    public const float TrayZ = -0.225f;   // far enough in front of the dock-edge strip that waiting crates never cover its marks
+    public static readonly Vector3 QuarterTrayOrigin = new Vector3(-0.265f, 0.047f, TrayZ);
     public const float QuarterTraySpacing = 0.09f;
     const float RowY = -196f, RowHeight = 48f, RowWidth = 165f, RowStep = 172f;
+    // Round 2 geometry (station-local metres): bed floor top, bed depth, dock-edge strip z (ruler-local).
+    public const float BedTop = 0.052f, BedDepth = 0.075f, EdgeZ = -0.085f;
 
     static AirliftStyle style;
     static Material orange, cream, teal, navy, rubber, yellow, slot;
@@ -61,52 +65,87 @@ public static class BuildDockWorkbench
             Replace(chapter, "Quarter crate " + i);
             quarters[i - 1] = Quarter(chapter, i, QuarterTrayOrigin + new Vector3((i - 1) * QuarterTraySpacing, 0, 0));
         }
+        foreach (var v in new[] { lesson.whole, lesson.halfA, lesson.halfB })
+        {
+            if (v == null || v.piece == null) continue;
+            v.trayPosition = new Vector3(v.trayPosition.x, v.trayPosition.y, TrayZ);
+            v.piece.localPosition = new Vector3(v.piece.localPosition.x, v.piece.localPosition.y, TrayZ);
+        }
         lesson.quarters = quarters;
         lesson.whole.id = "whole"; lesson.halfA.id = "half-1"; lesson.halfB.id = "half-2";
         lesson.halfA.lockedMark = LockedMark(lesson.halfA.piece, RulerLayout.PieceLength(4));
         lesson.halfB.lockedMark = LockedMark(lesson.halfB.piece, RulerLayout.PieceLength(4));
         report.Add("4 quarter crates + locked marks on both halves");
 
-        // 2. Container floor skin on the ruler.
+        // 2. Dock edge on the ruler (Round 2): the vehicles' beds are the container floor now. A thin strip in front
+        //    keeps the 0, 1/4, 1/2, 3/4, 1 ticks and the ONE CONTAINER label; unused cells get faded outlines.
         var ruler = lesson.ruler;
-        Replace(ruler, "Container floor");
-        var floor = Group("Container floor", ruler, Vector3.zero);
-        float len = RulerLayout.WholeLength, depth = 0.08f, bar = 0.005f;
-        Rounded("Outline back", floor, new Vector3(0, 0.004f, depth / 2), new Vector3(len + 2 * bar, 0.004f, bar), navy);
-        Rounded("Outline front", floor, new Vector3(0, 0.004f, -depth / 2), new Vector3(len + 2 * bar, 0.004f, bar), navy);
-        Rounded("Outline left", floor, new Vector3(-len / 2 - bar / 2, 0.004f, 0), new Vector3(bar, 0.004f, depth), navy);
-        Rounded("Outline right", floor, new Vector3(len / 2 + bar / 2, 0.004f, 0), new Vector3(bar, 0.004f, depth), navy);
-        float cell = len / PlacementState.CellsPerWhole;
-        for (int i = 0; i < PlacementState.CellsPerWhole; i++)
-            Rounded("Slot " + (i + 1), floor, new Vector3(-len / 2 + (i + 0.5f) * cell, 0.0035f, 0), new Vector3(cell - 0.004f, 0.0012f, depth - 0.012f), slot);
-        var containerLabel = WorldText("ONE CONTAINER label", floor, new Vector3(0, 0.006f, depth / 2 + 0.022f), "ONE CONTAINER", 0.07f, Quaternion.Euler(60, 0, 0), style.headingFont, style.panel);
-        containerLabel.rectTransform.sizeDelta = new Vector2(0.22f, 0.03f);
-        var halfMarks = new List<GameObject>();
-        foreach (Transform child in ruler)
+        foreach (var old in new[] { "Container floor", "Dock edge", "Not needed", "Tick 0", "Tick 1/2", "Tick 1", "Mark 0", "Mark 1/2", "Mark 1" }) Replace(ruler, old);
+        var rulerBar = ruler.Find("Ruler bar"); if (rulerBar != null) rulerBar.gameObject.SetActive(false);
+        float len = RulerLayout.WholeLength, cell = len / PlacementState.CellsPerWhole;
+        // Ruler-local heights: the ruler sits at station y 0.031; the deck top is 0.0175.
+        const float deckTop = 0.0175f - 0.031f;
+        var edge = Group("Dock edge", ruler, Vector3.zero);
+        Rounded("Edge strip", edge, new Vector3(0, deckTop + 0.003f, EdgeZ), new Vector3(len + 0.03f, 0.006f, 0.04f), cream);
+        string[] marks = { "0", "1/4", "1/2", "3/4", "1" };
+        for (int k = 0; k < marks.Length; k++)
         {
-            if (child.name == "Mark 0" || child.name == "Mark 1" || child.name == "Tick 0" || child.name == "Tick 1") child.gameObject.SetActive(true);
-            if (child.name == "Mark 1/2" || child.name == "Tick 1/2") { halfMarks.Add(child.gameObject); child.gameObject.SetActive(false); }
+            float x = -len / 2 + k * 2 * cell;
+            Rounded("Tick " + marks[k], edge, new Vector3(x, deckTop + 0.0068f, EdgeZ + 0.012f), new Vector3(0.003f, 0.0016f, k % 2 == 0 ? 0.016f : 0.01f), navy, 0.0007f);
+            var mark = WorldText("Mark " + marks[k], edge, new Vector3(x, deckTop + 0.008f, EdgeZ - 0.008f), marks[k], 0.085f, Quaternion.Euler(60, 0, 0), style.bodyFont, style.panel);
+            mark.rectTransform.sizeDelta = new Vector2(0.06f, 0.03f);
         }
-        lesson.halfMarks = halfMarks.ToArray();
-        report.Add("container floor: outline, 8 slots, label; half marks " + halfMarks.Count);
+        var containerLabel = WorldText("ONE CONTAINER label", edge, new Vector3(0, deckTop + 0.004f, EdgeZ - 0.037f), "ONE CONTAINER", 0.055f, Quaternion.Euler(60, 0, 0), style.headingFont, style.panel);
+        containerLabel.rectTransform.sizeDelta = new Vector2(0.22f, 0.025f);
+        var unused = Group("Not needed", ruler, Vector3.zero);
+        var unusedCells = new GameObject[PlacementState.CellsPerWhole];
+        for (int i = 0; i < unusedCells.Length; i++)
+        {
+            var c = Group("Not needed cell " + (i + 1), unused, new Vector3(-len / 2 + (i + 0.5f) * cell, deckTop + 0.001f, 0));
+            Rounded("Outline back", c, new Vector3(0, 0, 0.034f), new Vector3(cell - 0.004f, 0.002f, 0.003f), slot, 0.0009f);
+            Rounded("Outline front", c, new Vector3(0, 0, -0.034f), new Vector3(cell - 0.004f, 0.002f, 0.003f), slot, 0.0009f);
+            Rounded("Outline left", c, new Vector3(-(cell - 0.004f) / 2, 0, 0), new Vector3(0.003f, 0.002f, 0.068f), slot, 0.0009f);
+            Rounded("Outline right", c, new Vector3((cell - 0.004f) / 2, 0, 0), new Vector3(0.003f, 0.002f, 0.068f), slot, 0.0009f);
+            c.gameObject.SetActive(false); unusedCells[i] = c.gameObject;
+        }
+        var notNeeded = WorldText("Not needed label", unused, new Vector3(len / 4, deckTop + 0.004f, 0), "not needed", 0.06f, Quaternion.Euler(80, 0, 0), style.bodyFont, style.muted);
+        notNeeded.rectTransform.sizeDelta = new Vector2(0.14f, 0.025f);
+        notNeeded.gameObject.SetActive(false);
+        var halfHighlight = Rounded("Half mark highlight", edge, new Vector3(0, deckTop + 0.0072f, EdgeZ), new Vector3(0.005f, 0.0012f, 0.038f), teal, 0.0005f);
+        halfHighlight.SetActive(false);
+        lesson.halfMarks = new[] { halfHighlight };   // chapter 4 (ShowHalfMark) emphasises 1/2 on the strip
+        lesson.restHeight = BedTop + 0.0275f;
+        var hide = (lesson.hideWhileActive ?? new GameObject[0]).Where(g => g != null).ToList();
+        if (!hide.Contains(d.station)) hide.Add(d.station);   // the practice pad would sit under the beds; onboarding re-shows it
+        lesson.hideWhileActive = hide.ToArray();
+        report.Add("dock edge: 5 ticks, label, 8 not-needed cells; crate rest height " + lesson.restHeight.ToString("0.0000", CultureInfo.InvariantCulture));
 
-        // 3. Vehicle bay: existing truck plus 2 pickups (right bay, cabs to the ship) and 4 vans (front right).
+        // 3. Terminal migration: aircraft out, two dock cranes in; vehicles rebuilt to back up over the cells.
+        int migrated = 0;
+        foreach (var old in new[] { "Parked aircraft", "AIR DELIVERY tag", "Delivery truck", "Dock crane 1", "Dock crane 2" })
+            for (int i = terminal.transform.childCount - 1; i >= 0; i--)
+                if (terminal.transform.GetChild(i).name == old) { UnityEngine.Object.DestroyImmediate(terminal.transform.GetChild(i).gameObject); migrated++; }
+        terminal.cranes = new[] {
+            // In front of the containers at the deck's sides so the whole crane is visible; jibs reach out over the
+            // table edges like harbour cranes over the water, never over the tray, beds or card.
+            Crane(terminal.transform, "Dock crane 1", new Vector3(-0.52f, 0.0175f, 0.115f), -1f),
+            Crane(terminal.transform, "Dock crane 2", new Vector3(0.52f, 0.0175f, 0.115f), +1f) };
         Replace(terminal.transform, "Vehicle bay");
         var bayGo = Group("Vehicle bay", terminal.transform, Vector3.zero).gameObject;
         var bay = bayGo.AddComponent<VehicleBay>();
-        bay.rollDistance = 0.08f; bay.rollSeconds = 1f; bay.idleKind = "truck";
-        var list = new List<VehicleBay.Vehicle>();
-        Replace(terminal.truck, "Loaded tag");
-        list.Add(new VehicleBay.Vehicle { kind = "truck", root = terminal.truck, loadedTag = LoadedTag(terminal.truck, new Vector3(0, 0.165f, 0.02f), 1f, Quaternion.identity) });
-        foreach (var (x, i) in new[] { (0.235f, 1), (0.33f, 2) })
-            list.Add(new VehicleBay.Vehicle { kind = "pickup", root = Pickup(bayGo.transform, i, new Vector3(x, 0.041f, -0.06f)), distance = 0.08f });
-        for (int i = 1; i <= 4; i++)
-            list.Add(new VehicleBay.Vehicle { kind = "van", root = Van(bayGo.transform, i, new Vector3(0.13f + (i - 1) * 0.075f, 0.036f, -0.28f)), distance = 0.05f });
-        foreach (var v in list.Skip(1)) { v.loadedTag = v.root.Find("Loaded tag").gameObject; v.root.gameObject.SetActive(false); }
-        foreach (var v in list) v.loadedTag.SetActive(false);
+        bay.ruler = ruler; bay.parkHeight = 0.0175f; bay.driveDistance = 0.45f; bay.driveSeconds = 1.5f;
+        bay.idleKind = "truck"; bay.idlePosition = new Vector3(-0.49f, 0.0175f, -0.02f);
+        bay.unusedCells = unusedCells; bay.notNeededLabel = notNeeded.gameObject;
+        var list = new List<VehicleBay.Vehicle> { BuildVehicle(bayGo.transform, "Big truck", "truck", 8, yellow) };
+        for (int i = 1; i <= 2; i++) list.Add(BuildVehicle(bayGo.transform, "Pickup " + i, "pickup", 4, i == 1 ? teal : orange));
+        for (int i = 1; i <= 4; i++) list.Add(BuildVehicle(bayGo.transform, "Van " + i, "van", 2, i % 2 == 1 ? cream : teal));
+        foreach (var v in list) v.root.gameObject.SetActive(false);
+        list[0].root.localPosition = bay.idlePosition; list[0].root.gameObject.SetActive(true);
         bay.vehicles = list.ToArray();
+        terminal.truck = list[0].root;
         lesson.vehicles = bay;
-        report.Add("vehicle bay: 1 truck, 2 pickups, 4 vans");
+        EditorUtility.SetDirty(terminal);
+        report.Add("terminal: " + migrated + " old props removed, 2 cranes, vehicles 1 truck (8 cells) + 2 pickups (4) + 4 vans (2)");
 
         // 4. Story card: expression line and say-hints under the briefing panel.
         var ui = d.transform.Find("Lesson interface");
@@ -196,7 +235,7 @@ public static class BuildDockWorkbench
         chapterRow.SetActive(false);
         lesson.chapterObjects.SetActive(false);
 
-        EditorUtility.SetDirty(lesson); EditorUtility.SetDirty(n); EditorUtility.SetDirty(bay);
+        EditorUtility.SetDirty(lesson); EditorUtility.SetDirty(n); EditorUtility.SetDirty(bay); EditorUtility.SetDirty(terminal);
         EditorSceneManager.MarkSceneDirty(scene);
         if (!EditorSceneManager.SaveScene(scene)) throw new InvalidOperationException("Scene save failed.");
         AssetDatabase.SaveAssets();
@@ -239,41 +278,49 @@ public static class BuildDockWorkbench
         return mark.gameObject;
     }
 
-    // ---- vehicles (cab faces local -z; the bay rolls each vehicle along its facing) ----
-    static Transform Pickup(Transform parent, int index, Vector3 p)
+    // ---- vehicles (rear toward the learner, cab +z; the bed is exactly bedCells container cells wide) ----
+    static VehicleBay.Vehicle BuildVehicle(Transform parent, string name, string kind, int bedCells, Material cabMaterial)
     {
-        var root = Group("Pickup " + index, parent, p); root.localRotation = Quaternion.Euler(0, 180, 0);
-        Rounded("Chassis", root, Vector3.zero, new Vector3(0.075f, 0.018f, 0.16f), rubber);
-        Rounded("Cab", root, new Vector3(0, 0.034f, -0.045f), new Vector3(0.07f, 0.05f, 0.055f), yellow);
-        Rounded("Windscreen", root, new Vector3(0, 0.042f, -0.0735f), new Vector3(0.055f, 0.02f, 0.003f), navy);
-        Rounded("Bed", root, new Vector3(0, 0.019f, 0.035f), new Vector3(0.07f, 0.02f, 0.085f), cream);
-        Wheels(root, 0.04f, 0.05f, -0.008f, 0.03f, 0.008f);
-        LoadedTag(root, new Vector3(0, 0.1f, 0), 0.85f, Quaternion.Euler(0, 180, 0));
-        return root;
-    }
-
-    static Transform Van(Transform parent, int index, Vector3 p)
-    {
-        var root = Group("Van " + index, parent, p);
-        Rounded("Chassis", root, Vector3.zero, new Vector3(0.058f, 0.014f, 0.12f), rubber);
-        Rounded("Body", root, new Vector3(0, 0.037f, 0), new Vector3(0.056f, 0.06f, 0.115f), cream);
-        Rounded("Windscreen", root, new Vector3(0, 0.05f, -0.0585f), new Vector3(0.046f, 0.02f, 0.003f), navy);
-        Rounded("Stripe", root, new Vector3(0, 0.03f, 0.008f), new Vector3(0.0575f, 0.01f, 0.09f), teal);
-        Wheels(root, 0.031f, 0.04f, -0.006f, 0.024f, 0.006f);
-        LoadedTag(root, new Vector3(0, 0.09f, 0), 0.7f, Quaternion.identity);
-        return root;
-    }
-
-    static void Wheels(Transform root, float x, float z, float y, float diameter, float width)
-    {
-        foreach (float sx in new[] { -x, x }) foreach (float sz in new[] { -z, z })
+        float w = RulerLayout.PieceLength(bedCells);
+        var root = Group(name, parent, Vector3.zero);
+        Rounded("Chassis", root, new Vector3(0, 0.022f, 0.03f), new Vector3(w - 0.012f, 0.01f, 0.13f), rubber);
+        Rounded("Rear bumper", root, new Vector3(0, 0.024f, -0.04f), new Vector3(w - 0.006f, 0.008f, 0.006f), rubber);
+        Rounded("Bed floor", root, new Vector3(0, BedTop - 0.0175f - 0.003f, 0), new Vector3(w, 0.006f, BedDepth), cream, 0.0027f);
+        foreach (float side in new[] { -1f, 1f })
+            Rounded(side < 0 ? "Rail left" : "Rail right", root, new Vector3(side * (w / 2 - 0.001f), BedTop - 0.0175f + 0.003f, 0), new Vector3(0.002f, 0.006f, BedDepth), navy, 0.0009f);
+        Rounded("Front wall", root, new Vector3(0, BedTop - 0.0175f + 0.014f, BedDepth / 2 + 0.002f), new Vector3(w - 0.004f, 0.028f, 0.004f), rubber, 0.0018f);
+        Rounded("Cab", root, new Vector3(0, 0.052f, 0.07f), new Vector3(w - 0.008f, 0.05f, 0.05f), cabMaterial);
+        Rounded("Rear window", root, new Vector3(0, 0.062f, 0.0435f), new Vector3(Mathf.Min(0.12f, w * 0.6f), 0.016f, 0.003f), navy, 0.0013f);
+        float wheelX = w / 2 - 0.006f;
+        foreach (float sx in new[] { -wheelX, wheelX }) foreach (float sz in new[] { -0.022f, 0.075f })
         {
             var wheel = GameObject.CreatePrimitive(PrimitiveType.Cylinder); wheel.name = "Wheel";
             UnityEngine.Object.DestroyImmediate(wheel.GetComponent<Collider>());
-            wheel.transform.SetParent(root, false); wheel.transform.localPosition = new Vector3(sx, y, sz);
-            wheel.transform.localRotation = Quaternion.Euler(0, 0, 90); wheel.transform.localScale = new Vector3(diameter, width, diameter);
+            wheel.transform.SetParent(root, false); wheel.transform.localPosition = new Vector3(sx, 0.011f, sz);
+            wheel.transform.localRotation = Quaternion.Euler(0, 0, 90); wheel.transform.localScale = new Vector3(0.022f, 0.003f, 0.022f);
             wheel.GetComponent<Renderer>().sharedMaterial = rubber;
         }
+        var tag = LoadedTag(root, new Vector3(0, 0.11f, 0.07f), bedCells >= 8 ? 1f : bedCells >= 4 ? 0.85f : 0.7f, Quaternion.identity);
+        return new VehicleBay.Vehicle { kind = kind, bedCells = bedCells, root = root, loadedTag = tag };
+    }
+
+    /// Toy dock crane: base, tower, operator cab, jib (pointing along x by jibDir), counter-jib and weight,
+    /// cable, hook and a crate being unloaded. Rounded meshes only, no colliders.
+    static Transform Crane(Transform parent, string name, Vector3 p, float jibDir)
+    {
+        var root = Group(name, parent, p);
+        // Compact: every part stays under ~0.19 m board height so it reads below the lesson card from the seated
+        // head instead of showing through the translucent card (owner render check 2026-09-16).
+        Rounded("Base", root, new Vector3(0, 0.008f, 0), new Vector3(0.07f, 0.016f, 0.07f), navy);
+        Rounded("Tower", root, new Vector3(0, 0.08f, 0), new Vector3(0.02f, 0.13f, 0.02f), yellow);
+        Rounded("Operator cab", root, new Vector3(0, 0.13f, -0.018f), new Vector3(0.036f, 0.026f, 0.028f), teal);
+        Rounded("Jib", root, new Vector3(jibDir * 0.1f, 0.152f, 0), new Vector3(0.23f, 0.012f, 0.016f), yellow);
+        Rounded("Counter jib", root, new Vector3(-jibDir * 0.045f, 0.152f, 0), new Vector3(0.07f, 0.011f, 0.014f), yellow);
+        Rounded("Counterweight", root, new Vector3(-jibDir * 0.072f, 0.14f, 0), new Vector3(0.024f, 0.022f, 0.024f), navy);
+        Rounded("Cable", root, new Vector3(jibDir * 0.19f, 0.139f, 0), new Vector3(0.002f, 0.022f, 0.002f), cream, 0.0009f);
+        Rounded("Hook", root, new Vector3(jibDir * 0.19f, 0.126f, 0), new Vector3(0.012f, 0.008f, 0.012f), navy);
+        Rounded("Hanging crate", root, new Vector3(jibDir * 0.19f, 0.108f, 0), new Vector3(0.036f, 0.024f, 0.032f), orange);
+        return root;
     }
 
     /// Upright yellow plate reading LOADED, facing the player (station -z).

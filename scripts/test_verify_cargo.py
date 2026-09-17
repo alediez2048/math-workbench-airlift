@@ -3,9 +3,23 @@ import unittest
 from pathlib import Path
 import zipfile
 import struct
+import verify_cargo
 from verify_cargo import validate_tests, scan_apk, metadata_with_string_boundaries
 
 class VerificationTests(unittest.TestCase):
+    def test_playmode_suites_run_before_every_editor_suite_including_baseline(self):
+        baseline = [{'mode': 'editor', 'filter': 'OnboardingFlowTests'}]
+        selected = [{'mode': 'editor', 'filter': 'A'}, {'mode': 'playmode', 'filter': 'P'}]
+        ordered = verify_cargo.order_suites(baseline, selected)
+        self.assertEqual([s['filter'] for s in ordered], ['P', 'OnboardingFlowTests', 'A'])
+
+    def test_zero_playmode_results_get_one_reload_retry(self):
+        zero = {'summary': {'total': 0}}
+        self.assertTrue(verify_cargo.should_retry_playmode('playmode', zero, 0))
+        self.assertFalse(verify_cargo.should_retry_playmode('playmode', zero, 1))
+        self.assertFalse(verify_cargo.should_retry_playmode('editor', zero, 0))
+        self.assertFalse(verify_cargo.should_retry_playmode('playmode', {'summary': {'total': 1}}, 0))
+
     def test_metadata_string_boundaries(self):
         literals = [b'sk-SK', b'X'*30, b'sk-'+b'Y'*30]
         offsets = [0,5,35,68]

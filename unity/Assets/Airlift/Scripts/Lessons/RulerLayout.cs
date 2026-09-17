@@ -27,6 +27,20 @@ namespace Airlift.Lessons
             return new Vector3(origin.x + (startCell + cells * 0.5f) * cell, restHeight, rulerCenter.z);
         }
 
+        /// Container cell (0..7) under a released crate's centre, or -1 outside the dock zone. Vehicles back
+        /// up over these cells, so the cell picks the bed the crate is dropped into.
+        public static int CellAt(Vector3 rulerCenter, Vector3 pieceLocal)
+        {
+            if (!InDockZone(rulerCenter, pieceLocal)) return -1;
+            float cell = WholeLength / PlacementState.CellsPerWhole;
+            int index = Mathf.FloorToInt((pieceLocal.x - Origin(rulerCenter).x) / cell + 1e-4f);
+            return Mathf.Clamp(index, 0, PlacementState.CellsPerWhole - 1);
+        }
+
+        /// Station-local x of the centre of a run of cells.
+        public static float CellsCenterX(Vector3 rulerCenter, int startCell, int cells) =>
+            Origin(rulerCenter).x + (startCell + cells * 0.5f) * (WholeLength / PlacementState.CellsPerWhole);
+
         public static float PieceLength(int cells) => WholeLength * cells / PlacementState.CellsPerWhole;
     }
 }

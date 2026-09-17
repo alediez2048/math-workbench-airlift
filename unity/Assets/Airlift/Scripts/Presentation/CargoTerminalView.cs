@@ -8,10 +8,11 @@ namespace Airlift.Presentation
         public Transform truck;
         public Transform[] containers;
         public Transform staging;
-        public Transform aircraft;
+        public Transform[] cranes;
         public Transform measuringPlatform;
         public bool HasRequiredProps => truck != null && containers != null && containers.Length >= 2
             && containers[0] != null && containers[1] != null && staging != null
-            && aircraft != null && measuringPlatform != null;
+            && cranes != null && cranes.Length >= 2 && cranes[0] != null && cranes[1] != null
+            && measuringPlatform != null;
     }
 }

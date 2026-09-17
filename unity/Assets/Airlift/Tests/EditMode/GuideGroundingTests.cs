@@ -48,27 +48,36 @@ namespace Airlift.Tests
             {
                 Assert.That(GuideSteps.ForChapter(c, false, c.SplitTo > 0).CanGrabNow, Is.True, c.Id);
                 Assert.That(GuideSteps.ForChapter(c, true, false).Id, Is.EqualTo(ids[c.Number - 1]), "completion keeps the chapter id");
+                Assert.That(GuideSteps.ForChapter(c, true, false).CanGrabNow, Is.False, c.Id + ": accepted crates drive away with the vehicles");
             }
         }
 
-        [Test] public void ChapterOnTableDescribesTheContainerAndCratesAtTheirCurrentSize()
+        [Test] public void ChapterOnTableDescribesVehiclesBackedUpToTheDockAndTheirBeds()
         {
             var ch = CargoChapter.All;
             string truck = GuideSteps.ForChapter(ch[0], false, false).OnTableNow;
-            Assert.That(truck, Does.Contain("one whole container")); Assert.That(truck, Does.Contain("one full crate"));
+            Assert.That(truck, Does.Contain("One big truck is backed up to the dock"));
+            Assert.That(truck, Does.Contain("one whole container")); Assert.That(truck, Does.Contain("the bed holds 1."));
+            Assert.That(truck, Does.Contain("Crates to load: one full crate (1)"));
             Assert.That(truck, Does.Not.Contain("1/2"));
 
-            Assert.That(GuideSteps.ForChapter(ch[1], false, true).OnTableNow, Does.Contain("one full crate").And.Contain("split"));
+            string pickups = GuideSteps.ForChapter(ch[1], false, true).OnTableNow;
+            Assert.That(pickups, Does.Contain("Two pickups are backed up to the dock").And.Contain("each pickup bed holds 1/2"));
+            Assert.That(pickups, Does.Contain("one full crate").And.Contain("split"));
             Assert.That(GuideSteps.ForChapter(ch[1], false, false).OnTableNow, Does.Contain("two 1/2 crates"), "after the split");
 
-            Assert.That(GuideSteps.ForChapter(ch[2], false, true).OnTableNow, Does.Contain("two 1/2 crates"));
+            string vans = GuideSteps.ForChapter(ch[2], false, true).OnTableNow;
+            Assert.That(vans, Does.Contain("Four vans are backed up to the dock").And.Contain("each van bed holds 1/4"));
+            Assert.That(vans, Does.Contain("two 1/2 crates"));
             Assert.That(GuideSteps.ForChapter(ch[2], false, false).OnTableNow, Does.Contain("four 1/4 crates"));
 
             string same = GuideSteps.ForChapter(ch[3], false, false).OnTableNow;
-            Assert.That(same, Does.Contain("four 1/4 crates")); Assert.That(same, Does.Contain("1/2 mark"));
+            Assert.That(same, Does.Contain("One pickup is backed up to the dock").And.Contain("the bed holds 1/2"));
+            Assert.That(same, Does.Contain("1/2 to 1 is not needed")); Assert.That(same, Does.Contain("four 1/4 crates"));
 
             string topUp = GuideSteps.ForChapter(ch[4], false, false).OnTableNow;
-            Assert.That(topUp, Does.Contain("Locked on the floor from 0: one 1/2 crate")); Assert.That(topUp, Does.Contain("four 1/4 crates"));
+            Assert.That(topUp, Does.Contain("One big truck")); Assert.That(topUp, Does.Contain("Locked in the bed from 0: one 1/2 crate"));
+            Assert.That(topUp, Does.Contain("four 1/4 crates"));
         }
 
         [Test] public void ChapterVerdictAppearsOnlyWhenTheAppAcceptedTheLoad()
@@ -79,14 +88,25 @@ namespace Airlift.Tests
                 string open = GuideSteps.ForChapter(c, false, splitsAtStart).OnTableNow;
                 string done = GuideSteps.ForChapter(c, true, false).OnTableNow;
                 Assert.That(open, Does.Not.Contain("accepted"), c.Id);
-                Assert.That(done, Does.Contain("accepted").And.Contain(c.Expression), c.Id);
+                Assert.That(done, Does.Contain("Load accepted: " + c.Expression), c.Id);
+                Assert.That(done, Does.Contain("away with the crates"), c.Id);
                 foreach (var text in new[] { open, done, GuideSteps.ForChapter(c, false, false).OnTableNow })
                 {
                     Assert.That(text.Length, Is.LessThanOrEqualTo(GuideSteps.MaxOnTableLength), c.Id + " fits lesson_state");
-                    Assert.That(text, Does.Not.Contain("strap"));
+                    foreach (var stale in new[] { "strap", "floor", "aircraft", "plane" })
+                        Assert.That(text.ToLowerInvariant(), Does.Not.Contain(stale), c.Id + " mentions " + stale);
                 }
             }
             Assert.That(GuideSteps.ForChapter(null, false, false).CanGrabNow, Is.True, "null chapter is safe");
+        }
+
+        [Test] public void BedCountMatchesVehicleCountInEveryChapter()
+        {
+            foreach (var c in CargoChapter.All)
+            {
+                Assert.That(c.BedCells, Is.Not.Null, c.Id);
+                Assert.That(c.BedCells.Length, Is.EqualTo(c.VehicleCount), c.Id + ": on_table_now counts vehicles from BedCells");
+            }
         }
 
         [Test] public void PracticeDiagnosticsNeverReachTheGuide()

@@ -1,5 +1,13 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## September 16, 10:15 PM: owner LOCKED Cargo Crew; finish its lock checklist, then plan the next two lessons
+
+Owner accepted the Dock 7 lesson (commit 53647f9) and decided: lock Cargo Crew, complete the remaining work for
+it (`docs/00-build/CARGO-CREW-LOCK.md`), then enter planning mode for Neighborhood Café (division) and Community
+Garden (multiplication). This supersedes "no third lesson / preview cards do not authorize lessons" below; the
+new lessons still need an approved plan before implementation. Round 2 (cranes, load into trucks) is in
+integration.
+
 ## September 16, 8:30 PM: Phase 1R "Dock 7" built and installed (owner headset test pending)
 
 Owner authorized implementing all three steps of `docs/00-build/PHASE-1R-DOCK-CREW.md` with an agent team

@@ -156,3 +156,74 @@ Proxy tools added: `replay_demo`, `split_cargo`, `check_load`, `reset_cargo`, `n
 `restart_chapter`, `back_to_lessons` (all parameterless). `advance_step` moves the onboarding steps, and
 inside a chapter behaves like `next_chapter`. Every handler returns the step result JSON with `ok` and
 `reason`, and the guide narrates only what the tool returned.
+
+---
+
+# Round 2 (2026-09-16 21:00): cranes and loading crates straight into trucks
+
+Owner accepted the Dock 7 build (commit 53647f9) and asked for: (1) replace the parked aircraft with a couple of
+cranes; (2) instead of loading crates onto the central container floor, load them directly into trucks parked
+in front, and the trucks drive away once loaded correctly. Same team rules as above.
+
+## Design decision (keeps the visible whole)
+
+The chapter's vehicles **back up to the dock edge in front of the learner**, rear towards the learner, cabs
+pointing away (+z). Their open cargo beds sit **side by side along x, exactly over the old ruler**, so the beds
+together span one container length (0 to 1, `RulerLayout.WholeLength` = 0.28 m, 8 cells). A thin dock-edge strip
+in front of the beds keeps the 0, 1/4, 1/2, 3/4, 1 ticks and the "ONE CONTAINER" label. A van bed is 2 cells
+wide, a pickup bed 4, the big truck bed 8. Crates keep their length along x and drop into a bed. Cells of the
+container not used by the chapter (chapter 4) show a faded "not needed" outline. When a load is accepted the
+vehicles drive +z off the deck carrying their crates; the next chapter brings its own vehicles.
+
+| # | BedCells (left to right from cell 0) | Vehicles |
+|---|---|---|
+| 1 | {8} | 1 big truck |
+| 2 | {4,4} | 2 pickups |
+| 3 | {2,2,2,2} | 4 vans |
+| 4 | {4} | 1 pickup (cells 4-8 "not needed") |
+| 5 | {8} | 1 big truck, locked 1/2 already in its bed at cell 0 |
+
+## A2. Engine additions (Airlift.Lessons)
+
+```csharp
+// CargoChapter
+public int[] BedCells;                                   // per vehicle bed, from cell 0; sum <= 8; VehicleCount == BedCells.Length
+// CargoLessonModel
+public int BedCount { get; }
+public int BedStartCell(int bed);
+public int BedCapacity(int bed);                         // cells
+public int BedFill(int bed);                             // cells currently loaded (incl. locked)
+public int BedAtCell(int cell);                          // -1 when the cell is outside this chapter's beds
+public int BedOf(string id);                             // -1 when not docked
+public bool Dock(string id, bool held, int bed);         // packs from the bed's start; refuses held/unknown/locked/
+                                                         // already docked/bad bed; refuses a crate longer than the
+                                                         // bed's free space and writes LastFeedback, e.g.
+                                                         // "That crate is too long for this van. Split it first."
+public bool Dock(string id, bool held);                  // kept: first bed (left to right) with room that fits
+// StartCell(id) stays a global cell (bed start + offset in bed). RulerQuantity stays the total loaded.
+```
+Submit accepts only when **every bed is exactly full** and the RequiredDenominator rule holds. Under-filled
+feedback names the vehicle, e.g. "Van 3 is still empty." or "Pickup 2 has room for 1/2 of a container more."
+Story/Task/Accepted text should describe trucks backed up to the dock and crates loaded into them, and the
+cranes that unload the ship (no aircraft anywhere).
+
+## B2. Workbench additions
+
+```csharp
+// RulerLayout
+public static int CellAt(Vector3 rulerCenter, Vector3 pieceLocal);   // 0..7 inside the dock zone, else -1
+// VehicleBay
+public void ShowChapter(CargoChapter c);   // parks this chapter's vehicles with beds aligned to BedCells over the ruler
+public void DriveAway(IList<Transform> cargo);   // vehicles drive +z off the deck (~1.5 s), docked crates ride along
+public void ResetBay();
+// CargoTerminalView: `aircraft` is removed; add `public Transform[] cranes;` HasRequiredProps requires >= 2 cranes.
+```
+Director: on release, `bed = model.BedAtCell(RulerLayout.CellAt(...))`, then `model.Dock(id, false, bed)`; on a
+refused fit show model.LastFeedback. On an accepted load call `vehicles.DriveAway(docked crate transforms)`;
+restart, reset or next chapter restores crates and vehicles.
+
+## C2. Voice additions
+
+GuideSteps on_table_now describes the vehicles backed up to the dock and their empty/loaded beds (from the
+chapter's BedCells) instead of a container floor; proxy story language adds cranes and trucks backed up to the
+dock and drops aircraft; LessonCatalog facts follow. Tool names and semantics are unchanged.

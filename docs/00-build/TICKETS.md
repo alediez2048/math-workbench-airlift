@@ -1,5 +1,10 @@
 # Cargo Crew — phased ticket backlog
 
+## September 16 (late night) — Cargo Crew locked by owner
+
+Owner accepted the Dock 7 lesson (53647f9) and locked it. Remaining work and ticket decisions:
+[CARGO-CREW-LOCK.md](CARGO-CREW-LOCK.md). Next: plan Neighborhood Café and Community Garden.
+
 ## September 16 (night) — Phase 1R "Dock 7" drafted (awaiting owner approval)
 
 Owner accepted voice actions on build 190518 and asked for a voice-first workbench, a dock story and

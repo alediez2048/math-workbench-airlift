@@ -54,13 +54,18 @@ the session tools and rules are read when the mint starts. Live guide, mic on, n
    While holding the crate say it again: the guide says "Let go of the crate first." and nothing moves.
 4. **Start.** Put the crate on the pad; say "start loading". Chapter 1 · Big truck opens; the guide tells
    the story once (not twice).
-5. **Chapter actions.** Say "is this right" with an empty floor: the guide repeats the app's feedback
-   (floor empty) and does not invent a verdict. Load the crate, say "load it": accepted with `1`.
-   Say "next chapter": Chapter 2 story. Say "split it": two 1/2 crates appear. Say "put everything
-   back": loaded crates return to the tray. Say "start this chapter over": one full crate again.
+5. **Chapter actions.** Say "is this right" with an empty bed: the guide repeats the app's feedback
+   and does not invent a verdict. Load the crate into the big truck's bed, say "load it": accepted with `1`,
+   and the truck drives away with the crate. Say "next chapter": two pickups back up to the dock and the
+   guide tells their story. Say "split it": two 1/2 crates appear. Say "put everything back": loaded crates
+   come back out of the beds. Say "start this chapter over": one full crate again.
+5b. **Grounding (Round 2).** Ask "what do I do now?" in each chapter. The guide should talk about the
+   vehicles backed up to the dock, their beds and the crates to load, and mention cranes rather than
+   aircraft. In chapter 4 it should say the rest of the container is not needed. After an accepted load it
+   must not tell you to grab crates that just drove away.
 6. **Refusals.** Hold a crate and say "split it" or "back to the lessons": one-sentence refusal, nothing
    changes. Before a load is accepted say "next chapter": the guide says what is left.
-7. **Buttons still narrate.** Mute, press Load on a correct floor, unmute, press Next: the guide says one
+7. **Buttons still narrate.** Mute, press Load with the beds correctly filled, unmute, press Next: the guide says one
    Dock 7 line for the new chapter (only while not paused).
 8. **Back.** Say "back to the lessons": the cards return; the guide says so in one sentence.
 9. Report any action the guide claimed without the table changing, any doubled speech, and any

@@ -1,5 +1,50 @@
 # Cargo Crew development log
 
+## 2026-09-16 — Round 2 built: cranes, crates loaded straight into trucks that drive away (owner check pending)
+
+- **Team round 2:** engine (BedCells {8},{4,4},{2,2,2,2},{4},{8}; Dock(id, held, bed); per-bed acceptance with
+  vehicle-named feedback; 37 tests), workbench (vehicles back up to the dock edge with beds exactly over the
+  0-to-1 ruler, dock-edge strip with 0/1/4/1/2/3/4/1 marks and ONE CONTAINER, "not needed" cells for chapter 4,
+  DropAt picks the bed under the crate, DriveAway carries crates off the deck; aircraft, old truck and container
+  floor removed; two cranes), voice (on_table_now describes vehicles and beds; proxy story adds cranes and
+  trucks backed up to the dock; catalog facts).
+- **Integration fixes:** a workbench test used Transform.Find for "Mark 1/4" ("/" is a path separator) and
+  failed although the scene was right; test now matches child names. Renders showed tall crane jibs through the
+  translucent lesson card and tray crates covering the dock-edge marks: cranes made compact and moved in front of
+  the containers at the deck sides with jibs over the table edges; tray moved to z -0.225. Tests added first
+  (crane height under the card sightline, crane in front of containers and clear of props, tray clear of the
+  strip), confirmed RED, then GREEN.
+- **Launcher icon (L-4) correction:** a default-icon change and its test passed but did not change the APK;
+  Unity 6.6 packages only adaptive Android icons, which already use the Nerdy logo. Reverted; L-4 stays open.
+- **Runner flake (L-7) fixed:** PlayMode suites now run before the baseline EditMode suite; the full wrapper
+  passed CargoBaselineTestsSceneTests with no manual reload.
+- **Evidence:** editor drive of all chapters through the real drop path (every crate into its bed, every load
+  accepted with the right expression); renders artifacts/dock7/. Wrapper: 165 checks across 25 suites, scan
+  passed, 0 errors; APK cargo-20260916-221238 (SHA-256 16e977c3...), md5 60e660e9 verified on the Quest, launched
+  22:17; dev mint restarted with round 2 instructions. Not verified: drive-away timing in play, 7 cm vans on the
+  headset, grabbing into beds on device.
+
+## 2026-09-16 — Owner decision: lock Cargo Crew, then plan Café and Garden
+
+- Owner: "We still have two more lessons to complete. Lock this lesson in, complete the remaining tickets for it
+  to be in good shape and move to planning mode for the next two lessons."
+- Wrote CARGO-CREW-LOCK.md: accepted-ticket bookkeeping, lock work L-1..L-8 (round 2, recovery/interruptions,
+  temporaries, launcher logo, performance, release gates, runner flake, bookkeeping), owner items O-1..O-4
+  (vercel login, consent heading, AI-requirement decision, footage) and recommendations for the remaining
+  learning-activity tickets (fold P1-08 into the guide, defer P2-02/03/05/06, supersede P2-07).
+
+## 2026-09-16 — OWNER ACCEPTED the Dock 7 voice-guided lesson on the Quest; committed 53647f9
+
+- **Owner-reported (~20:50) on build cargo-20260916-202453:** ran the entire flow; "this is 100% exactly what I
+  wanted from the beginning ... a fully immersive experience" with the voice assistant throughout.
+- **Commit:** 53647f9 (215 files; not pushed). detect_changes rated the diff critical because it spans the lesson
+  model, director and onboarding flows, which is exactly the accepted scope; secret scan hit only the proxy test's
+  fake key string.
+- **Next (owner request, round 2):** replace the aircraft with a couple of cranes; load crates directly into
+  trucks in front instead of the central container floor, trucks drive away once loaded. Design: vehicles back
+  up to the dock edge with beds side by side over the 0-to-1 ruler so the whole container stays visible
+  (contract "Round 2" in PHASE-1R-CONTRACTS.md). Same three-agent team; integration by the main session.
+
 ## 2026-09-16 — Phase 1R "Dock 7" built by an agent team (owner authorized "implement all 3 steps")
 
 - **Team:** three implementers on disjoint files against docs/00-build/PHASE-1R-CONTRACTS.md, no Unity access;

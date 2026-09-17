@@ -40,17 +40,29 @@ public static class PreviewDockChapters
                     if (!string.IsNullOrEmpty(t.text)) sb.AppendLine("  TMP " + t.name + " font=" + (t.font ? t.font.name : "null") + " style=" + t.fontStyle + " size=" + t.fontSize + " rich=" + t.richText + " pos=" + t.rectTransform.anchoredPosition + " rect=" + t.rectTransform.rect.size + " fallbacks=" + (t.font ? string.Join("/", t.font.fallbackFontAssetTable.ConvertAll(f => f ? f.name : "null")) : "") + " text=" + t.text.Substring(0, System.Math.Min(40, t.text.Length)).Replace("\n", "|"));
                 sb.AppendLine("ch" + (i + 1) + " start: heading='" + d.heading.text + "' body='" + d.body.text.Replace("\n", " | ") + "' hints='" + lesson.sayHints.text + "' canSplit=" + lesson.CanSplit);
                 if (lesson.CanSplit) { var r = lesson.TrySplit(); sb.AppendLine("  split ok=" + r.Ok + " " + r.Reason); }
-                var chapter = model.Chapter; int needCells = chapter.Target.Numerator * 8 / chapter.Target.Denominator;
+                if (i == 1)
+                {
+                    // Before splitting, the whole crate cannot fit a pickup bed: the real drop path must refuse it.
+                    var ruler0 = lesson.ruler.localPosition;
+                    bool whole = lesson.DropAt("whole", new Vector3(Airlift.Lessons.RulerLayout.CellsCenterX(ruler0, 0, 8), ruler0.y, ruler0.z));
+                    sb.AppendLine("  drop whole into pickups before split: docked=" + whole + " feedback='" + lesson.Feedback + "' model='" + model.LastFeedback + "'");
+                }
+                if (lesson.CanSplit) { var r = lesson.TrySplit(); sb.AppendLine("  split ok=" + r.Ok + " " + r.Reason); }
+                var rc = lesson.ruler.localPosition;
                 foreach (var id in model.PieceIds.ToList())
                 {
                     if (model.IsLocked(id) || model.IsDocked(id)) continue;
-                    if (model.RulerQuantity.Numerator * 8 / model.RulerQuantity.Denominator >= needCells) break;
-                    model.Dock(id, false);
+                    int cells = model.Piece(id).Cells; int bed = -1;
+                    for (int b = 0; b < model.BedCount; b++) if (model.BedCapacity(b) - model.BedFill(b) >= cells) { bed = b; break; }
+                    if (bed < 0) continue;
+                    int startCell = model.BedStartCell(bed) + model.BedFill(bed);
+                    bool ok = lesson.DropAt(id, new Vector3(Airlift.Lessons.RulerLayout.CellsCenterX(rc, startCell, cells), rc.y, rc.z));
+                    sb.AppendLine("  drop " + id + " -> bed " + bed + " ok=" + ok);
                 }
-                snap.Invoke(lesson, null); refresh.Invoke(lesson, null);
+                Shot(n.head, Path.Combine(dir, (i + 1) + "b-docked.png"));
                 var load = lesson.TryLoad();
                 sb.AppendLine("  load ok=" + load.Ok + " reason='" + load.Reason + "' complete=" + lesson.ChapterComplete + " expr='" + lesson.ExpressionText + "' feedback='" + lesson.Feedback + "'");
-                Shot(n.head, Path.Combine(dir, (i + 1) + "b-loaded.png"));
+                Shot(n.head, Path.Combine(dir, (i + 1) + "c-loaded.png"));
             }
         }
         finally { EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single); }

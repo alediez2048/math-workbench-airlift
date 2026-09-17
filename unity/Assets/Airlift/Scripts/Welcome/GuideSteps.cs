@@ -31,26 +31,66 @@ namespace Airlift.Welcome
             }
         }
 
-        /// One Dock 7 chapter on the table: the container floor, any locked crate, and the loose crates at
-        /// their current size. A split chapter whose crates can no longer split has been split one level.
+        /// One Dock 7 chapter on the table: the vehicles backed up to the dock with their beds side by side over the
+        /// 0 to 1 ruler (CargoChapter.BedCells, 8 cells = one container), any locked crate, and the loose crates at
+        /// their current size. A split chapter whose crates can no longer split has been split one level. After an
+        /// accepted load the vehicles drive away with the crates, so nothing is grabbable until the next chapter.
         public static GuideStep ForChapter(CargoChapter chapter, bool complete, bool canSplit)
         {
-            if (chapter == null) return new GuideStep("chapter", "The container floor runs from 0 to 1: one whole container.", true);
+            if (chapter == null) return new GuideStep("chapter", "Vehicles back up to the dock over the 0 to 1 ruler: one whole container.", true);
             var sb = new StringBuilder();
             sb.Append("Chapter ").Append(chapter.Number).Append(" · ").Append(chapter.Title).Append(". ");
-            sb.Append("The container floor runs from 0 to 1: one whole container");
-            if (chapter.ShowHalfMark) sb.Append(", with a 1/2 mark");
+            var beds = chapter.BedCells ?? new int[0];
+            int vehicles = beds.Length > 0 ? beds.Length : System.Math.Max(1, chapter.VehicleCount);
+            string noun = VehicleNoun(chapter.VehicleKind, beds);
+            sb.Append(Capitalize(Count(vehicles))).Append(' ').Append(vehicles == 1 ? noun : noun + "s")
+              .Append(vehicles == 1 ? " is" : " are").Append(" backed up to the dock, ")
+              .Append(vehicles == 1 ? "its bed" : "beds side by side").Append(" over the 0 to 1 ruler (one whole container)");
+            if (beds.Length > 0)
+            {
+                bool same = true; int used = 0;
+                foreach (int b in beds) { if (b != beds[0]) same = false; used += b; }
+                if (same) sb.Append(vehicles == 1 ? "; the bed holds " : "; each " + noun + " bed holds ").Append(CellsFraction(beds[0]));
+                else { var sizes = new List<string>(); foreach (int b in beds) sizes.Add(CellsFraction(b)); sb.Append("; beds hold ").Append(string.Join(", ", sizes)); }
+                if (used < WholeCells && used > 0) sb.Append(", and ").Append(CellsFraction(used)).Append(" to 1 is not needed");
+            }
             sb.Append(". ");
             if (chapter.LockedPieces != null && chapter.LockedPieces.Length > 0)
-                sb.Append("Locked on the floor from 0: ").Append(Crates(chapter.LockedPieces)).Append(". ");
+                sb.Append("Locked in the bed from 0: ").Append(Crates(chapter.LockedPieces)).Append(". ");
+            string into = vehicles == 1 ? "the bed" : "the beds";
+            if (complete)
+            {
+                sb.Append("Load accepted: ").Append(chapter.Expression).Append(". ")
+                  .Append(vehicles == 1 ? "The " + noun + " drives" : "The " + noun + "s drive").Append(" away with the crates.");
+                return new GuideStep("chapter" + chapter.Number + "_" + chapter.Id, sb.ToString(), false);
+            }
             bool split = chapter.SplitTo > 0 && !canSplit;
             var loose = split ? SplitOnce(chapter.StartPieces, chapter.SplitTo) : chapter.StartPieces;
-            sb.Append("Crates on the table: ").Append(Crates(loose)).Append(". ");
-            if (complete) sb.Append("Load checked and accepted: ").Append(chapter.Expression).Append(". Crates can still be moved.");
-            else if (canSplit) sb.Append("They can be split into equal chunks now, then loaded along the floor from 0.");
-            else sb.Append("Load crates along the floor from 0, then check the load.");
+            sb.Append("Crates to load: ").Append(Crates(loose)).Append(". ");
+            if (canSplit) sb.Append("They can be split into equal chunks, then loaded into ").Append(into).Append('.');
+            else sb.Append("Load crates into ").Append(into).Append(", then check the load.");
             return new GuideStep("chapter" + chapter.Number + "_" + chapter.Id, sb.ToString(), true);
         }
+
+        const int WholeCells = 8;
+
+        static string VehicleNoun(string kind, int[] beds)
+        {
+            if (kind == "truck") return beds.Length > 0 && beds[0] == WholeCells ? "big truck" : "truck";
+            return string.IsNullOrEmpty(kind) ? "vehicle" : kind;
+        }
+
+        /// Cells of one 8-cell container as a reduced fraction: 8 -> "1", 4 -> "1/2", 2 -> "1/4".
+        static string CellsFraction(int cells)
+        {
+            if (cells <= 0) return "0";
+            int a = cells, b = WholeCells;
+            while (b != 0) { int r = a % b; a = b; b = r; }
+            int n = cells / a, d = WholeCells / a;
+            return d == 1 ? n.ToString() : n + "/" + d;
+        }
+
+        static string Capitalize(string word) => string.IsNullOrEmpty(word) ? word : char.ToUpperInvariant(word[0]) + word.Substring(1);
 
         static int[] SplitOnce(int[] start, int splitTo)
         {
