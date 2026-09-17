@@ -16,7 +16,10 @@ namespace Airlift.Tests
         [Test] public void OpenLessonByVoiceOnlyOpensThePlayableCardWhileCardsShow()
         {
             Assert.That(GuideTools.OpenLesson(WelcomePhase.Catalog, "cargo_crew_fractions"), Is.EqualTo(OpenLessonDecision.Open));
-            Assert.That(GuideTools.OpenLesson(WelcomePhase.Catalog, "neighborhood_cafe_division"), Is.EqualTo(OpenLessonDecision.ComingSoon));
+            Assert.That(GuideTools.OpenLesson(WelcomePhase.Catalog, "neighborhood_cafe_division"), Is.EqualTo(OpenLessonDecision.Open), "CC-CF-04: the café is playable");
+            Assert.That(GuideTools.OpenLesson(WelcomePhase.Catalog, "community_garden_multiplication"), Is.EqualTo(OpenLessonDecision.Open), "CC-GD-04: the garden is playable");
+            Assert.That(GuideTools.OpenLesson(WelcomePhase.Lesson, "community_garden_multiplication"), Is.EqualTo(OpenLessonDecision.NotShowing));
+            Assert.That(GuideTools.OpenLesson(WelcomePhase.Lesson, "neighborhood_cafe_division"), Is.EqualTo(OpenLessonDecision.NotShowing));
             Assert.That(GuideTools.OpenLesson(WelcomePhase.Catalog, "made_up"), Is.EqualTo(OpenLessonDecision.Unknown));
             Assert.That(GuideTools.OpenLesson(WelcomePhase.Welcome, "cargo_crew_fractions"), Is.EqualTo(OpenLessonDecision.NotShowing));
             Assert.That(GuideTools.OpenLesson(WelcomePhase.Lesson, "cargo_crew_fractions"), Is.EqualTo(OpenLessonDecision.NotShowing));

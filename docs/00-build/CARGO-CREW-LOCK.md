@@ -25,14 +25,14 @@ once the owner accepts it on the headset.
 
 | ID | Work | Ticket | Status |
 |---|---|---|---|
-| L-1 | Integrate, verify and install cranes + load-into-trucks; owner accepts on headset; commit | CC-D-10 (round 2) | built and installed 22:17 (cargo-20260916-221238), owner headset check pending |
-| L-2 | Recovery and interruptions: Back and resume mid-chapter, reset/restart/next during the drive-away, Pause during a voice action, voice action while a crate is held, tracking loss gates grabs, one-controller path; tests for each | CC-P1-09, CC-P3-03 | todo |
-| L-3 | Remove temporaries once L-1 is accepted: practice-panel controller readout, grip-or-trigger fallback decision, keep `[Nerdy] UI` logging behind a dev flag | CC-P1-02 leftovers | todo (see D-4) |
+| L-1 | Integrate, verify and install cranes + load-into-trucks; owner accepts on headset; commit | CC-D-10 (round 2) | done: owner "looks good, keep going"; committed 2740d8a |
+| L-2 | Recovery and interruptions | CC-P1-09, CC-P3-03 | code done, headset check pending: while paused a voice action runs nothing and the guide stays silent; taking the headset off pauses the guide until Play; leaving mid-load or after an accepted load and returning gives a coherent chapter (RecoveryTests 4/4 confirmed RED first; DockWorkbenchWiringTests leave-and-return test passed on first run, a regression guard). Reviewed in code and already coherent: next/restart/back during the drive-away stop it and restore crates; voice actions while a crate is held refuse with "Let go of the crate first"; controller tracking loss releases through the SDK cancel path. One-controller play is possible by design (ray + voice + either hand grabs); not yet checked on device |
+| L-3 | Remove temporaries | CC-P1-02 leftovers | done: practice-panel controller readout off (test confirmed RED first); grip-or-trigger fallback kept (D-4); `[Nerdy] UI` press logging kept, low volume |
 | L-4 | Library tile logo (launcher shows no icon) | task #11 / CC-P0-01 | open, cause not found: the APK's adaptive icon already uses the Nerdy logo, and Unity 6.6 supports only adaptive Android icons (the Unity-logo mdpi PNG in the APK is a pre-API-26 fallback the Quest does not use). A default-icon change was tried, had no effect on the APK, and was reverted. Next: confirm what the Library tile shows for other sideloaded apps (it may never draw icons for unknown sources) before more changes |
 | L-5 | Measure Quest 3S performance: three post-warm-up full runs, CPU/GPU p95 ≤ 13.9 ms, stable over repeated chapters | CC-P3-04 | todo (owner wears headset) |
-| L-6 | Release gates for this lesson: asset and license inventory (fonts OFL, generated meshes, logo rights), Android permission/network inventory, APK secret scan, no dev HTTP exception | CC-P3-05 | todo (HTTP part needs O-1) |
+| L-6 | Release gates for this lesson | CC-P3-05 | inventory written: RELEASE-GATES.md. Open: dev HTTP mint (O-1), BLUETOOTH permission still in the APK (store only), owner confirmation of vendor SDK and OpenAI terms |
 | L-7 | PlayMode runner flake: make the wrapper pass without a manual domain reload | task #12 | done: the wrapper ran the baseline EditMode suite before PlayMode; PlayMode suites now run first with one automatic reload-and-retry on zero results (wrapper unit tests 7/7). Proven 22:12: CargoBaselineTestsSceneTests passed inside the full wrapper run with no manual reload and no retry |
-| L-8 | Ticket bookkeeping: mark accepted, superseded and deferred tickets in TICKETS.md; QA script matches the locked flow | — | todo |
+| L-8 | Ticket bookkeeping | — | done: 25 ticket rows in TICKETS.md now show accepted, lock item, deferred or superseded status; D-1..D-4 marked as recommendations |
 
 ## Needs the owner
 

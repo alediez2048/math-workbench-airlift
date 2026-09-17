@@ -192,6 +192,98 @@
       ],
       "requiredAssets": [],
       "requiredCueIds": []
+    },
+    "CC-L-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "RecoveryTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-PL-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CargoVoiceCharacterizationTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-PL-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "LessonStationRoutingTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "LessonStationSceneTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-PL-04": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "ToolNameSyncTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-CF-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CafeChapterTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "CafeModelTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-CF-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CafeWorkbenchWiringTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-GD-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "GardenChapterTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GardenModelTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-GD-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "GardenWorkbenchWiringTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
     }
   },
   "phaseEnds": {

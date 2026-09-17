@@ -9,6 +9,8 @@ namespace Airlift.Welcome
         public WelcomePhase Phase { get; private set; } = WelcomePhase.Consent;
         public bool VoiceConsented { get; private set; }
         public LearnerProfile Profile { get; } = new LearnerProfile();
+        /// The LessonCatalog id of the open lesson; null outside the lesson phase.
+        public string ActiveLessonId { get; private set; }
 
         public void Consent(bool allowVoice) { if (Phase != WelcomePhase.Consent) return; VoiceConsented = allowVoice; Phase = WelcomePhase.Welcome; }
 
@@ -21,9 +23,9 @@ namespace Airlift.Welcome
         public bool OpenLesson(string cardId)
         {
             if (Phase != WelcomePhase.Catalog || !LessonCatalog.IsPlayable(cardId)) return false;
-            Phase = WelcomePhase.Lesson; return true;
+            Phase = WelcomePhase.Lesson; ActiveLessonId = cardId; return true;
         }
 
-        public bool BackToCatalog() { if (Phase != WelcomePhase.Lesson) return false; Phase = WelcomePhase.Catalog; return true; }
+        public bool BackToCatalog() { if (Phase != WelcomePhase.Lesson) return false; Phase = WelcomePhase.Catalog; ActiveLessonId = null; return true; }
     }
 }

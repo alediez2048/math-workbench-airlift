@@ -152,7 +152,9 @@ namespace Airlift.Welcome
     public static class GuideTools
     {
         public const string LetGo = "Let go of the crate first.";
-        public const string NoLesson = "No lesson is open. Say open Cargo Crew first.";
+        /// Tool result while the learner has paused the guide: no action runs.
+        public const string PausedResult = "{\"ok\":false,\"reason\":\"The guide is paused. Press Play to continue.\"}";
+        public const string NoLesson = "No lesson is open. Say which lesson to open first.";
         public const string CardsAlreadyShowing = "The lesson cards are already showing.";
         public const string ChaptersNotStarted = "The loading chapters start after the briefing and practice.";
         public const string SayStartLoading = "The loading chapters have not started. Say start loading first.";
@@ -255,6 +257,41 @@ namespace Airlift.Welcome
                 o["feedback"] = feedback ?? "";
             }
             return o.ToString(Newtonsoft.Json.Formatting.None);
+        }
+
+        /// Station form: the chapter facts of any lesson (Number 0 = no chapter). When the station lists tools_now
+        /// (café, garden) the result also carries lesson (its title) and tools_now; Cargo passes null and its JSON is
+        /// byte-identical to the CargoChapter form above.
+        public static string ToolResult(bool ok, string reason, GuideStep step, string instruction, LessonChapterFacts chapter, JObject extra, string lesson, string[] toolsNow)
+        {
+            var o = new JObject { ["ok"] = ok, ["reason"] = reason ?? "" };
+            if (extra != null) foreach (var p in extra.Properties()) o[p.Name] = p.Value;
+            if (toolsNow != null) o["lesson"] = lesson ?? "";
+            o["step"] = step.Id ?? "";
+            o["on_table_now"] = step.OnTableNow ?? "";
+            o["can_grab_now"] = step.CanGrabNow;
+            o["instruction"] = instruction ?? "";
+            if (chapter.Number > 0)
+            {
+                o["chapter"] = chapter.Number;
+                o["chapter_title"] = chapter.Title ?? "";
+                o["story"] = chapter.Story ?? "";
+                o["task"] = chapter.Task ?? "";
+                o["chapter_complete"] = chapter.Complete;
+                o["expression"] = chapter.Expression ?? "";
+                o["feedback"] = chapter.Feedback ?? "";
+            }
+            if (toolsNow != null) o["tools_now"] = new JArray(toolsNow);
+            return o.ToString(Newtonsoft.Json.Formatting.None);
+        }
+
+        /// Station form of StoryLine: the new chapter's story, the accepted line once, else null.
+        public static string StoryLine(int lastNumber, bool lastComplete, LessonChapterFacts chapter)
+        {
+            if (chapter.Number <= 0) return null;
+            if (chapter.Number != lastNumber) return chapter.Story;
+            if (chapter.Complete && !lastComplete) return chapter.Accepted;
+            return null;
         }
 
         /// The Dock 7 line to say when the chapter changed through a button: the new chapter's story when a

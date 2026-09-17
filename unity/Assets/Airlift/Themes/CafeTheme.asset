@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa4ceec3f8a214bda926b9283ed79b4e, type: 3}
+  m_Name: CafeTheme
+  m_EditorClassIdentifier: Airlift.Runtime::Airlift.Presentation.LessonTheme
+  deck: {r: 0.98039216, g: 0.93333334, b: 0.84705883, a: 1}
+  trim: {r: 0.8392157, g: 0.6666667, b: 0.5019608, a: 1}
+  accent: {r: 0.9686274, g: 0.6666667, b: 0.74509805, a: 1}
+  accentSoft: {r: 0.6509804, g: 0.89411765, b: 0.8, a: 1}
+  prop1: {r: 0.9686274, g: 0.6666667, b: 0.74509805, a: 1}
+  prop2: {r: 0.6509804, g: 0.89411765, b: 0.8, a: 1}
+  prop3: {r: 0.9921568, g: 0.88235295, b: 0.5490196, a: 1}
+  cardPanel: {r: 0.20392157, g: 0.13333334, b: 0.10980392, a: 0.96862745}
+  cardHeading: {r: 1, g: 0.9529412, b: 0.8784314, a: 1}
+  cardBody: {r: 0.9647059, g: 0.91764706, b: 0.85490197, a: 1}
+  buttonFill: {r: 0.98039216, g: 0.76862746, b: 0.8156863, a: 1}
+  buttonLabel: {r: 0.24313726, g: 0.15686275, b: 0.1254902, a: 1}
+  deckMaterial: {fileID: 2100000, guid: 14f439181b4f54b0d96c861f9aaca12f, type: 2}
+  trimMaterial: {fileID: 2100000, guid: bdda49bc073bc43588f4a52be952b9ad, type: 2}
+  accentMaterial: {fileID: 2100000, guid: bc70284c7a2834bf6a19f11c50712922, type: 2}

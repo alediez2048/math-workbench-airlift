@@ -1,5 +1,46 @@
 # Cargo Crew — phased ticket backlog
 
+## September 17 — Café and Garden (approved plan, in progress)
+
+Owner approved building Neighborhood Café (division: share, pack, fact family) and Community Garden (multiplication:
+plant rows, turn the bed, split the bed), five chapters each, each on its own themed workbench, by the Fri 18:00 CDT
+internal target. A shared LessonStation platform routes voice tools to the open lesson; Cargo Crew stays locked and
+must reproduce its golden voice output. Plan: `/Users/jad/.claude/plans/agile-wibbling-nebula.md`. Signatures and team
+rules: [CAFE-GARDEN-CONTRACTS.md](CAFE-GARDEN-CONTRACTS.md). Headset scripts: [cafe](../qa/cafe.md),
+[garden](../qa/garden.md). Code-complete is not accepted; acceptance tickets need the owner on the headset.
+
+| Ticket | Outcome | Owner | Dependency | Status |
+|---|---|---|---|---|
+| [CC-PL-01](tickets/CC-PL-01.md) | Baseline commit + golden Cargo voice characterization test | platform + integrator | lock L-1..L-3; owner lock check | in progress |
+| [CC-PL-02](tickets/CC-PL-02.md) | LessonStation contract, router, visibility, active lesson id | platform | CC-PL-01 | in progress |
+| [CC-PL-03](tickets/CC-PL-03.md) | CargoStation adapter; NerdyDirector and TableHandle rewired; Cargo identical | platform | CC-PL-01, CC-PL-02 | in progress |
+| [CC-PL-04](tickets/CC-PL-04.md) | Themes, workbench roots, card frame; prefixed tools, tools_now, tool sync test | platform | CC-PL-02, CC-PL-03 | in progress |
+| [CC-CF-01](tickets/CC-CF-01.md) | Café engine: plates and boxes, 5 chapters, CafeSteps | cafe-engine | contracts | in progress |
+| [CC-CF-02](tickets/CC-CF-02.md) | Café workbench, props, pieces, card; builder; wiring tests | cafe-bench | CC-PL-02, CC-PL-04 | in progress |
+| [CC-CF-03](tickets/CC-CF-03.md) | CafeStation: briefing, drops, deal one round, check, payoff | cafe-bench | CC-CF-01, CC-CF-02 | in progress |
+| [CC-CF-04](tickets/CC-CF-04.md) | Café voice tools, grounding, catalog facts, Playable on | platform | CC-PL-04, CC-CF-03 | in progress |
+| [CC-CF-05](tickets/CC-CF-05.md) | Café headset acceptance | integrator + owner | CC-CF-01..04, CC-PL-03 | not started |
+| [CC-GD-01](tickets/CC-GD-01.md) | Garden engine: bed grid, strips, turn, fence, 5 chapters, GardenSteps | garden-engine | contracts | in progress |
+| [CC-GD-02](tickets/CC-GD-02.md) | Garden workbench, beds, trees, fence, strip pool, card; builder | garden-bench | CC-PL-02, CC-PL-04 | in progress |
+| [CC-GD-03](tickets/CC-GD-03.md) | GardenStation: plant strips, turn, fence, check, growth payoff | garden-bench | CC-GD-01, CC-GD-02 | in progress |
+| [CC-GD-04](tickets/CC-GD-04.md) | Garden voice tools, grounding, catalog facts, Playable on | platform | CC-PL-04, CC-GD-03 | in progress |
+| [CC-GD-05](tickets/CC-GD-05.md) | Garden headset acceptance | integrator + owner | CC-GD-01..04, CC-CF-05 | not started |
+| [CC-PL-05](tickets/CC-PL-05.md) | Three-lesson regression, release build, owner full run | integrator + owner | CC-PL-03, CC-CF-05, CC-GD-05 | not started |
+
+| When (CDT) | Milestone | Owner check |
+|---|---|---|
+| Wed 23:30–01:00 | Tickets and contracts written; engines and platform agents start | — |
+| Thu morning | 2-minute lock check, baseline commit; CC-PL-01..03 integrated | lock check |
+| Thu ~12:00 | Cargo unchanged after the rewire | headset recheck of Cargo |
+| Thu ~18:00 | Café integrated and installed; slip decision if needed | café headset check |
+| Thu ~23:00 | Garden integrated and installed | garden headset check |
+| Fri 08:00–14:00 | Fixes, CC-PL-05 regression, release build | — |
+| Fri 15:00 | Full run of all three lessons | acceptance |
+| Fri 18:00 | Internal target | submit decision |
+
+If time slips, the owner decides at Thu 18:00: simplify payoffs first, then garden chapter 5, then café chapter 4.
+Cargo Crew never regresses to buy time.
+
 ## September 16 (late night) — Cargo Crew locked by owner
 
 Owner accepted the Dock 7 lesson (53647f9) and locked it. Remaining work and ticket decisions:
@@ -67,41 +108,41 @@ scope cuts and review decisions. HITL means owner/device review is needed to clo
 
 | Ticket | Outcome | Size | Dependency | Status |
 |---|---|---|---|---|
-| [CC-P1-01](tickets/CC-P1-01.md) | Preserve and reproduce the working onboarding baseline | M | Owner authorized | awaiting batched review |
-| [CC-P1-02](tickets/CC-P1-02.md) | Style Cargo Crew and place a comfortable workbench | L | CC-P1-01; owner approved batched review | in-progress |
-| [CC-P1-02.5](tickets/CC-P1-02.5.md) | Find and launch Cargo Crew from the headset | M | P1-02 usable launch | draft / owner requested |
-| [CC-P1-03](tickets/CC-P1-03.md) | Deliver the first core AI-guided controller loop | XL | CC-P1-02 | draft |
-| [CC-P1-04](tickets/CC-P1-04.md) | Establish one visible whole and exact lesson state | L | owner override: after grab repair | code-complete / awaiting device review (2026-09-16) |
-| [CC-P1-05](tickets/CC-P1-05.md) | Split a whole into two labeled halves | L | CC-P1-04 | code-complete / awaiting device review (2026-09-16) |
-| [CC-P1-06](tickets/CC-P1-06.md) | Rebuild one whole using two halves | M | CC-P1-05 | draft |
-| [CC-P1-07](tickets/CC-P1-07.md) | Complete a half-length delivery independently | M | CC-P1-06 | draft |
-| [CC-P1-08](tickets/CC-P1-08.md) | Explain fraction notation with visible and tactile feedback | M | CC-P1-07 | draft |
-| [CC-P1-09](tickets/CC-P1-09.md) | Recover the whole-halves journey without losing pieces | L | CC-P1-08 | draft |
-| [CC-P1-10](tickets/CC-P1-10.md) | Accept the narrated whole-halves chapter on Quest | M | CC-P1-09 | draft |
+| [CC-P1-01](tickets/CC-P1-01.md) | Preserve and reproduce the working onboarding baseline | M | Owner authorized | superseded by owner acceptance of the full build (baseline suites pass in wrapper) |
+| [CC-P1-02](tickets/CC-P1-02.md) | Style Cargo Crew and place a comfortable workbench | L | CC-P1-01; owner approved batched review | accepted in practice (toy look, handle, cranes); readout removed (L-3) |
+| [CC-P1-02.5](tickets/CC-P1-02.5.md) | Find and launch Cargo Crew from the headset | M | P1-02 usable launch | absorbed by CC-P0-01; Library tile logo still open (L-4) |
+| [CC-P1-03](tickets/CC-P1-03.md) | Deliver the first core AI-guided controller loop | XL | CC-P1-02 | absorbed by CC-P0-04 / CC-P0-07 |
+| [CC-P1-04](tickets/CC-P1-04.md) | Establish one visible whole and exact lesson state | L | owner override: after grab repair | accepted by owner on headset (Dock 7 chapter 1; 53647f9) |
+| [CC-P1-05](tickets/CC-P1-05.md) | Split a whole into two labeled halves | L | CC-P1-04 | accepted by owner on headset (chapter 2 split; 53647f9) |
+| [CC-P1-06](tickets/CC-P1-06.md) | Rebuild one whole using two halves | M | CC-P1-05 | accepted by owner on headset (chapter 2 rebuild; 53647f9) |
+| [CC-P1-07](tickets/CC-P1-07.md) | Complete a half-length delivery independently | M | CC-P1-06 | accepted by owner on headset (vehicle delivery; 2740d8a) |
+| [CC-P1-08](tickets/CC-P1-08.md) | Explain fraction notation with visible and tactile feedback | M | CC-P1-07 | lock D-1: fold into the voice guide (recommended; not built) |
+| [CC-P1-09](tickets/CC-P1-09.md) | Recover the whole-halves journey without losing pieces | L | CC-P1-08 | lock L-2: code done, headset check pending |
+| [CC-P1-10](tickets/CC-P1-10.md) | Accept the narrated whole-halves chapter on Quest | M | CC-P1-09 | accepted by owner (full Dock 7 journey on headset, 53647f9 / 2740d8a) |
 
 ## Phase 2 — Quarters, equivalence and comparison (8 tickets)
 
 | Ticket | Outcome | Size | Dependency | Status |
 |---|---|---|---|---|
-| [CC-P2-01](tickets/CC-P2-01.md) | Split both halves into four quarters | M | CC-P1-10 | draft |
-| [CC-P2-02](tickets/CC-P2-02.md) | Build and name three quarters for a parcel | M | CC-P2-01 | draft |
-| [CC-P2-03](tickets/CC-P2-03.md) | Join two quarter pieces into a half | L | CC-P2-02 | draft |
-| [CC-P2-04](tickets/CC-P2-04.md) | Construct equivalent fractions rather than watch them | L | CC-P2-03 | draft |
-| [CC-P2-05](tickets/CC-P2-05.md) | Compare unequal fractions and justify the sign | M | CC-P2-04 | draft |
-| [CC-P2-06](tickets/CC-P2-06.md) | Complete fresh delivery checks with faded help | M | CC-P2-05 | draft |
-| [CC-P2-07](tickets/CC-P2-07.md) | Add two-button splitting and truthful inspection zoom | L | CC-P2-06 | draft |
-| [CC-P2-08](tickets/CC-P2-08.md) | Accept the three-chapter learning flow | M | CC-P2-07 | draft |
+| [CC-P2-01](tickets/CC-P2-01.md) | Split both halves into four quarters | M | CC-P1-10 | accepted by owner on headset (chapter 3 quarters) |
+| [CC-P2-02](tickets/CC-P2-02.md) | Build and name three quarters for a parcel | M | CC-P2-01 | lock D-2: deferred |
+| [CC-P2-03](tickets/CC-P2-03.md) | Join two quarter pieces into a half | L | CC-P2-02 | lock D-2: deferred |
+| [CC-P2-04](tickets/CC-P2-04.md) | Construct equivalent fractions rather than watch them | L | CC-P2-03 | partly accepted: 2/4 = 1/2 (chapter 4); 6/8 not built |
+| [CC-P2-05](tickets/CC-P2-05.md) | Compare unequal fractions and justify the sign | M | CC-P2-04 | lock D-2: deferred |
+| [CC-P2-06](tickets/CC-P2-06.md) | Complete fresh delivery checks with faded help | M | CC-P2-05 | lock D-2: deferred |
+| [CC-P2-07](tickets/CC-P2-07.md) | Add two-button splitting and truthful inspection zoom | L | CC-P2-06 | lock D-3: superseded by voice "split it" + Split fallback button (recommended) |
+| [CC-P2-08](tickets/CC-P2-08.md) | Accept the three-chapter learning flow | M | CC-P2-07 | accepted by owner (five-chapter flow on headset) |
 
 ## Phase 3 — Complete experience and release evidence (6 tickets)
 
 | Ticket | Outcome | Size | Dependency | Status |
 |---|---|---|---|---|
-| [CC-P3-01](tickets/CC-P3-01.md) | Validate bounded adaptive hints without AI grading | L | CC-P2-08 | draft |
-| [CC-P3-02](tickets/CC-P3-02.md) | Finish the cargo story with a truthful dispatch payoff | M | CC-P3-01 | draft |
-| [CC-P3-03](tickets/CC-P3-03.md) | Harden accessible input and interruption recovery | L | CC-P3-02 | draft |
-| [CC-P3-04](tickets/CC-P3-04.md) | Measure and meet the Quest 3S performance budget | M | CC-P3-03 | draft |
-| [CC-P3-05](tickets/CC-P3-05.md) | Clear package, asset and privacy release gates | M | CC-P3-04 | draft |
-| [CC-P3-06](tickets/CC-P3-06.md) | Package the accepted lesson and capture review evidence | M | CC-P3-05 | draft |
+| [CC-P3-01](tickets/CC-P3-01.md) | Validate bounded adaptive hints without AI grading | L | CC-P2-08 | owner decision O-3 pending (voice guide vs hint router) |
+| [CC-P3-02](tickets/CC-P3-02.md) | Finish the cargo story with a truthful dispatch payoff | M | CC-P3-01 | accepted by owner (vehicles drive away with crates) |
+| [CC-P3-03](tickets/CC-P3-03.md) | Harden accessible input and interruption recovery | L | CC-P3-02 | lock L-2: partial, headset check pending |
+| [CC-P3-04](tickets/CC-P3-04.md) | Measure and meet the Quest 3S performance budget | M | CC-P3-03 | lock L-5: todo (owner wears headset) |
+| [CC-P3-05](tickets/CC-P3-05.md) | Clear package, asset and privacy release gates | M | CC-P3-04 | lock L-6: inventory in RELEASE-GATES.md; 3 gates open |
+| [CC-P3-06](tickets/CC-P3-06.md) | Package the accepted lesson and capture review evidence | M | CC-P3-05 | todo (after lock; needs footage O-4) |
 
 ## Phase 4 — Gated spoken questions and child-release readiness (4 tickets)
 

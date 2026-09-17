@@ -11,8 +11,9 @@ using UnityEngine.UI;
 
 namespace Airlift.Welcome
 {
-    /// Orchestrates consent → voice welcome → lesson cards → Cargo workbench, and feeds the guide
-    /// app-authored context. Math and lesson state stay in OnboardingDirector/CargoLessonDirector.
+    /// Orchestrates consent → voice welcome → lesson cards → the open lesson workbench, and feeds the guide
+    /// app-authored context. Math and lesson state stay in the LessonStations (Cargo Crew: CargoStation wrapping
+    /// OnboardingDirector/CargoLessonDirector); shared voice tools go to the open station through LessonToolRouter.
     public sealed class NerdyDirector : MonoBehaviour
     {
         [Header("Wiring")]
@@ -31,6 +32,8 @@ namespace Airlift.Welcome
         public TMP_Text muteLabel, pauseLabel, musicLabel;
         public AmbientMusic music;
         public CargoLessonDirector cargoLesson;   // found at Start when not wired
+        /// Every lesson workbench in the scene (found at Start when not wired).
+        public LessonStation[] stations;
         /// Voice-first: onboarding row and chapter button row. Hidden while the live guide listens (GuidePolicy).
         public CanvasGroup[] fallbackButtons;
         [Header("Placement")]
@@ -48,6 +51,7 @@ namespace Airlift.Welcome
         void Start()
         {
             if (cargoLesson == null) cargoLesson = FindAnyObjectByType<CargoLessonDirector>(FindObjectsInactive.Include);
+            stations = Stations;
             ShowPhase();
             StartCoroutine(PlaceWhenTracked());
             if (guide != null)
@@ -125,6 +129,28 @@ namespace Airlift.Welcome
 
         void OnToolCall(string name, string callId, string args)
         {
+            // Paused means paused: a tool call still in flight from before Pause runs nothing and asks for no speech.
+            if (Paused) { guide.SubmitToolResult(callId, GuideTools.PausedResult, GuidePolicy.SpeakAfterToolResult(Paused)); return; }
+            var routing = LessonToolRouter.Route(name, Flow.ActiveLessonId, Stations);
+            switch (routing.Route)
+            {
+                case ToolRoute.Welcome: OnWelcomeTool(name, callId, args); break;
+                case ToolRoute.Shared: OnSharedTool(name, callId); break;
+                case ToolRoute.Lesson:
+                {
+                    JObject parsed = null; try { parsed = JObject.Parse(string.IsNullOrEmpty(args) ? "{}" : args); } catch { }
+                    if (ActiveStation.TryLessonTool(name, parsed, out var r)) SubmitLessonResult(callId, r.Ok, r.Reason);
+                    else guide.SubmitToolResult(callId, "{\"error\":\"unknown tool\"}");
+                    break;
+                }
+                case ToolRoute.NoLesson:
+                case ToolRoute.WrongLesson: SubmitLessonResult(callId, false, routing.Reason); break;
+                default: guide.SubmitToolResult(callId, "{\"error\":\"unknown tool\"}"); break;
+            }
+        }
+
+        void OnWelcomeTool(string name, string callId, string args)
+        {
             switch (name)
             {
                 case "record_profile":
@@ -135,22 +161,23 @@ namespace Airlift.Welcome
                 case "describe_card":
                     string id = ""; try { id = (string)Newtonsoft.Json.Linq.JObject.Parse(args)["cardId"]; } catch { }
                     guide.SubmitToolResult(callId, LessonCatalog.DescribeJson(id)); break;
-                case "request_help":
-                    guide.SubmitToolResult(callId, ResultNow(true, "", new JObject { ["hint"] = CurrentInstruction() })); break;
                 case "open_lesson":
                 {
                     // A spoken "open Cargo Crew" does exactly what pointing at the card does.
                     string cardId = GuideTools.CardId(args); var card = LessonCatalog.Find(cardId);
-                    switch (GuideTools.OpenLesson(Flow.Phase, cardId))
+                    var decision = GuideTools.OpenLesson(Flow.Phase, cardId);
+                    if (decision == OpenLessonDecision.Open && StationFor(cardId) == null) decision = OpenLessonDecision.ComingSoon;   // playable card, no workbench in this build
+                    switch (decision)
                     {
                         case OpenLessonDecision.Open:
                             OpenCard(card, narrate: false);
                             guide.SubmitToolResult(callId, ResultNow(true, "", new JObject { ["lesson"] = card.Title,
-                                ["say"] = "Welcome the learner to Dock 7 in one sentence using only on_table_now, then ask: would you like to get started? Then stop." }));
+                                ["say"] = "Welcome the learner to " + ActiveStation.StoryName + " in one sentence using only on_table_now, then ask: would you like to get started? Then stop." }));
                             break;
                         case OpenLessonDecision.ComingSoon:
                             Caption(card.Title + " is coming soon.");
-                            guide.SubmitToolResult(callId, "{\"ok\":false,\"reason\":\"coming soon\",\"say\":\"Say in one sentence that it is coming soon and Cargo Crew is ready now.\"}"); break;
+                            guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = "coming soon",
+                                ["say"] = "Say in one sentence that it is coming soon and " + LessonCatalog.ReadyPhrase() + " now." }.ToString(Newtonsoft.Json.Formatting.None)); break;
                         case OpenLessonDecision.NotShowing:
                             guide.SubmitToolResult(callId, "{\"ok\":false,\"reason\":\"the lesson cards are not showing right now\"}"); break;
                         default:
@@ -158,63 +185,79 @@ namespace Airlift.Welcome
                     }
                     break;
                 }
-                case "advance_step": VoiceAdvance(callId); break;
-                case "replay_demo": VoiceReplayDemo(callId); break;
-                case "split_cargo": VoiceChapterAction(callId, l => l.TrySplit()); break;
-                case "check_load": VoiceChapterAction(callId, l => l.TryLoad()); break;
-                case "reset_cargo": VoiceChapterAction(callId, l => l.TryReset()); break;
-                case "next_chapter": VoiceChapterAction(callId, l => l.TryNextChapter()); break;
-                case "restart_chapter": VoiceChapterAction(callId, l => l.TryRestartChapter()); break;
-                case "back_to_lessons": VoiceBackToLessons(callId); break;
-                default: guide.SubmitToolResult(callId, "{\"error\":\"unknown tool\"}"); break;
             }
         }
 
-        // ---- voice actions: each calls the same method the button calls and reports what actually happened ----
-        bool ChapterActive => cargoLesson != null && cargoLesson.IsActive;
-        OnboardingStage Stage => onboarding != null ? onboarding.Stage : OnboardingStage.Catalog;
-        bool PracticeHeld => onboarding != null && onboarding.IsHolding;
-        bool AnythingHeld => PracticeHeld || (cargoLesson != null && cargoLesson.AnyPieceHeld);
-        bool PrimaryAvailable => onboarding != null && onboarding.primary != null && onboarding.primary.gameObject.activeInHierarchy && onboarding.primary.interactable;
+        // ---- shared voice actions: each calls the same station method the button calls and reports what happened ----
+        /// The open lesson's workbench, or null in the cards view.
+        LessonStation ActiveStation => Flow.Phase == WelcomePhase.Lesson ? StationFor(Flow.ActiveLessonId) : null;
 
-        /// "yes / next": the on-card primary button during onboarding, next_chapter inside a chapter.
-        void VoiceAdvance(string callId)
+        LessonStation StationFor(string cardId)
         {
-            switch (GuideTools.AdvanceStep(Flow.Phase, ChapterActive, PrimaryAvailable, PracticeHeld))
+            if (string.IsNullOrEmpty(cardId)) return null;
+            foreach (var s in Stations) if (s != null && s.cardId == cardId) return s;
+            return null;
+        }
+
+        /// Wired stations plus every LessonStation in the scene (a bench built after WireLessonStations still opens),
+        /// in catalog order. A scene without a CargoStation gets one on the onboarding workbench, so Cargo Crew always
+        /// works. Resolved once per assignment of `stations`.
+        LessonStation[] foundStations, foundFrom;
+        LessonStation[] Stations
+        {
+            get
             {
-                case AdvanceRoute.NextChapter: { var r = cargoLesson.TryNextChapter(); SubmitLessonResult(callId, r.Ok, r.Reason); break; }
-                case AdvanceRoute.OnboardingStep: onboarding.Continue(); SubmitLessonResult(callId, true, ""); break;
-                default: SubmitLessonResult(callId, false, GuideTools.AdvanceRefusal(Flow.Phase, Stage, PracticeHeld)); break;
+                if (foundStations != null && ReferenceEquals(foundFrom, stations)) return foundStations;
+                var found = new System.Collections.Generic.List<LessonStation>();
+                if (stations != null) foreach (var s in stations) if (s != null && !found.Contains(s)) found.Add(s);
+                foreach (var s in FindObjectsByType<LessonStation>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (s != null && !found.Contains(s) && s.gameObject.scene == gameObject.scene) found.Add(s);
+                if (onboarding != null && !found.Exists(s => s != null && s.cardId == CargoStation.CardId))
+                {
+                    var cargo = onboarding.GetComponent<CargoStation>();
+                    if (cargo == null) cargo = onboarding.gameObject.AddComponent<CargoStation>();
+                    cargo.cardId = CargoStation.CardId; cargo.onboarding = onboarding; cargo.lesson = cargoLesson;
+                    cargo.heading = onboarding.heading; cargo.body = onboarding.body;
+                    if (cargo.visualRoots == null || cargo.visualRoots.Length == 0)
+                        cargo.visualRoots = System.Array.FindAll(stationVisuals ?? new GameObject[0], g => g != null && !StationVisibility.IsShared(g.name));
+                    if (!found.Contains(cargo)) found.Add(cargo);
+                }
+                found.Sort((a, b) => LessonCatalog.IndexOf(a.cardId).CompareTo(LessonCatalog.IndexOf(b.cardId)));
+                foundStations = found.ToArray();
+                if ((stations == null || stations.Length == 0) && foundStations.Length > 0) stations = foundStations;
+                foundFrom = stations;
+                return foundStations;
             }
         }
 
-        /// Same as the Help button during practice; ok only when the demo actually started.
-        void VoiceReplayDemo(string callId)
+        void OnSharedTool(string name, string callId)
         {
-            var gate = GuideTools.ReplayDemo(Flow.Phase, ChapterActive, Stage, PracticeHeld);
-            if (!gate.Ok || onboarding == null) { SubmitLessonResult(callId, false, gate.Ok ? GuideTools.NoLesson : gate.Reason); return; }
-            onboarding.Help();
-            bool started = onboarding.Stage == OnboardingStage.Demonstration;
-            SubmitLessonResult(callId, started, started ? "" : "The demo could not start right now.");
+            var station = ActiveStation;
+            switch (name)
+            {
+                case "request_help":
+                    guide.SubmitToolResult(callId, ResultNow(true, "", new JObject { ["hint"] = CurrentInstruction() })); break;
+                case "advance_step":
+                    if (station == null) SubmitLessonResult(callId, false, GuideTools.AdvanceRefusal(Flow.Phase, OnboardingStage.Catalog, false));
+                    else { var r = station.Advance(); SubmitLessonResult(callId, r.Ok, r.Reason); }
+                    break;
+                case "next_chapter":
+                case "restart_chapter":
+                    if (station == null) SubmitLessonResult(callId, false, GuideTools.NoLesson);
+                    else { var r = name == "next_chapter" ? station.NextChapter() : station.RestartChapter(); SubmitLessonResult(callId, r.Ok, r.Reason); }
+                    break;
+                case "back_to_lessons": VoiceBackToLessons(callId, station); break;
+            }
         }
 
-        void VoiceChapterAction(string callId, System.Func<CargoLessonDirector, LessonActionResult> action)
+        /// Same as the Back button (the station's Close, then OnLessonBack), refused while anything is held.
+        void VoiceBackToLessons(string callId, LessonStation station)
         {
-            var gate = GuideTools.ChapterTool(Flow.Phase, ChapterActive, Stage);
+            var gate = GuideTools.BackToLessons(Flow.Phase, station != null && station.AnyHeld);
             if (!gate.Ok) { SubmitLessonResult(callId, false, gate.Reason); return; }
-            var r = action(cargoLesson);
-            SubmitLessonResult(callId, r.Ok, r.Reason);
-        }
-
-        /// Same as the Back button (OnboardingDirector.Back, CargoLessonDirector.Exit, OnLessonBack), refused while held.
-        void VoiceBackToLessons(string callId)
-        {
-            var gate = GuideTools.BackToLessons(Flow.Phase, AnythingHeld);
-            if (!gate.Ok) { SubmitLessonResult(callId, false, gate.Reason); return; }
-            onboarding?.Back();
-            cargoLesson?.Exit();
+            station?.Close();
             if (Flow.Phase == WelcomePhase.Lesson) ShowCatalog(narrate: false); // the tool result narrates
-            SubmitLessonResult(callId, true, "", new JObject { ["say"] = "Say in one sentence that the lesson cards are showing and Cargo Crew is ready. Then stop." });
+            SubmitLessonResult(callId, true, "", new JObject { ["say"] = "Say in one sentence that the lesson cards are showing and " + LessonCatalog.ReadyPhrase() + ". Then stop." });
         }
 
         /// Fresh lesson_state first, then the tool output; the voice change is already narrated, so no story line.
@@ -227,9 +270,11 @@ namespace Airlift.Welcome
 
         string ResultNow(bool ok, string reason, JObject extra)
         {
+            var station = ActiveStation;
             var step = CurrentStep();
-            if (ChapterActive && cargoLesson.Chapter != null)
-                return GuideTools.ToolResult(ok, reason, step, CurrentInstruction(), cargoLesson.Chapter, cargoLesson.ChapterComplete, cargoLesson.ExpressionText, cargoLesson.Feedback, extra);
+            // Stations that list tools_now (café, garden) add lesson + tools_now; Cargo (null) keeps its accepted JSON.
+            if (station != null)
+                return GuideTools.ToolResult(ok, reason, step, CurrentInstruction(), station.ChapterActive ? station.Chapter : default, extra, station.Title, station.ToolsNow);
             return GuideTools.ToolResult(ok, reason, step, CurrentInstruction(), extra: extra);
         }
 
@@ -246,7 +291,7 @@ namespace Airlift.Welcome
             {
                 ApplyMicPolicy();
                 guide.PushContext(GuideContextBuilder.Catalog());
-                if (narrate) Say("Say one short sentence: the lessons are in front of them and Cargo Crew is ready. Then stop.");
+                if (narrate) Say("Say one short sentence: the lessons are in front of them and " + LessonCatalog.ReadyPhrase() + ". Then stop.");
             }
         }
 
@@ -254,10 +299,10 @@ namespace Airlift.Welcome
         public void SelectCard(string cardId)
         {
             var card = LessonCatalog.Find(cardId); if (card == null) return;
-            if (!card.Playable)
+            if (!card.Playable || StationFor(card.Id) == null)
             {
                 Caption(card.Title + " is coming soon.");
-                Say("Say one short sentence: " + card.Title + " is coming soon, Cargo Crew is ready now. Then stop.");
+                Say("Say one short sentence: " + card.Title + " is coming soon, " + LessonCatalog.ReadyPhrase() + " now. Then stop.");
                 return;
             }
             OpenCard(card, narrate: true);
@@ -266,16 +311,17 @@ namespace Airlift.Welcome
         /// Pointing at the card and saying "open Cargo Crew" both land here.
         void OpenCard(LessonCard card, bool narrate)
         {
-            if (!Flow.OpenLesson(card.Id)) return;
+            if (StationFor(card.Id) == null || !Flow.OpenLesson(card.Id)) return;
             if (narrate) guide?.Hush(); // a voice open keeps its own response; the tool result narrates
             ShowPhase();
-            onboarding?.ChooseCargo();
+            var station = ActiveStation;
+            station.Open();
             if (guide != null)
             {
                 guide.PushContext(GuideContextBuilder.Entered(card.Title, card.Facts));
                 PushLessonState(); // before any speech, so the welcome describes this step and nothing later
                 ApplyMicPolicy(); // questions are welcome inside the lesson
-                if (narrate) Say("Welcome the learner to the Cargo Crew workbench in one sentence using only on_table_now from the latest lesson_state (nothing can be grabbed yet), then ask: would you like to get started? Then stop and wait.");
+                if (narrate) Say("Welcome the learner to the " + station.Title + " workbench in one sentence using only on_table_now from the latest lesson_state (nothing can be grabbed yet), then ask: would you like to get started? Then stop and wait.");
             }
         }
 
@@ -286,52 +332,52 @@ namespace Airlift.Welcome
         void Update()
         {
             if (Flow.Phase != WelcomePhase.Lesson) { observedChapter = 0; observedComplete = false; return; }
-            if (onboarding == null || onboarding.body == null) return;
+            if (ActiveStation == null) return;
             if (StateKey() != lastInstruction) PushLessonState(); // context only; the guide speaks when asked
             NarrateChapterChange();
         }
 
-        /// A chapter started or a load was accepted through a button: say one Dock 7 line. Voice tools mark the
+        /// A chapter started or a check was accepted through a button: say one story line. Voice tools mark the
         /// new state as observed first, so their changes are narrated by the tool result instead.
         void NarrateChapterChange()
         {
-            if (!ChapterActive || cargoLesson.Chapter == null) { observedChapter = 0; observedComplete = false; return; }
-            var chapter = cargoLesson.Chapter; bool complete = cargoLesson.ChapterComplete;
-            string line = GuideTools.StoryLine(observedChapter, observedComplete, chapter, complete);
-            observedChapter = chapter.Number; observedComplete = complete;
-            if (line != null) Say("Say this Dock 7 line warmly in your own words, in at most two short sentences, then stop: " + line);
+            var station = ActiveStation;
+            var chapter = station != null && station.ChapterActive ? station.Chapter : default;
+            if (chapter.Number <= 0) { observedChapter = 0; observedComplete = false; return; }
+            string line = GuideTools.StoryLine(observedChapter, observedComplete, chapter);
+            observedChapter = chapter.Number; observedComplete = chapter.Complete;
+            if (line != null) Say("Say this " + station.StoryName + " line warmly in your own words, in at most two short sentences, then stop: " + line);
         }
 
         void MarkChapterObserved()
         {
-            bool active = ChapterActive && cargoLesson.Chapter != null;
-            observedChapter = active ? cargoLesson.Chapter.Number : 0;
-            observedComplete = active && cargoLesson.ChapterComplete;
+            var station = ActiveStation;
+            var chapter = station != null && station.ChapterActive ? station.Chapter : default;
+            observedChapter = chapter.Number > 0 ? chapter.Number : 0;
+            observedComplete = chapter.Number > 0 && chapter.Complete;
         }
 
-        /// The instruction the learner reads, without the temporary practice controller readout (which
-        /// changed every frame and flooded the conversation with telemetry).
+        /// The instruction the learner reads on the open station's card; in the cards view, the onboarding card.
         string CurrentInstruction()
         {
-            var shown = ChapterActive && cargoLesson.body != null ? cargoLesson.body : onboarding != null ? onboarding.body : null;
-            return shown != null ? GuideSteps.StripDiagnostics(shown.text) : "";
+            var station = ActiveStation;
+            if (station != null) return station.Instruction;
+            return onboarding != null && onboarding.body != null ? GuideSteps.StripDiagnostics(onboarding.body.text) : "";
         }
 
         GuideStep CurrentStep()
         {
-            if (!ChapterActive || cargoLesson.Chapter == null) return GuideSteps.ForOnboarding(Stage);
-            var chapter = cargoLesson.Chapter; bool complete = cargoLesson.ChapterComplete; bool canSplit = cargoLesson.CanSplit;
-            int key = chapter.Number * 4 + (complete ? 2 : 0) + (canSplit ? 1 : 0);   // cached: Update asks every frame
-            if (key != cachedStepKey) { cachedStepKey = key; cachedChapterStep = GuideSteps.ForChapter(chapter, complete, canSplit); }
-            return cachedChapterStep;
+            var station = ActiveStation;
+            return station != null ? station.CurrentStep() : GuideSteps.ForOnboarding(onboarding != null ? onboarding.Stage : OnboardingStage.Catalog);
         }
 
         string StateKey() => CurrentStep().Id + "|" + CurrentInstruction();
         void PushLessonState()
         {
             lastInstruction = StateKey();
+            var station = ActiveStation; if (station == null) return;
             var step = CurrentStep();
-            guide?.PushContext(GuideContextBuilder.LessonStep("Cargo Crew", step.Id, step.OnTableNow, step.CanGrabNow, CurrentInstruction()));
+            guide?.PushContext(GuideContextBuilder.LessonStep(station.Title, step.Id, step.OnTableNow, step.CanGrabNow, CurrentInstruction(), station.ToolsNow));
         }
         void AskHelp() { if (CanSay) { guide.Hush(); Say("Explain this instruction in at most two friendly sentences, then stop: " + CurrentInstruction()); } else Caption(CurrentInstruction()); }
 
@@ -343,14 +389,25 @@ namespace Airlift.Welcome
         /// Buttons show whenever voice cannot hear the learner: offline, no mic permission, muted, paused, mic-off phase.
         void ApplyFallbackButtons()
         {
-            if (fallbackButtons == null) return;
+            var groups = FallbackGroups();
+            if (groups.Count == 0) return;
             bool live = guide != null && guide.Mode == GuideMode.Live && Permission.HasUserAuthorizedPermission(Permission.Microphone);
             bool show = GuidePolicy.ShowFallbackButtons(live, GuidePolicy.MicOn(Flow.Phase, Muted, Paused));
-            foreach (var group in fallbackButtons)
+            foreach (var group in groups)
             {
                 if (group == null) continue;
                 group.alpha = show ? 1f : 0f; group.interactable = show; group.blocksRaycasts = show;
             }
+        }
+
+        /// The director's own groups plus every station's button rows.
+        System.Collections.Generic.List<CanvasGroup> FallbackGroups()
+        {
+            var groups = new System.Collections.Generic.List<CanvasGroup>();
+            if (fallbackButtons != null) foreach (var g in fallbackButtons) if (g != null && !groups.Contains(g)) groups.Add(g);
+            foreach (var s in Stations)
+                if (s != null && s.fallbackGroups != null) foreach (var g in s.fallbackGroups) if (g != null && !groups.Contains(g)) groups.Add(g);
+            return groups;
         }
 
         public void ToggleMute()
@@ -373,6 +430,21 @@ namespace Airlift.Welcome
             else if (Flow.Phase == WelcomePhase.Lesson) Say("Say one short sentence: you are back, and what the learner should do now: " + CurrentInstruction());
             else Caption("");
         }
+
+        bool autoPaused;
+        /// Taking the headset off pauses the app: pause the guide so it does not talk to an empty room, and stay
+        /// paused until the learner presses Play. A pause the learner chose is never undone here.
+        public void HandleAppPause(bool pausing)
+        {
+            if (pausing)
+            {
+                if (Paused || Flow.Phase == WelcomePhase.Consent) return;
+                TogglePause(); autoPaused = true;
+                Caption("Paused while the headset was off. Press Play to continue.");
+            }
+            else if (autoPaused) { autoPaused = false; ApplyMicPolicy(); }
+        }
+        void OnApplicationPause(bool pausing) => HandleAppPause(pausing);
 
         public void ToggleMusic()
         {
@@ -398,7 +470,16 @@ namespace Airlift.Welcome
                 }
                 if (lesson) { LogHudPlacement("at lesson entry"); if (Application.isPlaying) StartCoroutine(LogHudLater()); }
             }
-            foreach (var go in stationVisuals) if (go) go.SetActive(lesson);
+            // Each station's own roots show only while it is the open lesson; the rest of stationVisuals (the table
+            // handle) shows in every lesson.
+            var owned = new System.Collections.Generic.HashSet<GameObject>();
+            foreach (var s in Stations)
+            {
+                if (s == null) continue;
+                if (s.visualRoots != null) foreach (var root in s.visualRoots) if (root != null && !StationVisibility.IsShared(root.name)) owned.Add(root);
+            }
+            if (stationVisuals != null) foreach (var go in stationVisuals) if (go && !owned.Contains(go)) go.SetActive(StationVisibility.SharedShows(Flow.Phase));
+            foreach (var s in Stations) if (s != null) s.SetVisualsActive(StationVisibility.StationShows(Flow.Phase, Flow.ActiveLessonId, s.cardId));
             if (onboarding != null && onboarding.catalog != null) onboarding.catalog.SetActive(false);
             // The welcome canvas stays in the world during the lesson; its invisible ray surface must not
             // steal presses from the workbench card when it ends up closer to the controller.

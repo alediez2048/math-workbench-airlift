@@ -18,10 +18,15 @@ namespace Airlift.Guide
         /// The current step, what is on the table right now and whether anything can be grabbed. Speech about
         /// what to do must come from this, never from the lesson overview facts.
         public static string LessonStep(string lesson, string stepId, string onTableNow, bool canGrabNow, string instructionShown)
+            => LessonStep(lesson, stepId, onTableNow, canGrabNow, instructionShown, null);
+
+        /// Same, plus tools_now: the tools that make sense in this lesson right now (null leaves it out).
+        public static string LessonStep(string lesson, string stepId, string onTableNow, bool canGrabNow, string instructionShown, string[] toolsNow)
         {
             var o = new JObject { ["kind"] = "lesson_state", ["lesson"] = Trim(lesson, 60), ["step"] = Trim(stepId, 40), ["on_table_now"] = Trim(onTableNow, 300),
                 ["can_grab_now"] = canGrabNow, ["instruction"] = Trim(instructionShown, MaxLength),
                 ["rules"] = "Only describe what is on the table now and what the instruction says. Do not judge correctness unless the instruction itself states a submitted result." };
+            if (toolsNow != null) o["tools_now"] = new JArray(toolsNow);
             return "APP CONTEXT " + o.ToString(Newtonsoft.Json.Formatting.None);
         }
 
@@ -29,7 +34,7 @@ namespace Airlift.Guide
             => "APP CONTEXT " + new JObject { ["kind"] = "entered_lesson", ["lesson"] = Trim(cardTitle, 60), ["facts"] = new JArray(facts),
                 ["note"] = "Lesson overview for answering questions, not the current step. The latest lesson_state says what is on the table now." }.ToString(Newtonsoft.Json.Formatting.None);
 
-        public static string Catalog() => "APP CONTEXT {\"kind\":\"catalog\",\"note\":\"Three lesson cards are in front of the learner. Only Cargo Crew (fractions) can be opened; the other two are previews.\"}";
+        public static string Catalog() => "APP CONTEXT " + new JObject { ["kind"] = "catalog", ["note"] = Airlift.Welcome.LessonCatalog.CatalogNote() }.ToString(Newtonsoft.Json.Formatting.None);
 
         static string Trim(string s, int max) => string.IsNullOrEmpty(s) ? "" : (s.Length <= max ? s : s.Substring(0, max));
     }

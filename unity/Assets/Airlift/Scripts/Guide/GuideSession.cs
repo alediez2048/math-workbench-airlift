@@ -47,6 +47,9 @@ namespace Airlift.Guide
         float lastGuideAudioAt = -10f; const float MicHoldAfterSpeechSeconds = 0.6f;
         /// Half-duplex: the Quest mic hears the Quest speaker, so never stream while the guide speaks.
         readonly PromptGate gate = new PromptGate();
+        /// Test seam (CargoVoiceCharacterizationTests): every message the app hands this session, in order, including
+        /// response requests, whether or not a socket is open. Null in the app.
+        [NonSerialized] public Action<string> OutgoingTap;
         public bool MicGateOpen => micEnabled && (playback == null || !playback.IsSpeaking) && Time.time - lastGuideAudioAt > MicHoldAfterSpeechSeconds;
 
         public void Begin() { StartCoroutine(Run()); }
@@ -65,9 +68,11 @@ namespace Airlift.Guide
         public void SendUserText(string text) { Send(GuideMessages.UserText(text)); Queue(null); }
         public void PushContext(string contextText) { Send(GuideMessages.SystemContext(contextText)); }
         public void SubmitToolResult(string callId, string outputJson) { Send(GuideMessages.ToolOutput(callId, outputJson)); Queue(null); }
+        /// Tool output without asking for a spoken reply (used while the learner has paused the guide).
+        public void SubmitToolResult(string callId, string outputJson, bool respond) { if (respond) { SubmitToolResult(callId, outputJson); return; } Send(GuideMessages.ToolOutput(callId, outputJson)); }
         /// Queued behind any active response; the gate sends response.create when the server is free.
         public void Prompt(string instructions) { Queue(instructions); }
-        void Queue(string instructions) { if (socket == null || socket.State != WebSocketState.Open) return; gate.Request(instructions, Time.time); }
+        void Queue(string instructions) { OutgoingTap?.Invoke(GuideMessages.ResponseCreate(instructions)); if (socket == null || socket.State != WebSocketState.Open) return; gate.Request(instructions, Time.time); }
 
         IEnumerator Run()
         {
@@ -185,6 +190,7 @@ namespace Airlift.Guide
 
         void Send(string json)
         {
+            OutgoingTap?.Invoke(json);
             if (socket == null || socket.State != WebSocketState.Open) return;
             lock (outLock) { outgoing.Enqueue(json); if (senderRunning) return; senderRunning = true; }
             _ = SendLoop();

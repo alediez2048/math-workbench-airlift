@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa4ceec3f8a214bda926b9283ed79b4e, type: 3}
+  m_Name: GardenTheme
+  m_EditorClassIdentifier: Airlift.Runtime::Airlift.Presentation.LessonTheme
+  deck: {r: 0.49411762, g: 0.76862746, b: 0.39999998, a: 1}
+  trim: {r: 0.8, g: 0.6117647, b: 0.4078431, a: 1}
+  accent: {r: 1, g: 0.8, b: 0.24313721, a: 1}
+  accentSoft: {r: 0.48627448, g: 0.8, b: 0.3607843, a: 1}
+  prop1: {r: 0.95686275, g: 0.5490196, b: 0.20392153, a: 1}
+  prop2: {r: 0.9647059, g: 0.6431373, b: 0.7764706, a: 1}
+  prop3: {r: 0.4313725, g: 0.72156864, b: 0.8862745, a: 1}
+  cardPanel: {r: 0.09411765, g: 0.20392157, b: 0.14117648, a: 0.96862745}
+  cardHeading: {r: 1, g: 0.93333334, b: 0.6901961, a: 1}
+  cardBody: {r: 0.93333334, g: 0.9647059, b: 0.9019608, a: 1}
+  buttonFill: {r: 1, g: 0.8392157, b: 0.4, a: 1}
+  buttonLabel: {r: 0.15686275, g: 0.21176471, b: 0.17254902, a: 1}
+  deckMaterial: {fileID: 2100000, guid: a898ee128a43d4c4481fb99b0053982a, type: 2}
+  trimMaterial: {fileID: 2100000, guid: 5d0147c1fc61a4da78521c9fee299e6f, type: 2}
+  accentMaterial: {fileID: 2100000, guid: f2a7c1ae874844e6584d692aaa0808b9, type: 2}

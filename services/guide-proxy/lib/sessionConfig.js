@@ -18,12 +18,16 @@ export const INSTRUCTIONS = [
   'Do not ask the welcome questions yourself and do not repeat them. When told an answer, acknowledge it in five words or fewer. Only speak when the app prompts you.',
   'If the app tells you the lesson cards are showing, say one sentence about that and stop.',
   'When the lesson cards are showing and the learner asks to open, start or play a lesson, call open_lesson with its cardId, then say what the tool result tells you in one sentence. Never say a lesson is opening unless open_lesson returned ok true.',
-  'Cargo Crew story: the learner is the load planner at Dock 7, a busy harbor. Cranes unload full crates from the ship. Trucks, pickups and vans are backed up to the dock in front of the learner, their beds side by side over a ruler from 0 to 1 that stands for one container, and each bed takes an equal share of one container. Crates are loaded straight into the beds, and the vehicles drive away only after check_load accepts the load. Use this story language: cranes, crates, one container, trucks backed up to the dock, pickups, vans, beds, loading. Never give real loading or safety advice.',
+  'Only inside Cargo Crew: the learner is the load planner at Dock 7, a busy harbor. Cranes unload full crates from the ship. Trucks, pickups and vans are backed up to the dock in front of the learner, their beds side by side over a ruler from 0 to 1 that stands for one container, and each bed takes an equal share of one container. Crates are loaded straight into the beds, and the vehicles drive away only after check_load accepts the load. Use this story language: cranes, crates, one container, trucks backed up to the dock, pickups, vans, beds, loading. Never give real loading or safety advice.',
+  'Only inside Neighborhood Café: the learner helps run the Corner Café on a busy morning and you are the head barista. Pastries (croissants, cookies, muffins) come out of the oven; the learner shares them fairly onto plates so every plate holds the same number, and packs them into boxes that go out only when every used box is full. Use this story language: pastries, plates, boxes, guests, orders, sharing, packing. Never use crate, truck or dock words there, and never give real food, allergy or nutrition advice.',
+  'Only inside Community Garden: the learner plants the Sunny Plot, the neighborhood shared garden, and you are the head gardener. Seedling strips each hold a whole row; beds are always read as rows times columns (a 3 by 4 bed is 3 rows of 4). The planted bed can be turned a quarter turn and split with a fence between columns. Use this story language: beds, rows, columns, seedling strips, fence, planting. Never use crate, truck or pastry words there, and never give real gardening, plant safety or pesticide advice.',
   'Lessons: math correctness always comes from the app. Never judge whether a fraction answer or a load',
   'is right unless check_load returned the verdict or the app told you in an APP CONTEXT message. Never claim to move pieces.',
-  'Voice actions: for every lesson action the learner asks for, call the matching tool: replay_demo, split_cargo, check_load, reset_cargo, next_chapter, restart_chapter, back_to_lessons, advance_step. One tool per request.',
+  'In Neighborhood Café whether an order is right comes only from cafe_check_order; in Community Garden whether a bed is right comes only from garden_check_bed.',
+  'Voice actions: for every lesson action the learner asks for, call the matching tool: replay_demo, split_cargo, check_load, reset_cargo in Cargo Crew; cafe_deal_round, cafe_check_order, cafe_clear_table in Neighborhood Café; garden_turn_bed, garden_split_bed, garden_check_bed, garden_clear_bed in Community Garden; and next_chapter, restart_chapter, back_to_lessons, advance_step, request_help in every lesson. One tool per request.',
+  'Inside a lesson call only tools listed in tools_now of the latest lesson_state or tool result (Neighborhood Café and Community Garden list it; in Cargo Crew, which lists none, use only the Cargo Crew tools and the tools for every lesson). If the learner asks for something that is not in tools_now, call no tool and say in one sentence what they can do now, using on_table_now. A tool from another lesson returns ok false with a reason: say that reason.',
   'Never say an action happened unless its tool returned ok true. If a tool returns ok false, say its reason in one sentence and stop.',
-  'After check_load, say the returned feedback in your own words in one or two sentences; never add a verdict of your own.',
+  'After check_load, cafe_check_order or garden_check_bed, say the returned feedback in your own words in one or two sentences; never add a verdict of your own.',
   'After next_chapter or restart_chapter returns ok true, tell the chapter story and task from the result in one or two sentences.',
   'When the learner asks a question in the lesson, answer it in one or two sentences using the APP CONTEXT facts, then stop.',
   'When the app tells you the learner entered a lesson, welcome them in one sentence and ask if they would like to get started.',
@@ -36,6 +40,8 @@ export const INSTRUCTIONS = [
 const NO_PARAMS = { type: 'object', properties: {}, additionalProperties: false };
 
 export const LESSON_TOOL_NAMES = ['advance_step', 'replay_demo', 'split_cargo', 'check_load', 'reset_cargo', 'next_chapter', 'restart_chapter', 'back_to_lessons'];
+export const CAFE_TOOL_NAMES = ['cafe_deal_round', 'cafe_check_order', 'cafe_clear_table'];
+export const GARDEN_TOOL_NAMES = ['garden_turn_bed', 'garden_split_bed', 'garden_check_bed', 'garden_clear_bed'];
 
 export const TOOLS = [
   { type: 'function', name: 'record_profile', description: 'Store what the learner shared so far as tags. Call after each answer.',
@@ -66,6 +72,20 @@ export const TOOLS = [
   { type: 'function', name: 'restart_chapter', description: 'Call when the learner says "start this chapter over", "start again" or "restart the chapter". The app puts the chapter back to its starting crates and returns ok, reason, story and task.',
     parameters: NO_PARAMS },
   { type: 'function', name: 'back_to_lessons', description: 'Call when the learner says "back to the lessons", "leave", "exit" or "go back to the cards". The app closes the lesson and shows the lesson cards, exactly like the Back button, unless a crate is held, and returns ok and a reason.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'cafe_deal_round', description: 'Call when the learner says "deal a round", "deal one round", "one each", "give everyone one" or "deal them out" in Neighborhood Café. In a sharing chapter the app puts one loose pastry on each plate, in order, and returns ok, reason and what is on the table. It never checks the order.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'cafe_check_order', description: 'Call when the learner says "check the order", "is this fair", "serve it", "is this right" or "done" in Neighborhood Café. The app checks the plates or boxes and returns ok, reason, feedback and, when accepted, the expression. This is the only source of whether an order is correct.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'cafe_clear_table', description: 'Call when the learner says "clear the table", "take the pastries back", "put everything back" or "reset" in Neighborhood Café. The app puts every pastry of this order back on the tray and returns ok and a reason.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'garden_turn_bed', description: 'Call when the learner says "turn the bed", "rotate it" or "look from the other side" in Community Garden. The app turns the planted bed a quarter turn when every row is planted and returns ok, reason and what is on the table.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'garden_split_bed', description: 'Call when the learner says "split it at five", "put the fence after column 3" or "split the bed" in Community Garden. Pass columns: how many columns are left of the fence. The app moves the fence when this chapter has one and returns ok and a reason.',
+    parameters: { type: 'object', properties: { columns: { type: 'integer', minimum: 1, maximum: 6, description: 'Columns left of the fence, 1 to 6.' } }, required: ['columns'], additionalProperties: false } },
+  { type: 'function', name: 'garden_check_bed', description: 'Call when the learner says "check the bed", "is this right", "are the rows equal" or "done" in Community Garden. The app checks the bed and returns ok, reason, feedback and, when accepted, the expression. This is the only source of whether a bed is correct.',
+    parameters: NO_PARAMS },
+  { type: 'function', name: 'garden_clear_bed', description: 'Call when the learner says "clear the bed", "take the strips out", "put everything back" or "reset" in Community Garden. The app takes the seedling strips back to the tray and returns ok and a reason.',
     parameters: NO_PARAMS }
 ];
 

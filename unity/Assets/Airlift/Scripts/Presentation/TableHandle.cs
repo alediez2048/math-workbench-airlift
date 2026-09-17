@@ -15,13 +15,23 @@ namespace Airlift.Presentation
         public Transform stationRoot;
         public ComfortPlacement placement;
         public CargoLessonDirector lesson;
+        /// Every lesson workbench: the table cannot be carried while any of them has a piece in hand.
+        public LessonStation[] stations = new LessonStation[0];
         public GrabInteractable handleInteractable;
         public GrabInteractable[] pieceInteractables = new GrabInteractable[0];
         public TMP_Text statusText;
         public bool IsHeld { get; private set; }
         bool handleEnabled = true;
 
-        bool AnyPieceHeld => (placement != null && placement.IsHeld) || (lesson != null && lesson.AnyPieceHeld);
+        bool AnyPieceHeld
+        {
+            get
+            {
+                if ((placement != null && placement.IsHeld) || (lesson != null && lesson.AnyPieceHeld)) return true;
+                if (stations != null) foreach (var s in stations) if (s != null && s.AnyHeld) return true;
+                return false;
+            }
+        }
 
         void OnEnable() { if (grabbable != null) grabbable.WhenPointerEventRaised += OnPointer; }
         void OnDisable() { if (grabbable != null) grabbable.WhenPointerEventRaised -= OnPointer; }

@@ -1,5 +1,59 @@
 # Cargo Crew development log
 
+## 2026-09-17 — Three lessons integrated: platform, Café and Garden installed for the owner check
+
+- **Golden first:** CargoVoiceCharacterizationTests recorded 95 Cargo voice steps before any routing change
+  (deterministic on rerun). Platform refactor (LessonStation, CargoStation adapter, router, visibility, TableHandle
+  across stations, lesson-prefixed tools) passed the strict golden and every Cargo suite unchanged. Two planned
+  catalog re-records (café playable: 12 lines; garden playable: 8 lines) were each proven line-by-line to differ
+  only by the catalog phrases before re-recording.
+- **Integration fixes:** FakeLessonStation lived in the editor-only test assembly, so Unity refused AddComponent
+  (moved to runtime behind #if UNITY_EDITOR); garden copy test matched "start" as "star" (whole-word match now);
+  garden turn test rounded half-millimetre centres (tolerance match now); render-driven visual fixes (plate/box and
+  row/part labels 3x, tidy trays, menu board placement, capacity tag off the label, bike crate, garden sign).
+- **Cargo behaviour changes to recheck:** table carry refused while the practice crate is held; the guide may
+  decline tools not in the card state; the Cargo card badge lost a thin outline (PatchCatalogCards).
+- **Evidence:** editor drives of all 15 chapters through real drop/deal/turn/fence paths with renders in
+  artifacts/dock7, artifacts/cafe, artifacts/garden. Wrapper: 319 checks across 36 suites, scan passed, 0 errors;
+  APK cargo-20260917-095611 (SHA-256 b7c04284...), md5 a7044d66 verified on the Quest, launched 10:04. Proxy
+  node --test 10/10; dev mint serving 20 tools (Mac alias 192.168.86.20 after a DHCP change).
+- **Known cosmetic:** after café boxes ride away, "Box N" labels stay on the empty spots.
+
+## 2026-09-17 — Café and Garden plan approved; six-agent team started
+
+- Owner decisions: both lessons, five chapters each, by Friday 18:00; Café teaches share → pack → fact family;
+  Garden teaches plant rows → turn the bed → split the bed; every lesson gets its own dedicated, custom workbench
+  and colour scheme (café pastels/browns/coffee; garden greenery/trees/bushes); dedicated tickets from the template.
+- Plan: /Users/jad/.claude/plans/agile-wibbling-nebula.md. Contracts: CAFE-GARDEN-CONTRACTS.md. Platform design
+  reviewed against the code: LessonStation base + CargoStation adapter (CargoLessonDirector unchanged), router and
+  visibility, workbench roots under the shared world-locked root, LessonTheme, lesson-prefixed voice tools with
+  tools_now, golden Cargo voice characterization test before any routing change.
+- Agents: platform (CC-PL-01..04, pauses for the golden recording), cafe-engine (CC-CF-01), garden-engine
+  (CC-GD-01), cafe-bench (CC-CF-02/03), garden-bench (CC-GD-02/03), tickets (15 primers, TICKETS.md section, QA
+  scripts). Main session integrates and is the only one running Unity.
+- Pending owner: 2-minute check of build 223313 (Pause while the guide talks; headset off and on) so the lock work
+  can be committed as the baseline.
+
+## 2026-09-16 — Round 2 accepted and committed (2740d8a); lock work L-2, L-3, L-6, L-7, L-8
+
+- Owner on build 221238: "looks good, keep going". Committed 2740d8a (detect_changes high: the round 2 model,
+  director, layout and wrapper changes only; secret scan clean). Not pushed.
+- **L-2 recovery (code done, headset check pending):** a voice tool call arriving while paused runs nothing and
+  submits its result without requesting speech (new GuideSession.SubmitToolResult overload; the existing method is
+  unchanged because impact analysis rated it CRITICAL: every voice action flows through it). Taking the headset
+  off (OnApplicationPause) pauses the guide until Play; a learner's own pause is never undone. RecoveryTests 4/4,
+  confirmed RED first. Leave-and-return test (mid-load and after an accepted load) passed on first run.
+- **L-3:** practice-panel controller readout off (test RED then GREEN); grip-or-trigger fallback kept.
+- **L-6:** RELEASE-GATES.md inventory from the APK: INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS and an
+  unexpected BLUETOOTH permission (Unity adds it for Microphone; the OpenXR Meta step meant to strip it did not);
+  endpoints; OFL font licenses present; all props generated in-project; open gates listed.
+- **L-7:** proven again: baseline PlayMode suite passed inside the full wrapper run.
+- **L-8:** 25 ticket rows in TICKETS.md updated.
+- **L-4 correction:** Library tile logo still open (adaptive icon already Nerdy; default-icon attempt reverted).
+- Build cargo-20260916-223313 (SHA-256 a77db7b4..., 170 checks, 26 suites, scan passed), md5 6fc7f816 verified on
+  the Quest, launched 22:37. Uncommitted until the owner checks pause-while-talking and headset-off pause.
+- Next: planning mode for Neighborhood Café (division) and Community Garden (multiplication).
+
 ## 2026-09-16 — Round 2 built: cranes, crates loaded straight into trucks that drive away (owner check pending)
 
 - **Team round 2:** engine (BedCells {8},{4,4},{2,2,2,2},{4},{8}; Dock(id, held, bed); per-bed acceptance with

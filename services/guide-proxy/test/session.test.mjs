@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateSessionRequest, createLimiter, CLIENT_MARKER } from '../lib/validate.js';
-import { buildSessionConfig, TOOLS, AGE_BANDS, CARD_IDS, LESSON_TOOL_NAMES } from '../lib/sessionConfig.js';
+import { buildSessionConfig, TOOLS, AGE_BANDS, CARD_IDS, LESSON_TOOL_NAMES, CAFE_TOOL_NAMES, GARDEN_TOOL_NAMES } from '../lib/sessionConfig.js';
 import { createHandler } from '../api/session.js';
 
 const good = { method: 'POST', headers: { 'x-nerdy-client': CLIENT_MARKER }, body: { launchNonce: 'abc12345-nonce', build: '0.2.0' } };
@@ -24,7 +24,8 @@ test('session config is server-authored: English, no surroundings, tools present
   assert.match(cfg.instructions, /Do not ask the welcome questions yourself/);
   assert.match(cfg.instructions, /Only speak when the app prompts you/);
   assert.deepEqual(cfg.tools.map(t => t.name), ['record_profile', 'end_welcome', 'describe_card', 'request_help', 'advance_step', 'open_lesson',
-    'replay_demo', 'split_cargo', 'check_load', 'reset_cargo', 'next_chapter', 'restart_chapter', 'back_to_lessons']);
+    'replay_demo', 'split_cargo', 'check_load', 'reset_cargo', 'next_chapter', 'restart_chapter', 'back_to_lessons',
+    'cafe_deal_round', 'cafe_check_order', 'cafe_clear_table', 'garden_turn_bed', 'garden_split_bed', 'garden_check_bed', 'garden_clear_bed']);
   assert.match(cfg.instructions, /call advance_step/);
   assert.equal(cfg.audio.input.turn_detection.threshold, 0.6);
   assert.equal(cfg.audio.input.transcription.language, 'en');
@@ -89,6 +90,51 @@ test('voice actions are grounded: tool results decide what happened and whether 
   assert.match(cfg.instructions, /Be brief/);
   assert.match(cfg.instructions, /Never ask for the learner's name/);
   assert.match(cfg.instructions, /on_table_now, can_grab_now/);
+});
+
+test('café and garden tools exist, are mapped from learner phrases and only one takes an argument', () => {
+  const cfg = buildSessionConfig().session;
+  const byName = Object.fromEntries(cfg.tools.map(t => [t.name, t]));
+  for (const name of [...CAFE_TOOL_NAMES, ...GARDEN_TOOL_NAMES]) {
+    const t = byName[name];
+    assert.ok(t, name + ' tool');
+    assert.equal(t.type, 'function');
+    assert.match(t.description, /^Call when the learner says/, name + ' description starts with learner phrases');
+    assert.ok(t.description.length < 400, name + ' description stays short');
+    assert.ok(cfg.instructions.includes(name), 'instructions name ' + name);
+    if (name !== 'garden_split_bed') assert.deepEqual(t.parameters, { type: 'object', properties: {}, additionalProperties: false }, name + ' takes no arguments');
+  }
+  const split = byName.garden_split_bed.parameters;
+  assert.deepEqual(split.required, ['columns']);
+  assert.equal(split.additionalProperties, false);
+  assert.equal(split.properties.columns.type, 'integer');
+  assert.equal(split.properties.columns.minimum, 1);
+  assert.equal(split.properties.columns.maximum, 6);
+  assert.match(byName.cafe_deal_round.description, /deal one round/);
+  assert.match(byName.cafe_deal_round.description, /deal a round/);
+  assert.match(byName.cafe_check_order.description, /check the order/);
+  assert.match(byName.cafe_clear_table.description, /clear the table/);
+  assert.match(byName.cafe_check_order.description, /only source of whether an order is correct/);
+  assert.match(byName.garden_turn_bed.description, /turn the bed/);
+  assert.match(byName.garden_split_bed.description, /split it at five/);
+  assert.match(byName.garden_check_bed.description, /only source of whether a bed is correct/);
+  for (const name of [...CAFE_TOOL_NAMES, ...GARDEN_TOOL_NAMES]) assert.ok(!LESSON_TOOL_NAMES.includes(name));
+});
+
+test('inside a lesson the guide calls only tools_now, and each story stays in its own lesson', () => {
+  const cfg = buildSessionConfig().session;
+  assert.match(cfg.instructions, /Inside a lesson call only tools listed in tools_now/);
+  assert.match(cfg.instructions, /in Cargo Crew, which lists none, use only the Cargo Crew tools/);
+  assert.match(cfg.instructions, /Only inside Cargo Crew: the learner is the load planner at Dock 7/);
+  assert.match(cfg.instructions, /Only inside Neighborhood Café: /);
+  assert.match(cfg.instructions, /Only inside Community Garden: /);
+  for (const word of ['head barista', 'plates', 'boxes', 'pastries']) assert.ok(cfg.instructions.includes(word), 'café word ' + word);
+  for (const word of ['head gardener', 'seedling strips', 'rows times columns', 'fence']) assert.ok(cfg.instructions.includes(word), 'garden word ' + word);
+  assert.match(cfg.instructions, /comes only from cafe_check_order/);
+  assert.match(cfg.instructions, /comes only from garden_check_bed/);
+  assert.match(cfg.instructions, /A tool from another lesson returns ok false with a reason/);
+  assert.match(cfg.instructions, /never give real food, allergy or nutrition advice/);
+  assert.match(cfg.instructions, /never give real gardening, plant safety or pesticide advice/);
 });
 
 test('handler returns only the ephemeral secret, never the API key', async () => {

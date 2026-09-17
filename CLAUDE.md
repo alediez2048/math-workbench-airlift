@@ -1,5 +1,74 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## CURRENT STATE — September 17, 10:15 AM (read this first; older dated sections below are history)
+
+**What exists (branch `unity-airlift`, pushed):** Nerdy app (`com.nerdy.vr`) with consent → chip welcome → three
+lesson cards → a dedicated workbench per lesson, all on one world-locked table (carry handle, Guide HUD with
+Pause/Play, Mute, Music), and a live OpenAI Realtime voice guide that performs every lesson action by voice.
+- **Cargo Crew / Dock 7 (fractions)** — owner-ACCEPTED and LOCKED (commits 53647f9, 2740d8a). Five chapters, crates
+  loaded into truck/pickup/van beds over a 0-to-1 ruler, cranes, drive-away payoff. Lock checklist:
+  `docs/00-build/CARGO-CREW-LOCK.md`; release gates: `docs/00-build/RELEASE-GATES.md`.
+- **Neighborhood Café / Corner Café (division)** — built, NOT yet headset-checked. Share onto plates, pack into
+  boxes, fact family; pastel/coffee workbench; payoff to guest table and delivery bike.
+- **Community Garden / Sunny Plot (multiplication)** — built, NOT yet headset-checked. Plant equal rows, turn the
+  bed, split the bed with a fence; green workbench with trees, bushes, fence; growth payoff.
+- **Platform:** `LessonStation` base (CargoStation adapter, CafeStation, GardenStation), `LessonToolRouter`,
+  `StationVisibility`, `LessonTheme`, lesson-prefixed voice tools with `tools_now` (Cargo sends none), wrong-lesson
+  refusal "That is not part of <Title>." Plan: `/Users/jad/.claude/plans/agile-wibbling-nebula.md`; contracts:
+  `docs/00-build/CAFE-GARDEN-CONTRACTS.md`; tickets CC-PL-01..05, CC-CF-01..05, CC-GD-01..05 in
+  `docs/00-build/TICKETS.md`; headset scripts `docs/qa/cafe.md`, `docs/qa/garden.md`.
+
+**Installed on the Quest:** `artifacts/qa/cargo-20260917-095611` (319 checks, 36 suites, SHA-256 b7c04284…,
+md5 a7044d66). Owner headset check of this build is PENDING: Pause while talking + headset off/on, Cargo recheck
+(expected changes: table carry refused while the practice crate is held; guide may decline tools not in card
+state; Cargo card badge lost a thin outline), then all 5 Café and 5 Garden chapters. Known cosmetic: café "Box N"
+labels stay on empty spots after boxes ride away. Garden has ~600 objects: watch performance.
+
+**Non-negotiables:**
+- Cargo Crew is locked: do not change `CargoLessonDirector`, `CargoLessonModel`, `CargoChapter`,
+  `OnboardingDirector`, `BuildDockWorkbench`. `CargoVoiceCharacterizationTests` (golden
+  `unity/Assets/Airlift/Tests/EditMode/Golden/cargo-voice.golden.json`) must pass; re-record only for a proven
+  catalog-wording change (diff line by line first).
+- Never rerun `CreateNerdyWelcome.cs`, `CreateFractionChapter.cs` or `ApplyCargoStyle.cs`. Idempotent builders:
+  `BuildDockWorkbench`, `BuildCafeWorkbench`, `BuildGardenWorkbench`, then `WireLessonStations`, `PatchCatalogCards`.
+- Math is deterministic C#; the guide never grades. No timers/stars/scores. Adult testers only (PRIVACY-GATE.md).
+- Commit after owner headset acceptance; push only when the owner asks.
+
+**How to work (Unity + agents):**
+- Only the main session runs Unity (Pipeline CLI `unity command …`). Unfocused editor: run
+  `AgentScripts/RefreshAndCompile.cs`, then poll `recompile_status` until completed.
+- Single suite: `unity command run_tests editor <Filter> testName false true 300`, poll `test_status`.
+- Full build: `bash scripts/verify-cargo.sh --suite <all suites> --build --approved-dirty-build` (PlayMode runs
+  first automatically; OnboardingFlowTests is the baseline, never pass it to --suite). Install with adb
+  (`/Applications/Unity/Hub/Editor/6000.6.0f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb`), verify md5,
+  capture `adb logcat -v time -s Unity:I` on the Mac during owner runs.
+- Editor previews from the seated head: `AgentScripts/PreviewDockChapters.cs`, `PreviewCafeChapters.cs`,
+  `PreviewGardenChapters.cs` → `artifacts/dock7|cafe|garden/`. Always look at renders before a build.
+- Parallel agents: disjoint file ownership, contract file first, agents never run Unity (they compile offline with
+  Unity's Roslyn). Editor-only test assemblies cannot host MonoBehaviours used with AddComponent.
+
+**Voice server:** dev mint on the Mac (`~/.config/nerdy/start-dev-mint.sh`, port 8787). The app calls
+`http://192.168.86.20:8787/session`; the Mac's DHCP address changed to .35, so the owner added an alias
+(`sudo ifconfig en1 alias 192.168.86.20 255.255.255.0`, lost on reboot). Restart the mint after proxy changes.
+
+**Open owner items:** `vercel login` → deploy `services/guide-proxy`, https MintUrl, revert
+`insecureHttpOption`; consent heading wording; AI-requirement decision (voice guide vs hint router CC-P3-01);
+Library tile logo (adaptive icon already Nerdy; cause unknown); performance run on the Quest; BLUETOOTH permission
+still in the APK; demo footage. Deadline: Friday 2026-09-18, internal target 18:00 CDT.
+
+## September 17, 12:00 AM: Café + Garden plan approved; six-agent team building
+
+Plan: `/Users/jad/.claude/plans/agile-wibbling-nebula.md`; contracts: `docs/00-build/CAFE-GARDEN-CONTRACTS.md`;
+tickets CC-PL-*, CC-CF-*, CC-GD-* in `docs/00-build/TICKETS.md`. Cargo Crew stays locked: CargoLessonDirector,
+CargoLessonModel, CargoChapter, OnboardingDirector and BuildDockWorkbench must not change; the golden Cargo voice
+JSON must stay identical through the platform refactor. Only the main session runs Unity.
+
+## September 16, 10:40 PM: round 2 committed (2740d8a); lock items L-2/L-3/L-6/L-7/L-8 done; planning next
+
+Status and remaining owner items: `docs/00-build/CARGO-CREW-LOCK.md`, `docs/00-build/RELEASE-GATES.md`. Build
+223313 on the Quest carries the uncommitted lock changes (pause gate, headset-off pause, readout off). Next:
+plan mode for Neighborhood Café (division) and Community Garden (multiplication).
+
 ## September 16, 10:15 PM: owner LOCKED Cargo Crew; finish its lock checklist, then plan the next two lessons
 
 Owner accepted the Dock 7 lesson (commit 53647f9) and decided: lock Cargo Crew, complete the remaining work for
@@ -271,7 +340,7 @@ assets, commit/push or skipping owner font comparison implied.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (2810 symbols, 4431 relationships, 139 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (3505 symbols, 6598 relationships, 249 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

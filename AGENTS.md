@@ -1,5 +1,10 @@
 # Math Workbench: Airlift — instructions for Codex
 
+## September 17, 10:15 AM: three lessons built; see CLAUDE.md "CURRENT STATE"
+
+Cargo Crew (locked, accepted), Neighborhood Café and Community Garden (built, headset check pending) share one
+multi-lesson platform. CLAUDE.md's first section is authoritative for state, locks, workflow and open items.
+
 ## September 16, 5:30 PM: Phase 0 "Nerdy welcome" built; see CLAUDE.md top section
 
 CLAUDE.md's first section is the current state (Nerdy identity, voice guide, welcome/cards,
@@ -147,7 +152,7 @@ legibility and world payoff > submission evidence > Cargo Grid > hands > voice.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (2810 symbols, 4431 relationships, 139 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (3505 symbols, 6598 relationships, 249 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

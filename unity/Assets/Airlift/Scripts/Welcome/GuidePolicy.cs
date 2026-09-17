@@ -9,6 +9,9 @@ namespace Airlift.Welcome
 
         public static bool CanPrompt(bool paused, bool live) => live && !paused;
 
+        /// A tool result normally asks the guide to narrate it; while paused the guide stays silent.
+        public static bool SpeakAfterToolResult(bool paused) => !paused;
+
         /// Voice-first workbench: the on-screen buttons hide while the live guide is listening and come back
         /// whenever voice is unavailable (offline, declined, muted, paused, or a phase with the mic off).
         public static bool ShowFallbackButtons(bool live, bool micOn) => !live || !micOn;

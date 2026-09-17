@@ -65,6 +65,13 @@ namespace Airlift.Tests
                 }
             }
         }
+        [Test] public void PracticePanelShowsNoControllerReadout()
+        {
+            // Lock item L-3: the temporary grab diagnostics printed raw controller values under the practice
+            // instruction. Grabbing is owner-confirmed; the grip-or-trigger fallback stays, the readout goes.
+            var d=Find<OnboardingDirector>();
+            Assert.That(d.showInputDiagnostics,Is.False);
+        }
         [Test] public void TrayCratesStayClearOfTheDockEdgeMarks()
         {
             var d=Find<OnboardingDirector>();var l=d.GetComponent<Airlift.Lessons.CargoLessonDirector>();

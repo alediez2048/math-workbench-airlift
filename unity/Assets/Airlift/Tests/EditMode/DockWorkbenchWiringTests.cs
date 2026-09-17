@@ -385,6 +385,51 @@ namespace Airlift.Tests
             finally { Object.DestroyImmediate(station); }
         }
 
+        /// Lock item L-2: leaving the lesson mid-load or right after an accepted load and coming back gives a coherent
+        /// chapter: crates in the tray, this chapter's vehicles parked, nothing left driving away.
+        [Test] public void LeavingAndReturningRestoresACoherentChapter()
+        {
+            var (station, ruler, bay) = MakeDock();
+            try
+            {
+                var lesson = station.AddComponent<CargoLessonDirector>();
+                lesson.stationRoot = station.transform; lesson.ruler = ruler; lesson.vehicles = bay; lesson.restHeight = 0.0795f;
+                CargoLessonDirector.PieceView View(string id, Vector3 tray)
+                {
+                    var piece = new GameObject(id).transform; piece.SetParent(station.transform, false);
+                    return new CargoLessonDirector.PieceView { id = id, piece = piece, trayPosition = tray };
+                }
+                lesson.whole = View("whole", new Vector3(-0.13f, 0.047f, -0.225f));
+                lesson.halfA = View("half-1", new Vector3(-0.21f, 0.047f, -0.225f));
+                lesson.halfB = View("half-2", new Vector3(-0.05f, 0.047f, -0.225f));
+                lesson.quarters = Enumerable.Range(1, 4).Select(i => View("quarter-" + i, new Vector3(-0.265f + (i - 1) * 0.09f, 0.047f, -0.225f))).ToArray();
+
+                // Mid-load: crate docked, not checked. Leave, come back.
+                lesson.Begin();
+                Assert.That(lesson.DropAt("whole", new Vector3(0.01f, 0.08f, 0.03f)), Is.True);
+                lesson.Exit();
+                lesson.Begin();
+                Assert.That(lesson.Chapter.Number, Is.EqualTo(1), "same chapter");
+                Assert.That(lesson.ChapterComplete, Is.False);
+                Assert.That(lesson.whole.piece.gameObject.activeSelf, Is.True);
+                Assert.That(lesson.whole.piece.localPosition, Is.EqualTo(lesson.whole.trayPosition), "crate back in the tray");
+                Assert.That(bay.DrivenAway, Is.False); Assert.That(bay.Current.Count, Is.EqualTo(1)); Assert.That(bay.Current[0].root.gameObject.activeSelf, Is.True);
+
+                // Accepted load drove away: leave, come back to the next chapter with its own vehicles.
+                Assert.That(lesson.DropAt("whole", new Vector3(0.01f, 0.08f, 0.03f)), Is.True);
+                Assert.That(lesson.TryLoad().Ok, Is.True); Assert.That(bay.DrivenAway, Is.True);
+                lesson.Exit();
+                lesson.Begin();
+                Assert.That(lesson.Chapter.Number, Is.EqualTo(2), "returning after an accepted load continues with the next chapter");
+                Assert.That(bay.DrivenAway, Is.False);
+                Assert.That(bay.Current.Count, Is.EqualTo(2)); Assert.That(bay.Current.All(v => v.root.gameObject.activeSelf), Is.True, "both pickups parked and visible");
+                Assert.That(lesson.whole.piece.gameObject.activeSelf, Is.True, "chapter 2 starts from one whole crate in the tray");
+                Assert.That(lesson.whole.piece.localPosition, Is.EqualTo(lesson.whole.trayPosition));
+                Assert.That(lesson.TryReset().Ok, Is.True, "reset works in the resumed chapter");
+            }
+            finally { Object.DestroyImmediate(station); }
+        }
+
         // ---- pure copy rules ----
         [Test] public void BodyStartsWithStoryAndTask()
         {
