@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateSessionRequest, createLimiter, CLIENT_MARKER } from '../lib/validate.js';
-import { buildSessionConfig, TOOLS, AGE_BANDS, CARD_IDS, LESSON_TOOL_NAMES, CAFE_TOOL_NAMES, GARDEN_TOOL_NAMES } from '../lib/sessionConfig.js';
+import { buildSessionConfig, LANGUAGES, TOOLS, AGE_BANDS, CARD_IDS, LESSON_TOOL_NAMES, CAFE_TOOL_NAMES, GARDEN_TOOL_NAMES } from '../lib/sessionConfig.js';
 import { createHandler } from '../api/session.js';
 
 const good = { method: 'POST', headers: { 'x-nerdy-client': CLIENT_MARKER }, body: { launchNonce: 'abc12345-nonce', build: '0.2.0' } };
@@ -18,7 +18,7 @@ test('validation rejects wrong method, client marker, nonce and build', () => {
 
 test('session config is server-authored: English, no surroundings, tools present, VAD tuned', () => {
   const cfg = buildSessionConfig().session;
-  assert.match(cfg.instructions, /English only/);
+  assert.match(cfg.instructions, /Speak only English/);
   assert.match(cfg.instructions, /Never describe surroundings/);
   assert.match(cfg.instructions, /Never ask for the learner's name/);
   assert.match(cfg.instructions, /Do not ask the welcome questions yourself/);
@@ -86,7 +86,7 @@ test('voice actions are grounded: tool results decide what happened and whether 
   const everything = JSON.stringify(cfg);
   assert.doesNotMatch(everything, /aircraft|airplane|plane\b|container floor/i, 'no aircraft or container floor anywhere in the session');
   // Existing rules stay.
-  assert.match(cfg.instructions, /English only/);
+  assert.match(cfg.instructions, /Speak only English/);
   assert.match(cfg.instructions, /Be brief/);
   assert.match(cfg.instructions, /Never ask for the learner's name/);
   assert.match(cfg.instructions, /on_table_now, can_grab_now/);
@@ -135,6 +135,50 @@ test('inside a lesson the guide calls only tools_now, and each story stays in it
   assert.match(cfg.instructions, /A tool from another lesson returns ok false with a reason/);
   assert.match(cfg.instructions, /never give real food, allergy or nutrition advice/);
   assert.match(cfg.instructions, /never give real gardening, plant safety or pesticide advice/);
+});
+
+test('the guide is Dee, the Nerdy AI+VR assistant, and opens with the owner-approved introduction', () => {
+  const cfg = buildSessionConfig().session;
+  assert.match(cfg.instructions, /You are Dee, the AI assistant of Nerdy AI\+VR/);
+  assert.doesNotMatch(cfg.instructions, /You are Nerdy,/);
+  assert.match(cfg.instructions, /If asked your name, say you are Dee/);
+  assert.match(cfg.instructions, /When the app gives you exact words to say, say them word for word/);
+});
+
+test('a concept intro step in a tool result is said word for word once', () => {
+  const cfg = buildSessionConfig().session;
+  assert.match(cfg.instructions, /If a tool result contains say_exactly, say it word for word, then stop\./);
+  const exact = cfg.instructions.indexOf('When the app gives you exact words to say');
+  const sayExactly = cfg.instructions.indexOf('If a tool result contains say_exactly');
+  assert.ok(exact >= 0 && sayExactly > exact, 'say_exactly rule follows the exact-words rule');
+  assert.match(buildSessionConfig('es').session.instructions, /If a tool result contains say_exactly/);
+});
+
+test('the learner picks the voice language once and the session is locked to it', () => {
+  assert.deepEqual(Object.keys(LANGUAGES), ['en', 'es']);
+  const en = buildSessionConfig().session;
+  assert.match(en.instructions, /Speak only English for the whole session/);
+  assert.match(en.instructions, /Never switch languages/);
+  assert.doesNotMatch(en.instructions, /unless the learner clearly speaks another language/);
+  assert.equal(en.audio.input.transcription.language, 'en');
+  const es = buildSessionConfig('es').session;
+  assert.match(es.instructions, /Speak only Spanish for the whole session/);
+  assert.doesNotMatch(es.instructions, /Speak only English/);
+  assert.equal(es.audio.input.transcription.language, 'es');
+  assert.equal(buildSessionConfig('fr').session.audio.input.transcription.language, 'en', 'unknown codes fall back to English');
+  assert.equal(validateSessionRequest('POST', good.headers, { ...good.body, language: 'es' }).ok, true);
+  assert.equal(validateSessionRequest('POST', good.headers, { ...good.body, language: 'fr' }).status, 400);
+  assert.equal(validateSessionRequest('POST', good.headers, good.body).ok, true, 'language is optional (English)');
+});
+
+test('handler mints the session in the requested language', async () => {
+  let sent = null;
+  const fetchImpl = async (url, init) => { sent = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ value: 'ek_test_secret', expires_at: 1 }) }; };
+  const h = createHandler({ apiKey: 'k', fetchImpl, limit: { allow: () => true }, log() {} });
+  const r = res(); await h({ ...good, body: { ...good.body, language: 'es' } }, r);
+  assert.equal(r.code, 200);
+  assert.equal(sent.session.audio.input.transcription.language, 'es');
+  assert.match(sent.session.instructions, /Speak only Spanish/);
 });
 
 test('handler returns only the ephemeral secret, never the API key', async () => {

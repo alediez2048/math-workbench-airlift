@@ -129,7 +129,10 @@ namespace Airlift.Tests
                 Do("demo finishes", FinishDemo);
                 Do("practice crate grabbed", () => PracticePointer(PointerEventType.Select));
                 Do("practice crate released on the pad", ReleaseOnPad);
-                Tool("advance_step");                       // ready -> Start fractions
+                Tool("advance_step");                       // ready -> Start fractions -> intro "whole"
+                Tool("check_load"); Tool("split_cargo");    // refused during the intro
+                Tool("advance_step"); Tool("advance_step"); Tool("advance_step");   // halves, sum, quarters
+                Tool("advance_step");                       // quarters -> chapter 1
                 Do("whenReadyContinue listener (Begin) if it did not fire", () => { if (!lesson.IsActive) lesson.Begin(); });
 
                 // Chapter 1: big truck.

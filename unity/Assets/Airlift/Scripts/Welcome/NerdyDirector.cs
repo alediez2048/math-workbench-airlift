@@ -31,6 +31,10 @@ namespace Airlift.Welcome
         public Button muteButton, helpButton, repeatButton, skipButton, pauseButton, musicButton;
         public TMP_Text muteLabel, pauseLabel, musicLabel;
         public AmbientMusic music;
+        [Header("Voice language (consent card)")]
+        public Button[] languageButtons;          // English, Español: same order as GuideLanguage.Codes
+        public Sprite languageChosen, languageIdle;
+        public string Language { get; private set; } = GuideLanguage.Default;
         public CargoLessonDirector cargoLesson;   // found at Start when not wired
         /// Every lesson workbench in the scene (found at Start when not wired).
         public LessonStation[] stations;
@@ -47,18 +51,22 @@ namespace Airlift.Welcome
         string lastInstruction = ""; string lastGuideLine = ""; bool placed;
         int observedChapter; bool observedComplete;          // last chapter state the guide knows about
         int cachedStepKey = -1; GuideStep cachedChapterStep;
+        string observedIntro;                                // last concept-intro step id the guide knows about
 
         void Start()
         {
             if (cargoLesson == null) cargoLesson = FindAnyObjectByType<CargoLessonDirector>(FindObjectsInactive.Include);
             stations = Stations;
+            string savedLanguage = GuideLanguage.Default;
+            try { savedLanguage = PlayerPrefs.GetString(GuideLanguage.PrefsKey, GuideLanguage.Default); } catch (System.Exception) { }
+            ChooseLanguage(savedLanguage);
             ShowPhase();
             StartCoroutine(PlaceWhenTracked());
             if (guide != null)
             {
                 guide.adultTesterOnlySatisfied = adultTesterOnly;
-                guide.ModeChanged += m => { SetState(m == GuideMode.Live ? "live guide" : "offline guide"); ApplyFallbackButtons(); };
-                guide.StateChanged += s => { if (stateText != null) stateText.text = s; };
+                guide.ModeChanged += m => { Debug.Log("[Guide] mode " + m + " language " + guide.language); SetState(m == GuideMode.Live ? "live guide" : "offline guide"); ApplyFallbackButtons(); };
+                guide.StateChanged += s => { Debug.Log("[Guide] state " + s + " micEnabled=" + guide.MicEnabled + " micGateOpen=" + guide.MicGateOpen); if (stateText != null) stateText.text = s; };
                 guide.GuideTranscriptDelta += d => { lastGuideLine += d; if (captionText != null) captionText.text = lastGuideLine; };
                 guide.GuideTranscriptDone += t => { lastGuideLine = ""; if (captionText != null) captionText.text = t; };
                 guide.UserTranscriptDone += t => { if (userText != null) userText.text = t; };
@@ -85,14 +93,35 @@ namespace Airlift.Welcome
         }
 
         // ---- consent ----
-        public void ConsentAllowVoice() { Flow.Consent(true); ShowPhase(); if (guide != null) { ApplyMicPolicy(); guide.Begin(); } StartCoroutine(GreetWhenLive()); }
-        public void ConsentNoVoice() { Flow.Consent(false); ShowPhase(); SetState("offline guide"); Caption("Welcome to Nerdy. Tap the answers below, then choose a lesson."); }
+        public void ConsentAllowVoice() { Flow.Consent(true); ShowPhase(); if (guide != null) { guide.language = Language; ApplyMicPolicy(); guide.Begin(); } StartCoroutine(GreetWhenLive()); }
+
+        /// Consent card: the voice language for the whole session (owner 2026-09-17). The server locks the minted session to it.
+        public void ChooseLanguage(string code)
+        {
+            Language = GuideLanguage.Normalize(code);
+            try { PlayerPrefs.SetString(GuideLanguage.PrefsKey, Language); } catch (System.Exception) { }
+            if (guide != null) guide.language = Language;
+            if (languageButtons != null)
+                for (int i = 0; i < languageButtons.Length && i < GuideLanguage.Codes.Length; i++)
+                {
+                    var image = languageButtons[i] != null ? languageButtons[i].GetComponent<Image>() : null;
+                    if (image == null) continue;
+                    bool chosen = GuideLanguage.Codes[i] == Language;
+                    var sprite = chosen ? languageChosen : languageIdle;
+                    if (sprite == null) continue;
+                    image.sprite = sprite; image.type = Image.Type.Sliced;
+                    image.color = chosen ? Color.white : new Color(1f, 1f, 1f, 0.1f);
+                    float half = Mathf.Max(1f, Mathf.Min(image.rectTransform.rect.width, image.rectTransform.rect.height)) / 2f;
+                    image.pixelsPerUnitMultiplier = sprite.border.x / half * (100f / sprite.pixelsPerUnit);   // capsule ends
+                }
+        }
+        public void ConsentNoVoice() { Flow.Consent(false); ShowPhase(); SetState("offline guide"); Caption(GuideIntro.OfflineCaption); }
 
         IEnumerator GreetWhenLive()
         {
             float until = Time.time + 45f;
             while (guide != null && guide.Mode != GuideMode.Live && Time.time < until && guide.State != "offline") yield return null;
-            if (guide != null && guide.Mode == GuideMode.Live) Say("Say exactly one short friendly sentence: welcome the learner to Nerdy and ask them to tap the answers on the card. Then stop.");
+            if (guide != null && guide.Mode == GuideMode.Live) Say(GuideIntro.PromptFor(Language));
             else Caption("The live guide is offline right now. Tap the answers below, then choose a lesson.");
         }
 
@@ -264,8 +293,13 @@ namespace Airlift.Welcome
         void SubmitLessonResult(string callId, bool ok, string reason, JObject extra = null)
         {
             MarkChapterObserved();
+            string seen = observedIntro;
+            var shown = MarkIntroObserved();
+            // An intro step reached by this voice tool is said once, from say_exactly; a refusal during the intro keeps
+            // its reason and does not repeat the step already said.
+            var intro = IntroNarration.ShouldNarrate(seen, shown) ? shown : null;
             if (Flow.Phase == WelcomePhase.Lesson) PushLessonState();
-            guide.SubmitToolResult(callId, ResultNow(ok, reason, extra));
+            guide.SubmitToolResult(callId, ResultNow(ok, IntroNarration.ReasonFor(reason, intro), IntroNarration.WithSayExactly(extra, intro)));
         }
 
         string ResultNow(bool ok, string reason, JObject extra)
@@ -331,10 +365,27 @@ namespace Airlift.Welcome
         // ---- workbench guide: instruction text is the app-authored event source ----
         void Update()
         {
-            if (Flow.Phase != WelcomePhase.Lesson) { observedChapter = 0; observedComplete = false; return; }
+            if (Flow.Phase != WelcomePhase.Lesson) { observedChapter = 0; observedComplete = false; observedIntro = null; return; }
             if (ActiveStation == null) return;
             if (StateKey() != lastInstruction) PushLessonState(); // context only; the guide speaks when asked
+            NarrateIntroChange();
             NarrateChapterChange();
+        }
+
+        /// A concept-intro step appeared through a button (Next, Start fractions): Dee says it word for word once.
+        void NarrateIntroChange()
+        {
+            var station = ActiveStation; var intro = station != null ? station.CurrentIntro : null;
+            bool narrate = IntroNarration.ShouldNarrate(observedIntro, intro);
+            observedIntro = intro?.Id;
+            if (narrate) Say(IntroNarration.PromptFor(intro));
+        }
+
+        IntroStep MarkIntroObserved()
+        {
+            var station = ActiveStation; var intro = station != null ? station.CurrentIntro : null;
+            observedIntro = intro?.Id;
+            return intro;
         }
 
         /// A chapter started or a check was accepted through a button: say one story line. Voice tools mark the
@@ -384,7 +435,12 @@ namespace Airlift.Welcome
         bool CanSay => guide != null && GuidePolicy.CanPrompt(Paused, guide.Mode == GuideMode.Live);
         /// Every spoken request goes through here: nothing is prompted while paused or offline.
         void Say(string instructions) { if (CanSay) guide.Prompt(instructions); }
-        void ApplyMicPolicy() { guide?.SetMicEnabled(GuidePolicy.MicOn(Flow.Phase, Muted, Paused)); ApplyFallbackButtons(); }
+        void ApplyMicPolicy()
+        {
+            bool on = GuidePolicy.MicOn(Flow.Phase, Muted, Paused);
+            if (guide != null && guide.MicEnabled != on) Debug.Log("[Guide] mic " + (on ? "on" : "off") + " phase=" + Flow.Phase + " muted=" + Muted + " paused=" + Paused);
+            guide?.SetMicEnabled(on); ApplyFallbackButtons();
+        }
 
         /// Buttons show whenever voice cannot hear the learner: offline, no mic permission, muted, paused, mic-off phase.
         void ApplyFallbackButtons()

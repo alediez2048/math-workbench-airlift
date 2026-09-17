@@ -87,6 +87,8 @@ namespace Airlift.Lessons
         public bool CanSplit => active && model.CanSplit;
         public string ExpressionText => model.Expression;
         public string Feedback => feedback;
+        /// A crate on the table the learner can pick up and split: in this chapter, not loaded in a bed, not locked.
+        public bool IsLoosePiece(string id) => active && model.Piece(id) != null && !model.IsDocked(id) && !model.IsLocked(id);
 
         void Awake()
         {

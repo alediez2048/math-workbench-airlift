@@ -1,5 +1,110 @@
 # Cargo Crew development log
 
+## 2026-09-17 afternoon — Concept intros, Dock 7 splitter, chunky practice crate, 2x café/garden pieces
+
+Owner after build 112858 ("starting to look incredibly good"): more voice onboarding at lesson start (what
+fractions are); the practice/demo crate did not match the lesson crates; a non-voice way to split loads; café and
+garden pieces "3x". Owner decisions: intros in all three lessons; splitter station; **2x pieces keeping every
+chapter's numbers** (3x did not fit the 1.3 x 0.8 m table). Contracts: docs/00-build/INTRO-SPLITTER-CONTRACTS.md.
+Four agents on disjoint files (platform, cargo, café, garden); the main session integrated.
+
+- **Intros:** ConceptIntros (Cargo 4 steps: whole, halves, sum, quarters; Café 3; Garden 3) shown once per app run
+  before chapter 1; card heading/body/expression; Next/Start; nothing grabbable; other actions refused. Dee says each
+  step word for word: button path via NerdyDirector (IntroNarration.ShouldNarrate), voice path via say_exactly in the
+  tool result (proxy rule, node 14/14). Integration fixes (tests first): the tool reason is emptied when say_exactly
+  carries the line, and say_exactly is sent only when the voice tool moved to a new step (a refusal during the intro
+  no longer repeats the step).
+- **Splitter:** pad 0.30 x 0.14 at front right with a console "Halves · 1/2" / "Quarters · 1/4"; SplitterRules
+  (crate on pad, chapter split size, hint naming the needed size) then CargoLessonDirector.TrySplit; always visible;
+  voice split unchanged. STAGING tag moved onto the staging platform edge.
+- **Practice/demo crates** resized to 28 x 11 x 12 cm; tray/pad heights written to CargoOnboarding.asset.
+- **Café 2x:** pastries 2x; boxes 2 x 3 pastries (one row), plates 0.22; props moved to the back half; served plates
+  line up on the guest table; "Box N"/"Plate N" labels leave with their container (known cosmetic bug fixed).
+- **Garden 2x:** strips and plants 2x for chapters 1-3 and the intro; the 7x6 and 8x7 beds use smaller cells (1.59x
+  and 1.39x of the first build) because a 2x 8-row bed does not fit in front of the card; trays run front-to-back
+  beside the bed; props moved.
+- **Golden:** CargoVoiceCharacterizationTests script walks the intro (advance x4 plus two refused tools); re-recorded
+  after proving 35 steps before and 58 after are identical (step numbers and call ids normalised) and only the intro
+  block differs.
+- **Evidence:** all builders rerun in order (Dock, Café, Garden, WireLessonStations, PolishCards, AddLanguageChoice);
+  every affected suite green in the editor; renders artifacts/dock7/0-intro1..4, 0-practice, 2s/3s-splitter(-wide),
+  artifacts/cafe/0-intro1..3 and chapters, artifacts/garden/0-intro1..3 and chapters.
+- **Open:** grabbing disabled during the intro and the Next button path only verifiable in play mode/headset;
+  splitter feedback text is small (about 1 cm); the owner should judge the smaller 7x6/8x7 garden beds.
+
+## 2026-09-17 — Chunky crates, polished cards, voice language lock, Dee in the café story
+
+Owner requests after build 104622: Dock 7 crates about twice as big; "hone in on the edges of the entire card
+experience ... much more polished from beginning to end"; the voice guide kept switching from English to Spanish
+("select a language ... and stick to only that language"). Owner also reported the mic not hearing them, then
+"microphone is back to working" before diagnosis finished.
+
+- **Chunky crates (owner chose "chunkier": 2x height and depth, length exact to the ruler):** crates 11 x 12 cm
+  with labels twice as large (ChunkyCrate in BuildDockWorkbench resizes the existing whole/half crates in place and
+  every rebuilt quarter); rest height BedTop + 5.5 cm; beds 13 cm deep; vehicles lengthened and cabs raised above the
+  load; dock-edge strip moved forward; tray at z -0.30 (renders showed the taller crates hiding the 0, 1/4, 1/2
+  marks at -0.26); DOCK EXIT beam raised to clear loaded crates; slide leads the turn and the exit moved out so
+  the longer vehicles still never collide and fully leave the deck. DockWorkbenchWiringTests RED then green.
+  Build cargo-20260917-110246 (325 checks, SHA-256 bea0cb99...) installed, md5 verified.
+- **Card polish (evidence: artifacts/polish before-*/after-*, corners-zoom.png at Quest 3S pixel density):** causes
+  were MSAA off with render scale 0.8 on the Quest pipeline asset (stair-stepped card corners), 64-96 px corner
+  sprites, pill sprites whose corners exceeded the pill height (ovals), stencil masks (cannot anti-alias) on the
+  catalog cards, badges, Allow voice and the assistant bar, square-cornered catalog art, a caption spilling over
+  the bar's top edge, and lesson cards in a different flatter style. Fixes: MSAA 4x + render scale 1.0;
+  scripts/make_card_sprites.py (supersampled card, capsule pill, gradient capsule, hairline stroke, soft shadow,
+  rounded-top art, vertical fade); AgentScripts/PolishCards.cs (idempotent; ran twice to prove it) retires
+  RoundedRect, sizes every pill as a true capsule, bakes gradient pills and removes all masks, adds stroke and
+  shadow (CardShadowLink keeps a shadow visible exactly with its card, ExecuteAlways so previews match the device)
+  to consent, welcome, catalog, the three lesson cards, and a stroke to the assistant bar; caption auto-sizes
+  inside the bar. CardPolishTests 9 (8 RED first, masks found by the new test). Performance: MSAA 4x and full
+  render scale cost GPU time; the Quest performance run (L-5) is still owed.
+- **Voice language lock:** consent card row "Voice language · English · Español" (AddLanguageChoice.cs) saved in
+  PlayerPrefs nerdy.language; the mint request carries language; proxy validates en|es and builds instructions
+  with "Speak only <language> for the whole session ... Never switch languages" (replacing "English only, unless
+  the learner clearly speaks another language first", the cause of the switching) and transcription language
+  en|es; dev mint reads the body. Dee greets with the Spanish introduction in Spanish. Spanish letters added to
+  the six Nerdy SDF atlases in place (AddSpanishGlyphs.cs). Proxy node --test 13/13 (RED first); GuideLanguageTests
+  (font coverage RED first) and NerdyWelcomeWiringTests.ConsentCardChoosesTheVoiceLanguage. Dev mint restarted:
+  builds without the row mint English-locked sessions. Card and lesson text stay English.
+- **Dee in stories:** café briefing/chapter stories and café/garden catalog facts said "Nerdy" for the barista and
+  gardener; now Dee (GuideLanguageTests.StoriesCallTheGuideDeeNotNerdy RED first; Cargo golden unchanged).
+- **Mic report:** device state at the time: RECORD_AUDIO granted, AudioRecord active and not silenced for
+  com.nerdy.vr, session minted and live; the mic is off by design on consent and the welcome chips. No defect
+  found; the owner reported it working again. The next build logs "[Guide] mode/state/mic" transitions.
+
+## 2026-09-17 — Owner bugs on onboarding and Dock 7: logo, Dee, trucks, Library
+
+Owner report (headset, build 095611): (1) no Nerdy app in the Meta Library; (2) Nerdy logo gone from the first
+screen; (3) the voice guide must present "Welcome to Nerdy AI+VR, my name is Dee and I will be your AI assistant
+throughout your elementary math journey" (the story is important); (4) Cargo Crew is great, but trucks should load
+in the middle and drive left to a dock exit, and look like trucks. Item 4 is an owner-requested change to the
+locked lesson (vehicles and their departure only; math, chapters, copy and voice tools unchanged).
+
+- **Library (1), not an app defect:** the APK is installed, launchable, and carries LAUNCHER plus
+  com.oculus.intent.category.VR. It is the only sideloaded app on the Quest (installer null; every other app came
+  from the Store via com.oculus.ocms). Horizon OS lists sideloaded apps only under the Library's Unknown Sources
+  filter. A normal Library tile (and its artwork) needs a Meta developer release channel upload.
+- **Logo (2), root cause:** the L-4 launcher-icon attempt re-imported Branding/nerdy-logo-green.png as a Default
+  texture (commit 2740d8a, textureType 8 -> 0), which removes the sprite the consent card's Logo image references.
+  NerdyWelcomeWiringTests.ConsentCardShowsTheNerdyLogo confirmed RED ("Expected Sprite, was Default"), then
+  AgentScripts/FixLogoImport.cs restored the Sprite import: green.
+- **Dee (3):** proxy persona is now "You are Dee, the AI assistant of Nerdy AI+VR" with exact-words handling
+  (node test RED then green, 11/11); GuideIntro holds the spoken introduction, the greeting prompt and the no-voice
+  caption; NerdyDirector uses them (GuidePolicyTests). The golden Cargo recording changed only by the no-voice
+  caption: 62 lines, proven identical after substituting the old caption for the new one, then re-recorded.
+  Dev mint restarted with the Dee persona. "elemental" in the request is read as "elementary".
+- **Trucks (4):** new bodies in BuildDockWorkbench: semi (flatbed trailer + tractor with sleeper cab, hood, grille,
+  headlights, exhaust stacks, marker lights, mirrors, 8 wheels), pickup (bed sides, tailgate, cab, hood, grille,
+  roof light) and cab-over van; every vehicle has tail lights, plate and bumpers (new CargoRed material). Beds stay
+  exactly the chapter's cell widths over the ruler. VehicleBay departure: LOADED tags, then leftmost first each
+  vehicle turns left into the exit lane (station z -0.05, between the crate tray and the left crane base), drives
+  under a new DOCK EXIT gate (x -0.40, striped posts, sign, lane chevrons) and disappears past the deck's left edge;
+  crates ride in their beds. The idle truck now waits at the back of the dock. Tests first: departure poses and a
+  no-collision sweep for every chapter (in memory), truck anatomy/length/height, and a lane sweep against cranes,
+  containers, gate posts and the crate tray (scene) — scene tests RED before the builder ran, green after.
+  Renders artifacts/dock7/*d-depart*.png and *e-side.png checked: arrows first pointed right and trailer wheels poked
+  through the flatbed; both fixed before the build.
+
 ## 2026-09-17 — Three lessons integrated: platform, Café and Garden installed for the owner check
 
 - **Golden first:** CargoVoiceCharacterizationTests recorded 95 Cargo voice steps before any routing change

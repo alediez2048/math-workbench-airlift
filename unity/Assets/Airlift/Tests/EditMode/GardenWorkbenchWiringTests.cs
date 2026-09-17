@@ -21,7 +21,7 @@ namespace Airlift.Tests
     public class GardenWorkbenchWiringTests
     {
         const string ScenePath = "Assets/Airlift/Scenes/CargoCrew.unity";
-        const float CardZ = 0.24f, CardSightline = 0.19f, HandleZ = -0.412f;
+        const float CardZ = GardenTableLayout.CardZ, CardSightline = 0.19f;
         Scene loaded;
         [SetUp] public void Open() { if (!SceneManager.GetSceneByPath(ScenePath).isLoaded) loaded = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Additive); }
         [TearDown] public void Close() { if (loaded.IsValid()) EditorSceneManager.CloseScene(loaded, true); }
@@ -55,7 +55,7 @@ namespace Airlift.Tests
             var s = Station();
             Assert.That(s.strips.Length, Is.EqualTo(GardenChapter.All.Max(c => System.Math.Max(c.Rows, c.StripLengths?.Length ?? 0))), "one view per strip in the largest chapter");
             for (int len = 1; len <= GardenBedLayout.MaxColumns; len++)
-                Assert.That(s.stripMeshes[len].bounds.size.x, Is.EqualTo(len * s.bed.cell - 0.004f).Within(1e-4f), "strip body of " + len);
+                Assert.That(s.stripMeshes[len].bounds.size.x, Is.EqualTo(len * s.stripCell - GardenTableLayout.StripBodyInset).Within(1e-4f), "strip body of " + len);
             foreach (var v in s.strips)
             {
                 Assert.That(v.piece, Is.Not.Null); Assert.That(v.piece.IsChildOf(s.pieces.transform), Is.True, v.piece.name);
@@ -103,18 +103,34 @@ namespace Airlift.Tests
 
         [Test] public void PropsStayUnderTheCardSightline()
         {
-            // From the seated head (board-local y 0.5, z -0.65) anything taller than ~0.19 m shows through the
-            // translucent card. Blooms are measured fully grown (scale 1) wherever a planted strip can sit.
+            // From the seated head (board-local y 0.5, z -0.65) anything taller than ~0.19 m near the back shows through
+            // the translucent card. Strips and their blooms (fully grown, scale 1) are measured where they can sit:
+            // in the tray and in the back row of every chapter's bed at that chapter's piece scale, against the line
+            // from the seated head to the card's bottom edge at their depth.
             var s = Station(); var card = s.transform.Find("Garden card");
             foreach (var f in s.GetComponentsInChildren<MeshFilter>(true))
             {
                 if (f.transform.IsChildOf(card) || f.GetComponent<TMP_Text>() != null || f.sharedMesh == null) continue;   // world labels lie flat on the deck
-                float top = TopOf(s.transform, f, s.transform);
-                bool onStrip = s.strips.Any(v => f.transform.IsChildOf(v.piece));
-                if (onStrip) top += s.bed.center.y - s.trayHeight;   // measured in the tray; planted strips sit a little higher
-                Assert.That(top, Is.LessThan(CardSightline), f.name + " (" + f.transform.parent.name + ") stays below the card sightline");
+                var strip = s.strips.FirstOrDefault(v => f.transform.IsChildOf(v.piece));
+                if (strip == null)
+                {
+                    Assert.That(TopOf(s.transform, f, s.transform), Is.LessThan(CardSightline), f.name + " (" + f.transform.parent.name + ") stays below the card sightline");
+                    continue;
+                }
+                float top = TopOf(strip.piece, f, strip.piece);   // strip-local, unscaled
+                Assert.That(s.trayHeight + top, Is.LessThan(GardenTableLayout.CardSightline(GardenTableLayout.TrayBackZ) - 0.02f), f.name + " in the tray");
+                foreach (var chapter in GardenChapter.All)
+                {
+                    var L = s.bed.LayoutFor(chapter.Rows, chapter.Columns);
+                    float scale = L.Cell / s.stripCell;
+                    float y = L.Center.y + scale * top, z = L.RowZ(0) + scale * s.stripDepth * 0.5f;
+                    Assert.That(y, Is.LessThan(GardenTableLayout.CardSightline(z) - 0.02f), chapter.Id + ": " + f.name + " (" + f.transform.parent.name + ") grown in the back row stays under the card");
+                }
             }
-            Assert.That(s.wateringCanHome.z, Is.LessThan(CardZ)); Assert.That(s.butterflyHome.y, Is.LessThan(CardSightline));
+            Assert.That(GardenTableLayout.CardSightline(GardenTableLayout.CardZ), Is.EqualTo(GardenTableLayout.CardBottomY).Within(1e-4f), "the sightline meets the card bottom at the card");
+            Assert.That(GardenTableLayout.CardSightline(0.37f), Is.LessThan(CardSightline), "near the back the flat 0.19 m rule is the stricter one");
+            Assert.That(s.wateringCanHome.y + 0.1f, Is.LessThan(GardenTableLayout.CardSightline(s.wateringCanHome.z + 0.03f)), "watering can visible under the card");
+            Assert.That(s.butterflyHome.y, Is.LessThan(CardSightline));
         }
 
         /// Highest root-local y of a mesh, treating zero scales (hidden blooms) as fully grown.
@@ -142,68 +158,247 @@ namespace Airlift.Tests
             Assert.That(bed.rowLabels.Length, Is.EqualTo(8)); Assert.That(bed.rowLabels, Has.None.Null);
             Assert.That(bed.fenceTicks.Length, Is.EqualTo(7)); Assert.That(bed.fenceTicks, Has.None.Null);
             for (int k = 1; k <= 7; k++) Assert.That(bed.fenceTicks[k - 1].GetComponentInChildren<TMP_Text>(true).text, Is.EqualTo(k.ToString()));
-            Assert.That(bed.turnable.localPosition.x, Is.EqualTo(bed.center.x).Within(1e-4f)); Assert.That(bed.turnable.localPosition.z, Is.EqualTo(bed.center.z).Within(1e-4f));
+            var first = bed.LayoutFor(GardenChapter.All[0].Rows, GardenChapter.All[0].Columns);
+            Assert.That(bed.turnable.localPosition.x, Is.EqualTo(first.Center.x).Within(1e-4f)); Assert.That(bed.turnable.localPosition.z, Is.EqualTo(first.Center.z).Within(1e-4f), "closed state: the turnable sits under the chapter 1 bed centre");
+            Assert.That(bed.meshCell, Is.EqualTo(s.stripCell).Within(1e-6f), "soil and wall meshes are built for full-size cells");
+            Assert.That(bed.wallThickness, Is.EqualTo(GardenTableLayout.WallThickness).Within(1e-6f));
             for (int n = 1; n <= 8; n++)
             {
-                Assert.That(bed.longWalls[n].bounds.size.x, Is.EqualTo(n * bed.cell + 2 * bed.wallThickness).Within(1e-4f));
-                Assert.That(bed.shortWalls[n].bounds.size.x, Is.EqualTo(n * bed.cell).Within(1e-4f));
+                Assert.That(bed.longWalls[n].bounds.size.x, Is.EqualTo(n * bed.meshCell + 2 * bed.wallThickness).Within(1e-4f));
+                Assert.That(bed.shortWalls[n].bounds.size.x, Is.EqualTo(n * bed.meshCell).Within(1e-4f));
             }
             foreach (var chapter in GardenChapter.All)
                 foreach (var (rows, cols) in new[] { (chapter.Rows, chapter.Columns), (chapter.Columns, chapter.Rows) })
                 {
                     Assert.That(rows, Is.LessThanOrEqualTo(GardenBedLayout.MaxRows)); Assert.That(cols, Is.LessThanOrEqualTo(GardenBedLayout.MaxColumns));
-                    var L = bed.LayoutFor(rows, cols);
+                    var L = bed.LayoutFor(rows, cols); var expected = GardenTableLayout.BedFor(rows, cols);
+                    Assert.That(Vector3.Distance(L.Center, expected.Center), Is.LessThan(1e-5f), chapter.Id + " scene bed uses the table layout");
+                    Assert.That(L.Cell, Is.EqualTo(expected.Cell).Within(1e-6f), chapter.Id + " scene bed cell");
                     Assert.That(L.Back + bed.wallThickness, Is.LessThan(CardZ - 0.02f), chapter.Id + " bed stays in front of the card");
-                    Assert.That(L.Front - 0.1f, Is.GreaterThan(HandleZ + 0.03f), chapter.Id + " fence numbers and part labels stay clear of the table handle");
-                    Assert.That(L.Cell, Is.GreaterThanOrEqualTo(0.04f), "cells big enough to read seedlings");
+                    Assert.That(L.Cell, Is.GreaterThanOrEqualTo(0.06f), "cells big enough to read seedlings");
                 }
         }
 
-        /// Owner render review 2026-09-17: the tray slabs dominated the foreground. Each tray is just big enough for the
-        /// three strips of its side, and every strip that can rest in a tray lies inside it, clear of the row numbers.
-        [Test] public void TraysAreTidyAndHoldTheirStrips()
+        /// Owner 2026-09-17 ("the plants are too little"): seedling strips and every plant on them are twice the first
+        /// build in all three dimensions: body, pitch, collider, sprout and every crop they grow into.
+        [Test] public void StripsAndPlantsAreTwiceTheFirstBuild()
+        {
+            const float firstCell = 0.045f;
+            var s = Station();
+            Assert.That(s.stripCell, Is.EqualTo(2 * firstCell).Within(1e-6f), "seedling pitch on a strip");
+            Assert.That(s.stripDepth, Is.EqualTo(2 * 0.04f).Within(1e-6f)); Assert.That(s.stripHeight, Is.EqualTo(2 * 0.04f).Within(1e-6f));
+            Assert.That(s.splitGap, Is.EqualTo(GardenTableLayout.SplitGap).Within(1e-6f));
+            for (int len = 1; len <= GardenBedLayout.MaxColumns; len++)
+                AssertClose(s.stripMeshes[len].bounds.size, 2f * new Vector3(len * firstCell - 0.004f, 0.012f, 0.036f), "strip body of " + len);
+            var parts = new (string name, Vector3 position, Vector3 size)[]
+            {
+                ("Stem", new Vector3(0, 0.008f, 0), new Vector3(0.004f, 0.016f, 0.004f)),
+                ("Leaves", new Vector3(0, 0.017f, 0), new Vector3(0.022f, 0.007f, 0.012f)),
+                ("Lettuce head", new Vector3(0, 0.012f, 0), new Vector3(0.032f, 0.024f, 0.032f)),
+                ("Carrot top", new Vector3(0, 0.022f, 0), new Vector3(0.012f, 0.03f, 0.012f)),
+                ("Carrot root", new Vector3(0, 0.004f, 0), new Vector3(0.022f, 0.014f, 0.022f)),
+                ("Sunflower stalk", new Vector3(0, 0.025f, 0), new Vector3(0.005f, 0.05f, 0.005f)),
+                ("Sunflower petals", new Vector3(0, 0.055f, -0.004f), new Vector3(0.034f, 0.034f, 0.006f)),
+                ("Sunflower centre", new Vector3(0, 0.056f, -0.008f), new Vector3(0.015f, 0.015f, 0.008f)),
+                ("Bean pole", new Vector3(0.006f, 0.03f, 0), new Vector3(0.004f, 0.06f, 0.004f)),
+                ("Bean pods", new Vector3(-0.003f, 0.028f, 0), new Vector3(0.016f, 0.03f, 0.012f)),
+            };
+            foreach (var v in s.strips)
+            {
+                Assert.That(v.piece.localScale, Is.EqualTo(Vector3.one), v.piece.name + " full size in the closed state");
+                AssertClose(v.collider.size, 2f * new Vector3(GardenBedLayout.MaxColumns * firstCell, 0.04f, 0.04f), v.piece.name + " collider");
+                AssertClose(v.bodyLeft.sharedMesh.bounds.size, 2f * new Vector3(GardenBedLayout.MaxColumns * firstCell - 0.004f, 0.012f, 0.036f), v.piece.name + " body");
+                for (int k = 0; k < v.seedlings.Length; k++)
+                {
+                    Assert.That(v.seedlings[k].localPosition.x, Is.EqualTo(2 * GardenBedLayout.SeedlingX(firstCell, k, GardenBedLayout.MaxColumns)).Within(1e-5f), v.piece.name + " seedling pitch");
+                    Assert.That(v.seedlings[k].localPosition.y, Is.EqualTo(2 * 0.006f).Within(1e-5f), v.piece.name + " seedling sits on the body");
+                    foreach (var (name, position, size) in parts)
+                    {
+                        var part = v.seedlings[k].GetComponentsInChildren<MeshFilter>(true).FirstOrDefault(f => f.name == name);
+                        Assert.That(part, Is.Not.Null, v.piece.name + " " + name);
+                        AssertClose(part.sharedMesh.bounds.size, 2f * size, v.piece.name + " " + name + " size");
+                        AssertClose(part.transform.localPosition, 2f * position, v.piece.name + " " + name + " position");
+                    }
+                }
+            }
+            // The fence divider and the payoff grow with the plants.
+            var post = s.fence.Find("Post 1").GetComponent<MeshFilter>().sharedMesh.bounds.size;
+            AssertClose(post, 2f * new Vector3(0.01f, 0.06f, 0.01f), "fence post");
+            Assert.That(s.fence.GetComponent<BoxCollider>().size.z, Is.EqualTo(GardenTableLayout.FenceLength + 0.02f).Within(1e-4f), "the fence spans the deepest bed");
+            Assert.That(GardenTableLayout.BedMaxDepth, Is.LessThanOrEqualTo(GardenTableLayout.FenceLength));
+            AssertClose(s.wateringCan.Find("Can body").GetComponent<MeshFilter>().sharedMesh.bounds.size, 1.5f * new Vector3(0.06f, 0.05f, 0.04f), "watering can");
+            AssertClose(s.butterfly.Find("Wing left").GetComponent<MeshFilter>().sharedMesh.bounds.size, 2f * new Vector3(0.016f, 0.002f, 0.014f), "butterfly wing");
+        }
+
+        static void AssertClose(Vector3 actual, Vector3 expected, string what)
+        {
+            Assert.That(Vector3.Distance(actual, expected), Is.LessThan(2e-4f), what + ": " + actual.ToString("0.0000") + " expected " + expected.ToString("0.0000"));
+        }
+
+        /// Every label in front of or beside the bed stays inside the reach the table layout plans for (so the pure fit
+        /// test below is honest about the scene), and every prop, the watering can and the trays stay clear of every
+        /// chapter's bed, its labels and its opened split.
+        [Test] public void LabelsStayInTheirPlannedReachAndPropsClearTheBedAndTrays()
         {
             var s = Station(); var bed = s.bed;
-            var big = bed.LayoutFor(GardenBedLayout.MaxRows, GardenBedLayout.MaxColumns);
-            float labelLeft = big.Left - bed.wallThickness - bed.rowLabelOffset - bed.rowLabels[0].rectTransform.sizeDelta.x / 2;
-            float labelRight = big.Right + bed.wallThickness + bed.rowLabelOffset + 0.02f;
+            float Tilted(TMP_Text t) => t.rectTransform.sizeDelta.y * Mathf.Sin(70f * Mathf.Deg2Rad) * 0.5f;
+            foreach (var tick in bed.fenceTicks)
+            {
+                var number = tick.GetComponentInChildren<TMP_Text>(true);
+                float reach = bed.wallThickness * 0.5f - number.transform.localPosition.z + Tilted(number);
+                Assert.That(reach, Is.LessThanOrEqualTo(GardenTableLayout.BedLabelReach), tick.name + " number reaches " + reach.ToString("0.000") + " m in front of the bed");
+            }
+            foreach (var label in s.partLabels)
+                Assert.That(bed.wallThickness + s.partLabelOffset + Tilted(label), Is.LessThanOrEqualTo(GardenTableLayout.BedLabelReach), label.name + " in front of the bed");
+            Assert.That(bed.wallThickness + bed.rowLabelOffset + bed.rowLabels[0].rectTransform.sizeDelta.x * 0.5f, Is.LessThanOrEqualTo(GardenTableLayout.RowLabelReach), "row numbers beside the bed");
+
+            var root = s.transform;
+            var blockers = new List<(string name, Bounds b)>();
+            foreach (Transform prop in root.Find("Garden props")) blockers.Add(("prop " + prop.name, Footprint(root, prop)));
+            blockers.Add(("watering can", Footprint(root, s.wateringCan)));
+            foreach (var chapter in GardenChapter.All)
+                foreach (var (rows, cols) in chapter.NeedsTurn ? new[] { (chapter.Rows, chapter.Columns), (chapter.Columns, chapter.Rows) } : new[] { (chapter.Rows, chapter.Columns) })
+                {
+                    var L = bed.LayoutFor(rows, cols);
+                    float gap = chapter.HasFence ? s.splitGap : 0f;
+                    var area = Rect.MinMaxRect(L.Left - GardenTableLayout.RowLabelReach, L.Front - GardenTableLayout.BedLabelReach, L.Right + gap + bed.wallThickness, L.Back + bed.wallThickness);
+                    foreach (var (name, b) in blockers)
+                        Assert.That(Overlaps(area, b), Is.False, chapter.Id + " " + rows + " × " + cols + " bed and labels clear of " + name);
+                }
+            foreach (var trayName in new[] { "Seedling tray left", "Seedling tray right" })
+            {
+                var tray = Footprint(root, root.Find(trayName));
+                var area = Rect.MinMaxRect(tray.min.x, tray.min.z, tray.max.x, tray.max.z);
+                foreach (var (name, b) in blockers) Assert.That(Overlaps(area, b), Is.False, trayName + " clear of " + name);
+            }
+            foreach (var (name, b) in blockers)
+            {
+                Assert.That(Mathf.Max(Mathf.Abs(b.min.x), Mathf.Abs(b.max.x)), Is.LessThan(GardenTableLayout.DeckHalfX + 0.01f), name + " on the deck");
+                Assert.That(b.min.z, Is.GreaterThan(GardenTableLayout.HandleBackZ), name + " clear of the table handle");
+            }
+        }
+
+        static bool Overlaps(Rect area, Bounds b) => b.min.x < area.xMax && b.max.x > area.xMin && b.min.z < area.yMax && b.max.z > area.yMin;
+
+        /// Owner render review 2026-09-17: the tray slabs dominated the foreground; the same day the strips doubled. The
+        /// two trays run front to back beside the bed, each just big enough for the three strips of its side lying
+        /// front to back, and the scene trays, tray slots and fence home are the table layout's.
+        [Test] public void TraysAreTidyAndHoldTheirStrips()
+        {
+            var s = Station();
             var trays = new[] { s.transform.Find("Seedling tray left"), s.transform.Find("Seedling tray right") };
             Assert.That(trays, Has.None.Null);
-            var footprints = trays.Select(t => Footprint(s.transform, t)).ToArray();
-            foreach (var f in footprints)
+            for (int side = 0; side < 2; side++)
             {
-                Assert.That(f.size.x, Is.LessThanOrEqualTo(0.32f), "tray width " + f.size.x);
-                Assert.That(f.size.z, Is.LessThanOrEqualTo(0.24f), "tray depth " + f.size.z);
+                var f = Footprint(s.transform, trays[side]);
+                float sign = side == 0 ? -1f : 1f;
+                Assert.That(Mathf.Min(Mathf.Abs(f.min.x), Mathf.Abs(f.max.x)), Is.EqualTo(GardenTableLayout.TrayNearX).Within(0.002f), "tray inner edge");
+                Assert.That(f.size.x, Is.EqualTo(GardenTableLayout.TrayWidth).Within(0.002f), "tray width " + f.size.x);
+                Assert.That(f.min.z, Is.EqualTo(GardenTableLayout.TrayFrontZ).Within(0.002f)); Assert.That(f.max.z, Is.EqualTo(GardenTableLayout.TrayBackZ).Within(0.002f));
+                Assert.That(Mathf.Sign(f.center.x), Is.EqualTo(sign));
                 Assert.That(f.max.y, Is.LessThan(s.trayHeight + 0.006f), "tray rims stay below the strip tops so strips are easy to grab");
-                Assert.That(f.max.x < labelLeft || f.min.x > labelRight, Is.True, "tray clear of the widest bed and its row numbers");
-                Assert.That(f.min.z, Is.GreaterThan(HandleZ + 0.05f), "tray clear of the table handle");
-                Assert.That(Mathf.Max(Mathf.Abs(f.min.x), Mathf.Abs(f.max.x)), Is.LessThan(0.62f), "tray on the deck");
             }
             Assert.That(trays[0].GetComponentsInChildren<Renderer>(true).Select(r => r.sharedMaterial.name).Distinct().Count(), Is.GreaterThanOrEqualTo(2), "wooden tray with a green trim");
+            Assert.That(s.trayHeight, Is.EqualTo(GardenTableLayout.TrayRestY).Within(1e-5f));
+            Assert.That(s.trayYaw, Is.EqualTo(GardenTableLayout.TrayYaw).Within(1e-5f));
+            for (int i = 0; i < s.strips.Length; i++)
+            {
+                AssertClose(s.strips[i].trayFront, GardenTableLayout.TrayFront(i), "strip view " + (i + 1) + " tray slot");
+                Assert.That(Quaternion.Angle(s.strips[i].piece.localRotation, Quaternion.Euler(0, GardenTableLayout.TrayYaw, 0)), Is.LessThan(0.5f), "strip view " + (i + 1) + " rests front to back in its tray");
+            }
+            AssertClose(s.fenceHome, GardenTableLayout.FenceHome, "fence home in the right tray");
+        }
+
+        /// Pure table layout, every chapter: strips that rest in a tray lie inside it front to back without overlapping,
+        /// within reach of the seated learner, never planted by accident; the fence at home lies in the right tray.
+        [Test] public void TrayStripsLieInsideTheTraysWithinReach()
+        {
+            float cell = GardenTableLayout.StripCell;
             foreach (var chapter in GardenChapter.All.Where(c => !c.StartsPlanted))
+            {
+                Assert.That(GardenTableLayout.BedFor(chapter.Rows, chapter.Columns).Cell, Is.EqualTo(cell).Within(1e-6f), chapter.Id + ": tray chapters are full size");
                 for (int i = 0; i < chapter.StripLengths.Length; i++)
                 {
                     int len = chapter.StripLengths[i];
-                    var p = GardenStation.TrayPosition(s.strips[i], len, bed.cell);
-                    float half = len * bed.cell * 0.5f;
-                    var tray = footprints[p.x < 0 ? 0 : 1];
+                    var p = GardenTableLayout.TrayPosition(GardenTableLayout.TrayFront(i), len, cell);
+                    float halfLength = len * cell * 0.5f, halfDepth = GardenTableLayout.StripBodyDepth * 0.5f;
                     string what = chapter.Id + " strip-" + (i + 1) + " (" + len + ")";
-                    Assert.That(p.x - half, Is.GreaterThanOrEqualTo(tray.min.x + 0.008f), what + " inside its tray (left rim)");
-                    Assert.That(p.x + half, Is.LessThanOrEqualTo(tray.max.x - 0.008f), what + " inside its tray (right rim)");
-                    Assert.That(p.z - 0.018f, Is.GreaterThanOrEqualTo(tray.min.z + 0.008f), what + " inside its tray (front rim)");
-                    Assert.That(p.z + 0.018f, Is.LessThanOrEqualTo(tray.max.z - 0.008f), what + " inside its tray (back rim)");
+                    Assert.That(Mathf.Abs(p.x) - halfDepth, Is.GreaterThanOrEqualTo(GardenTableLayout.TrayNearX + GardenTableLayout.TrayRim), what + " inside its tray (bed side)");
+                    Assert.That(Mathf.Abs(p.x) + halfDepth, Is.LessThanOrEqualTo(GardenTableLayout.TrayNearX + GardenTableLayout.TrayWidth - GardenTableLayout.TrayRim), what + " inside its tray (outer side)");
+                    Assert.That(p.z - halfLength, Is.GreaterThanOrEqualTo(GardenTableLayout.TrayFrontZ + GardenTableLayout.TrayRim), what + " inside its tray (front rim)");
+                    Assert.That(p.z + halfLength, Is.LessThanOrEqualTo(GardenTableLayout.TrayBackZ - GardenTableLayout.TrayRim), what + " inside its tray (back rim)");
+                    Assert.That(p.y, Is.EqualTo(GardenTableLayout.TrayRestY));
                     for (int j = 0; j < i; j++)
                     {
-                        var q = GardenStation.TrayPosition(s.strips[j], chapter.StripLengths[j], bed.cell);
-                        if (Mathf.Sign(q.x) == Mathf.Sign(p.x)) Assert.That(Mathf.Abs(q.z - p.z), Is.GreaterThanOrEqualTo(0.045f), what + " does not overlap strip-" + (j + 1));
+                        var q = GardenTableLayout.TrayPosition(GardenTableLayout.TrayFront(j), chapter.StripLengths[j], cell);
+                        if (Mathf.Sign(q.x) == Mathf.Sign(p.x)) Assert.That(Mathf.Abs(q.x - p.x), Is.GreaterThanOrEqualTo(GardenTableLayout.StripBodyDepth + 0.01f), what + " does not touch strip-" + (j + 1));
                     }
-                    if (p.x < 0) Assert.That(p.x + half, Is.LessThan(labelLeft), what + " never covers the row numbers");
-                    else Assert.That(p.x - half, Is.GreaterThan(s.fenceHome.x + 0.03f), what + " clear of the fence home");
+                    var front = new Vector3(p.x, p.y, p.z - halfLength);
+                    Assert.That(front.z, Is.LessThan(-0.3f), what + " grabbable at the front of the table");
+                    Assert.That(Vector3.Distance(front, GardenTableLayout.SeatedHead), Is.LessThan(0.8f), what + " front end within seated reach");
                     foreach (var c in GardenChapter.All)
-                        Assert.That(bed.LayoutFor(c.Rows, c.Columns).RowAt(p), Is.EqualTo(-1), what + ": a strip resting in the tray is never planted by accident");
+                        foreach (var (rows, cols) in new[] { (c.Rows, c.Columns), (c.Columns, c.Rows) })
+                            Assert.That(GardenTableLayout.BedFor(rows, cols).RowAt(p), Is.EqualTo(-1), what + ": a strip resting in the tray is never planted by accident");
                 }
+                // Every row of a tray chapter is within seated reach for planting.
+                var L = GardenTableLayout.BedFor(chapter.Rows, chapter.Columns);
+                foreach (float x in new[] { L.Left, L.Right })
+                    Assert.That(Vector3.Distance(new Vector3(x, L.Center.y, L.RowZ(0)), GardenTableLayout.SeatedHead), Is.LessThan(0.9f), chapter.Id + " back row within reach");
+            }
+            var home = GardenTableLayout.FenceHome;
+            Assert.That(Mathf.Abs(home.x - (GardenTableLayout.TrayNearX + GardenTableLayout.TrayWidth * 0.5f)) + 0.03f, Is.LessThanOrEqualTo(GardenTableLayout.TrayWidth * 0.5f - GardenTableLayout.TrayRim), "fence home across the right tray");
+            Assert.That(home.z - GardenTableLayout.FenceLength * 0.5f, Is.GreaterThanOrEqualTo(GardenTableLayout.TrayFrontZ + GardenTableLayout.TrayRim), "fence home inside the tray (front)");
+            Assert.That(home.z + GardenTableLayout.FenceLength * 0.5f, Is.LessThanOrEqualTo(GardenTableLayout.TrayBackZ - GardenTableLayout.TrayRim), "fence home inside the tray (back)");
+            Assert.That(home.y, Is.EqualTo(GardenTableLayout.DeckTop + GardenTableLayout.TrayBase).Within(1e-6f), "the fence stands on the tray base");
             foreach (var chapter in GardenChapter.All)
-                Assert.That(bed.LayoutFor(chapter.Rows, chapter.Columns).FenceAt(s.fenceHome), Is.EqualTo(-1), chapter.Id + ": the fence at home is not on the bed");
+                Assert.That(GardenTableLayout.BedFor(chapter.Rows, chapter.Columns).FenceAt(home), Is.EqualTo(-1), chapter.Id + ": the fence at home is not on the bed");
+        }
+
+        /// Pure table layout, every chapter and the turned bed: twice the first build wherever the bed fits; only the
+        /// 7 × 6 and 8 × 7 beds shrink their cells (and their pieces) to fit the deck in front of the card. Every bed
+        /// stays in front of the card, its fence numbers and part labels clear the table handle, its row numbers clear
+        /// the left tray and its opened split clears the right tray.
+        [Test] public void EveryChapterBedAndItsTurnFitTheTable()
+        {
+            float full = GardenTableLayout.StripCell;
+            Assert.That(full, Is.EqualTo(2 * 0.045f).Within(1e-6f), "full-size cell is twice the first build");
+            foreach (var chapter in GardenChapter.All)
+                foreach (var (rows, cols) in chapter.NeedsTurn ? new[] { (chapter.Rows, chapter.Columns), (chapter.Columns, chapter.Rows) } : new[] { (chapter.Rows, chapter.Columns) })
+                {
+                    var L = GardenTableLayout.BedFor(rows, cols);
+                    string what = chapter.Id + " " + rows + " × " + cols;
+                    int span = Mathf.Max(rows, cols);
+                    if (span * full <= GardenTableLayout.BedMaxDepth + 1e-6f) Assert.That(L.Cell, Is.EqualTo(full).Within(1e-6f), what + " full size");
+                    else
+                    {
+                        Assert.That(span, Is.GreaterThanOrEqualTo(7), what + ": only the biggest beds shrink");
+                        Assert.That(L.Cell, Is.EqualTo(GardenTableLayout.BedMaxDepth / span).Within(1e-6f), what + " as large as the deck allows");
+                        Assert.That(L.Cell / full, Is.GreaterThanOrEqualTo(0.69f), what + " piece scale " + (L.Cell / full).ToString("0.000"));
+                    }
+                    Assert.That(L.Front, Is.GreaterThanOrEqualTo(GardenTableLayout.BedFrontZ - 1e-5f), what + " front wall line");
+                    Assert.That(L.Back + GardenTableLayout.WallThickness, Is.LessThan(GardenTableLayout.CardZ - 0.02f), what + " stays in front of the card");
+                    Assert.That(L.Front - GardenTableLayout.BedLabelReach, Is.GreaterThan(GardenTableLayout.HandleBackZ + 0.02f), what + " fence numbers and part labels clear the table handle");
+                    float gap = chapter.HasFence ? GardenTableLayout.SplitGap : 0f;
+                    Assert.That(L.Left - GardenTableLayout.RowLabelReach, Is.GreaterThan(-GardenTableLayout.TrayNearX + 0.02f), what + " row numbers clear the left tray");
+                    Assert.That(L.Right + gap + GardenTableLayout.WallThickness, Is.LessThan(GardenTableLayout.TrayNearX - 0.02f), what + " opened split clears the right tray");
+                    if (chapter.HasFence)
+                        Assert.That(GardenStation.PartLabelPosition(L, cols - 1, gap, 1, GardenTableLayout.WallThickness, GardenTableLayout.PartLabelOffset, GardenTableLayout.DeckTop).x + 0.08f,
+                            Is.LessThan(GardenTableLayout.TrayNearX), what + " right part label (at most 16 cm wide) clears the right tray");
+                    // Strips of this chapter lie on their rows without touching the next row.
+                    Assert.That(GardenTableLayout.StripBodyDepth * L.Cell / full, Is.LessThan(L.Cell), what + " strip bodies fit their rows");
+                }
+            var before = GardenTableLayout.BedFor(3, 4); var after = before.Turned();
+            var turned = GardenTableLayout.BedFor(4, 3);
+            Assert.That(turned.Cell, Is.EqualTo(before.Cell)); Assert.That(Vector3.Distance(turned.Center, before.Center), Is.LessThan(1e-6f), "a bed and its quarter turn share cell and centre");
+            Assert.That(after.Rows, Is.EqualTo(turned.Rows));
+            Assert.That(GardenTableLayout.TrayNearX, Is.GreaterThan(GardenTableLayout.HandleHalfX), "trays beside the handle");
+            Assert.That(GardenTableLayout.TrayNearX + GardenTableLayout.TrayWidth, Is.LessThan(GardenTableLayout.DeckHalfX - 0.03f), "trays on the deck inside the edging");
+            Assert.That(GardenTableLayout.TrayFrontZ, Is.GreaterThan(-GardenTableLayout.DeckHalfZ + 0.02f), "trays on the deck (front)");
+            Assert.That(GardenTableLayout.TrayBackZ, Is.LessThan(GardenTableLayout.CardZ - 0.03f), "trays in front of the card");
+            // Scales the 7 × 6 and 8 × 7 chapters get (reported to the owner).
+            var scales = GardenChapter.All.Select(c => GardenTableLayout.BedFor(c.Rows, c.Columns).Cell / full).ToArray();
+            Assert.That(scales.Take(3), Is.All.EqualTo(1f).Within(1e-6f));
+            Assert.That(scales[3], Is.EqualTo(0.5f / 7 / 0.09f).Within(1e-4f)); Assert.That(scales[4], Is.EqualTo(0.5f / 8 / 0.09f).Within(1e-4f));
         }
 
         /// Owner render review 2026-09-17: row numbers, fence spots, part labels and the sign were unreadable from the
@@ -234,11 +429,11 @@ namespace Airlift.Tests
 
         [Test] public void PartLabelsSitAtTheFrontWallUnderEachPart()
         {
-            const float wall = 0.012f, offset = 0.03f, deck = 0.0175f, gap = 0.03f;
+            float wall = GardenTableLayout.WallThickness, offset = GardenTableLayout.PartLabelOffset, deck = GardenTableLayout.DeckTop, gap = GardenTableLayout.SplitGap;
             foreach (var chapter in GardenChapter.All.Where(c => c.HasFence))
                 for (int split = 1; split < chapter.Columns; split++)
                 {
-                    var L = new GardenBedLayout(Center, Cell, chapter.Rows, chapter.Columns);
+                    var L = GardenTableLayout.BedFor(chapter.Rows, chapter.Columns);
                     var left = GardenStation.PartLabelPosition(L, split, gap, 0, wall, offset, deck);
                     var right = GardenStation.PartLabelPosition(L, split, gap, 1, wall, offset, deck);
                     foreach (var p in new[] { left, right })
@@ -248,7 +443,7 @@ namespace Airlift.Tests
                     }
                     Assert.That(left.x, Is.EqualTo((L.Left + L.BoundaryX(split)) / 2).Within(1e-5f), "left label centred under the left part");
                     Assert.That(right.x, Is.EqualTo((L.BoundaryX(split) + gap + L.Right + gap) / 2).Within(1e-5f), "right label centred under the opened right part");
-                    Assert.That(right.x - left.x, Is.GreaterThanOrEqualTo(0.15f), "labels about 11 cm wide never overlap");
+                    Assert.That(right.x - left.x, Is.GreaterThanOrEqualTo(0.15f), "labels about 12 cm wide never overlap");
                 }
         }
 
@@ -382,24 +577,26 @@ namespace Airlift.Tests
         }
 
         // ---- behaviour on in-memory objects (no scene changes) ----
-        const float Cell = 0.045f;
-        static readonly Vector3 Center = new Vector3(0f, 0.0415f, -0.03f);
+        const float Cell = GardenTableLayout.StripCell;
 
-        static GardenStation MakeGarden()
+        internal static GardenStation MakeGarden()
         {
             var root = new GameObject("test garden");
             var bedGo = new GameObject("bed"); bedGo.transform.SetParent(root.transform, false);
             var bed = bedGo.AddComponent<GardenBedView>();
-            bed.stationRoot = root.transform; bed.center = Center; bed.cell = Cell;
-            bed.turnable = new GameObject("turnable").transform; bed.turnable.SetParent(bedGo.transform, false); bed.turnable.localPosition = new Vector3(Center.x, 0, Center.z);
+            bed.stationRoot = root.transform;
+            var first = bed.LayoutFor(GardenChapter.All[0].Rows, GardenChapter.All[0].Columns);
+            bed.turnable = new GameObject("turnable").transform; bed.turnable.SetParent(bedGo.transform, false); bed.turnable.localPosition = new Vector3(first.Center.x, 0, first.Center.z);
             bed.cells = Enumerable.Range(0, 64).Select(i => { var c = new GameObject("cell " + i); c.transform.SetParent(bed.turnable, false); return c; }).ToArray();
+            bed.rowLabels = Enumerable.Range(0, 8).Select(i => { var t = new GameObject("row label " + (i + 1)).AddComponent<TextMeshPro>(); t.transform.SetParent(bedGo.transform, false); return (TMP_Text)t; }).ToArray();
+            bed.fenceTicks = Enumerable.Range(1, 7).Select(k => { var g = new GameObject("fence spot " + k); g.transform.SetParent(bedGo.transform, false); new GameObject("number").AddComponent<TextMeshPro>().transform.SetParent(g.transform, false); return g; }).ToArray();
             var pieces = new GameObject("pieces"); pieces.transform.SetParent(root.transform, false);
             var station = root.AddComponent<GardenStation>();
             station.stationRoot = root.transform; station.bed = bed; station.pieces = pieces; station.visualRoots = new[] { root };
             station.strips = Enumerable.Range(0, 8).Select(i => MakeStrip(pieces.transform, i)).ToArray();
             station.fence = new GameObject("fence").transform; station.fence.SetParent(pieces.transform, false); station.fence.localPosition = station.fenceHome;
-            station.wateringCan = new GameObject("can").transform; station.wateringCan.SetParent(root.transform, false); station.wateringCanHome = new Vector3(0.44f, 0.0175f, 0.12f);
-            station.butterfly = new GameObject("butterfly").transform; station.butterfly.SetParent(root.transform, false); station.butterflyHome = new Vector3(0.3f, 0.0875f, 0.34f);
+            station.wateringCan = new GameObject("can").transform; station.wateringCan.SetParent(root.transform, false); station.wateringCanHome = GardenTableLayout.CanHome;
+            station.butterfly = new GameObject("butterfly").transform; station.butterfly.SetParent(root.transform, false); station.butterflyHome = GardenTableLayout.ButterflyHome;
             station.wateringCan.localPosition = station.wateringCanHome; station.butterfly.localPosition = station.butterflyHome;
             return station;
         }
@@ -407,7 +604,7 @@ namespace Airlift.Tests
         static GardenStation.StripView MakeStrip(Transform parent, int i)
         {
             var piece = new GameObject("strip " + (i + 1)).transform; piece.SetParent(parent, false);
-            var view = new GardenStation.StripView { piece = piece, trayLeft = new Vector3(i % 2 == 0 ? -0.545f : 0.275f, 0.0315f, -0.06f - Mathf.Min(i / 2, 2) * 0.065f) };
+            var view = new GardenStation.StripView { piece = piece, trayFront = GardenTableLayout.TrayFront(i) };
             view.bodyLeft = new GameObject("body left").AddComponent<MeshFilter>(); view.bodyLeft.transform.SetParent(piece, false);
             view.bodyRight = new GameObject("body right").AddComponent<MeshFilter>(); view.bodyRight.transform.SetParent(piece, false);
             view.seedlings = new Transform[8]; view.sprouts = new Transform[8]; view.blooms = new Transform[8];
@@ -423,7 +620,18 @@ namespace Airlift.Tests
             return view;
         }
 
+        /// Open, then Next through the briefing and the concept intro (first time only) to chapter 1.
+        internal static void StartChapterOne(GardenStation s)
+        {
+            s.Open();
+            for (int i = 0; i < 10 && !s.ChapterActive; i++) Assert.That(s.Advance().Ok, Is.True, "advance to chapter 1");
+            Assert.That(s.Chapter.Number, Is.EqualTo(1));
+        }
+
         static int ActiveStrips(GardenStation s) => s.strips.Count(v => v.piece.gameObject.activeSelf);
+
+        /// Station-local centre of seedling k of a strip lying unturned (planted), with the piece scale applied.
+        static Vector3 SeedlingAt(GardenStation.StripView v, int k) => v.piece.localPosition + v.piece.localScale.x * v.seedlings[k].localPosition;
 
         [Test] public void OpenShowsTheBriefingAndAdvanceEntersChapterOne()
         {
@@ -438,8 +646,10 @@ namespace Airlift.Tests
                 Assert.That(s.pieces.activeSelf, Is.False, "nothing to grab during the briefing");
                 var early = s.Check(); Assert.That(early.Ok, Is.False); Assert.That(early.Reason, Is.EqualTo(GardenStation.BriefingReason));
 
+                for (int i = 0; i < ConceptIntros.Garden.Count; i++) Assert.That(s.Advance().Ok, Is.True, "concept intro step " + (i + 1));
                 var start = s.Advance();
                 Assert.That(start.Ok, Is.True, start.Reason);
+                Assert.That(start.Reason, Is.EqualTo("Chapter 1 · First rows. " + GardenChapter.All[0].Story + " " + GardenChapter.All[0].Task), "after the intro chapter 1 starts exactly as before");
                 Assert.That(s.ChapterActive, Is.True); Assert.That(s.Chapter.Number, Is.EqualTo(1));
                 Assert.That(s.CurrentStep().Id, Is.EqualTo(GardenSteps.StepId(GardenChapter.All[0])));
                 Assert.That(s.pieces.activeSelf, Is.True);
@@ -447,8 +657,13 @@ namespace Airlift.Tests
                 Assert.That(s.bed.ActiveCellCount(), Is.EqualTo(12), "3 × 4 bed");
                 Assert.That(s.fence.gameObject.activeSelf, Is.False, "no fence in chapter 1");
                 Assert.That(s.ToolsNow, Does.Contain("garden_check_bed").And.Contain("garden_clear_bed").And.Not.Contain("garden_turn_bed").And.Not.Contain("garden_split_bed").And.Not.Contain("next_chapter"));
+                var trayRotation = Quaternion.Euler(0, GardenTableLayout.TrayYaw, 0);
                 foreach (var v in s.strips.Take(5))
+                {
                     Assert.That(v.piece.localPosition, Is.EqualTo(GardenStation.TrayPosition(v, s.Model.StripLength(v.id), Cell)), v.id + " waits in the tray");
+                    Assert.That(Quaternion.Angle(v.piece.localRotation, trayRotation), Is.LessThan(0.01f), v.id + " lies front to back in the tray");
+                    Assert.That(v.piece.localScale, Is.EqualTo(Vector3.one), v.id + " full size");
+                }
             }
             finally { Object.DestroyImmediate(s.gameObject); }
         }
@@ -458,11 +673,12 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance();
+                StartChapterOne(s);
                 var L = s.BedLayout;
                 Assert.That(s.DropAt("strip-1", L.StripPosition(1, 4) + new Vector3(0.02f, 0.03f, 0.015f)), Is.True, "released a little off the row centre");
                 Assert.That(s.Model.RowOf("strip-1"), Is.EqualTo(1));
                 Assert.That(s.ViewOf("strip-1").piece.localPosition, Is.EqualTo(L.StripPosition(1, 4)), "snapped into row 2 from column 1");
+                Assert.That(s.ViewOf("strip-1").piece.localRotation, Is.EqualTo(Quaternion.identity), "planted strips lie along their row");
 
                 Assert.That(s.DropAt("strip-2", L.StripPosition(1, 4)), Is.False, "row 2 is taken");
                 Assert.That(s.Feedback, Does.Contain("Row 2"));
@@ -491,7 +707,7 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance();
+                StartChapterOne(s);
                 var L = s.BedLayout;
                 for (int r = 0; r < 3; r++) Assert.That(s.DropAt("strip-" + (r + 1), L.StripPosition(r, 4)), Is.True);
                 var check = s.Check();
@@ -511,6 +727,7 @@ namespace Airlift.Tests
                 }
                 Assert.That(s.ViewOf("strip-4").blooms.Any(b => b.gameObject.activeSelf), Is.False, "tray strips do not grow");
                 Assert.That(s.butterfly.localPosition, Is.Not.EqualTo(s.butterflyHome), "the butterfly landed on the bed");
+                Assert.That(s.butterfly.localPosition.y, Is.GreaterThan(L.Center.y + 0.1f), "the butterfly lands on top of the full-size plants");
                 Assert.That(s.wateringCan.localPosition, Is.EqualTo(s.wateringCanHome), "the watering can is back home");
                 Assert.That(s.DropAt("strip-1", new Vector3(0.45f, 0.03f, -0.3f)), Is.False, "an accepted bed does not change");
                 Assert.That(s.Model.RowOf("strip-1"), Is.EqualTo(0));
@@ -538,7 +755,7 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance(); s.JumpToChapter(2);
+                StartChapterOne(s); s.JumpToChapter(2);
                 Assert.That(s.Chapter.Id, Is.EqualTo("turn_the_bed"));
                 var before = s.BedLayout;
                 Assert.That(ActiveStrips(s), Is.EqualTo(3)); Assert.That(s.bed.ActiveCellCount(), Is.EqualTo(12));
@@ -549,13 +766,13 @@ namespace Airlift.Tests
                 Assert.That(s.Check().Ok, Is.False, "needs a turn first");
 
                 // Every seedling position before the turn, turned a quarter turn about the bed centre.
-                // Seedling centres sit on half-millimetre marks (1.5 cells = 67.5 mm), so compare within a tolerance
-                // instead of rounding to whole millimetres, which splits equal points on float noise.
+                // Seedling centres sit on half-cell marks, so compare within a tolerance instead of rounding to whole
+                // millimetres, which splits equal points on float noise.
                 var turnedSeedlings = new List<Vector2>();
                 foreach (var v in s.strips.Where(v => v.piece.gameObject.activeSelf))
                     for (int k = 0; k < 4; k++)
                     {
-                        var p = before.TurnPoint(v.piece.localPosition + v.seedlings[k].localPosition, 90f);
+                        var p = before.TurnPoint(SeedlingAt(v, k), 90f);
                         turnedSeedlings.Add(new Vector2(p.x, p.z));
                     }
 
@@ -565,13 +782,14 @@ namespace Airlift.Tests
                 Assert.That(s.bed.Layout.Rows, Is.EqualTo(4)); Assert.That(s.bed.ActiveCellCount(), Is.EqualTo(12));
                 Assert.That(ActiveStrips(s), Is.EqualTo(4), "regenerated as 4 rows of 3");
                 var after = s.BedLayout;
+                Assert.That(after.Cell, Is.EqualTo(before.Cell)); Assert.That(after.Center, Is.EqualTo(before.Center), "the turned bed keeps its cell and centre");
                 var planted = new List<Vector2>();
                 for (int r = 0; r < 4; r++)
                 {
                     var v = s.ViewOf("strip-" + (r + 1));
                     Assert.That(v.piece.localPosition, Is.EqualTo(after.StripPosition(r, 3)));
                     Assert.That(v.seedlings.Count(t => t.gameObject.activeSelf), Is.EqualTo(3));
-                    for (int k = 0; k < 3; k++) { var p = v.piece.localPosition + v.seedlings[k].localPosition; planted.Add(new Vector2(p.x, p.z)); }
+                    for (int k = 0; k < 3; k++) { var p = SeedlingAt(v, k); planted.Add(new Vector2(p.x, p.z)); }
                 }
                 Assert.That(turnedSeedlings.Count, Is.EqualTo(12)); Assert.That(planted.Count, Is.EqualTo(12));
                 foreach (var t in turnedSeedlings)
@@ -591,8 +809,9 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance(); s.JumpToChapter(3);   // 7 rows of 6, fence after column 5
+                StartChapterOne(s); s.JumpToChapter(3);   // 7 rows of 6, fence after column 5
                 var L = s.BedLayout;
+                float scale = L.Cell / s.stripCell;
                 Assert.That(ActiveStrips(s), Is.EqualTo(7)); Assert.That(s.bed.ActiveCellCount(), Is.EqualTo(42));
                 Assert.That(s.fence.gameObject.activeSelf, Is.True); Assert.That(s.fence.localPosition, Is.EqualTo(s.fenceHome));
                 var missing = s.Check(); Assert.That(missing.Ok, Is.False); Assert.That(missing.Reason, Is.EqualTo(GardenModel.NeedsFenceFeedback));
@@ -613,18 +832,19 @@ namespace Airlift.Tests
                 Assert.That(s.TryLessonTool("garden_check_bed", null, out var check), Is.True); Assert.That(check.Ok, Is.True, check.Reason);
                 Assert.That(s.ExpressionText, Is.EqualTo("7 × 6 = 7 × 5 + 7 × 1 = 42"));
                 var v = s.ViewOf("strip-1");
-                Assert.That(v.seedlings[4].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(Cell, 4, 6)).Within(1e-5f), "left part stays");
-                Assert.That(v.seedlings[5].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(Cell, 5, 6) + s.splitGap).Within(1e-5f), "right part slides apart");
+                Assert.That(v.seedlings[4].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(s.stripCell, 4, 6)).Within(1e-5f), "left part stays");
+                Assert.That(v.seedlings[5].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(s.stripCell, 5, 6) + s.splitGap / scale).Within(1e-5f), "right part slides apart");
+                Assert.That(SeedlingAt(v, 5).x - SeedlingAt(v, 4).x, Is.EqualTo(L.Cell + s.splitGap).Within(1e-5f), "on the table the seedlings open by the split gap");
                 Assert.That(v.bodyRight.gameObject.activeSelf, Is.True);
                 Assert.That(s.bed.SplitColumn, Is.EqualTo(5)); Assert.That(s.bed.SplitGap, Is.EqualTo(s.splitGap));
-                Assert.That(s.bed.Cell(0, 5).transform.localPosition.x - s.bed.Cell(0, 4).transform.localPosition.x, Is.EqualTo(Cell + s.splitGap).Within(1e-5f), "the bed opens at the fence");
+                Assert.That(s.bed.Cell(0, 5).transform.localPosition.x - s.bed.Cell(0, 4).transform.localPosition.x, Is.EqualTo(L.Cell + s.splitGap).Within(1e-5f), "the bed opens at the fence");
                 Assert.That(v.blooms[0].Cast<Transform>().Where(c => c.gameObject.activeSelf).All(c => c.name.StartsWith("Carrot ")), Is.True);
                 Assert.That(v.blooms[5].Cast<Transform>().Where(c => c.gameObject.activeSelf).All(c => c.name.StartsWith("Sunflower ")), Is.True, "a different crop on each side of the fence");
 
                 s.RestartChapter();
                 Assert.That(s.Model.FenceColumn, Is.EqualTo(0)); Assert.That(s.fence.localPosition, Is.EqualTo(s.fenceHome));
                 Assert.That(s.ViewOf("strip-1").bodyRight.gameObject.activeSelf, Is.False);
-                Assert.That(s.ViewOf("strip-1").seedlings[5].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(Cell, 5, 6)).Within(1e-5f), "restart closes the split");
+                Assert.That(s.ViewOf("strip-1").seedlings[5].localPosition.x, Is.EqualTo(GardenBedLayout.SeedlingX(s.stripCell, 5, 6)).Within(1e-5f), "restart closes the split");
             }
             finally { Object.DestroyImmediate(s.gameObject); }
         }
@@ -634,7 +854,7 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance();
+                StartChapterOne(s);
                 var L = s.BedLayout;
                 Assert.That(s.DropAt("strip-1", L.StripPosition(0, 4)), Is.True);
                 s.ViewOf("strip-2").held = true;
@@ -654,7 +874,7 @@ namespace Airlift.Tests
                 s.Open();
                 Assert.That(s.gameObject.activeSelf, Is.True); Assert.That(s.InBriefing, Is.True);
                 s.Advance();
-                Assert.That(s.Chapter.Number, Is.EqualTo(1));
+                Assert.That(s.Chapter.Number, Is.EqualTo(1), "the intro ran once; the second visit goes straight to the chapter");
                 for (int r = 0; r < 3; r++) s.DropAt("strip-" + (r + 1), L.StripPosition(r, 4));
                 Assert.That(s.Check().Ok, Is.True);
                 s.Close();
@@ -670,11 +890,12 @@ namespace Airlift.Tests
             var s = MakeGarden();
             try
             {
-                s.Open(); s.Advance();
+                StartChapterOne(s);
                 for (int i = 0; i < GardenChapter.All.Count; i++)
                 {
                     s.JumpToChapter(i);
                     var c = GardenChapter.All[i];
+                    var L = s.BedLayout;
                     Assert.That(s.bed.ActiveCellCount(), Is.EqualTo(c.Rows * c.Columns), c.Id);
                     for (int r = 0; r < 8; r++) for (int col = 0; col < 8; col++)
                     {
@@ -683,11 +904,25 @@ namespace Airlift.Tests
                         if (cell.activeSelf)
                         {
                             var p = s.bed.turnable.localPosition + cell.transform.localPosition;
-                            Assert.That(p.x, Is.EqualTo(s.BedLayout.ColumnX(col)).Within(1e-5f)); Assert.That(p.z, Is.EqualTo(s.BedLayout.RowZ(r)).Within(1e-5f));
+                            Assert.That(p.x, Is.EqualTo(L.ColumnX(col)).Within(1e-5f)); Assert.That(p.z, Is.EqualTo(L.RowZ(r)).Within(1e-5f));
+                            Assert.That(cell.transform.localScale.x, Is.EqualTo(L.Cell / s.bed.meshCell).Within(1e-5f), c.Id + " soil cell scaled to the bed cell");
                         }
                     }
                     Assert.That(ActiveStrips(s), Is.EqualTo(c.StartsPlanted ? c.Rows : c.StripLengths.Length), c.Id);
                     Assert.That(s.fence.gameObject.activeSelf, Is.EqualTo(c.HasFence), c.Id);
+                    // Pieces follow the bed: full size on tray chapters, the bed's cell on the 7 × 6 and 8 × 7 beds.
+                    float scale = L.Cell / s.stripCell;
+                    foreach (var v in s.strips.Where(v => v.piece.gameObject.activeSelf))
+                    {
+                        Assert.That(v.piece.localScale.x, Is.EqualTo(scale).Within(1e-5f), c.Id + " " + v.id + " piece scale");
+                        if (s.Model.RowOf(v.id) >= 0)
+                        {
+                            int len = s.Model.StripLength(v.id);
+                            Assert.That(SeedlingAt(v, len - 1).x - SeedlingAt(v, 0).x, Is.EqualTo((len - 1) * L.Cell).Within(1e-5f), c.Id + " seedlings one cell apart");
+                            Assert.That(SeedlingAt(v, 0).x, Is.EqualTo(L.ColumnX(0)).Within(1e-5f), c.Id + " first seedling over column 1");
+                        }
+                    }
+                    if (i >= 3) Assert.That(scale, Is.LessThan(1f), c.Id + " is too big for full-size pieces"); else Assert.That(scale, Is.EqualTo(1f), c.Id + " full size");
                 }
             }
             finally { Object.DestroyImmediate(s.gameObject); }
@@ -696,7 +931,7 @@ namespace Airlift.Tests
         // ---- pure rules ----
         [Test] public void LayoutMapsReleasesToRowsAndFenceLines()
         {
-            var L = new GardenBedLayout(Center, Cell, 3, 4);
+            var L = GardenTableLayout.BedFor(3, 4); var Center = L.Center;
             Assert.That(L.RowAt(L.StripPosition(0, 4)), Is.EqualTo(0)); Assert.That(L.RowAt(L.StripPosition(2, 3)), Is.EqualTo(2));
             Assert.That(L.RowAt(new Vector3(L.Right + Cell * 0.9f, Center.y, L.RowZ(1))), Is.EqualTo(1), "a long strip held by one end");
             Assert.That(L.RowAt(new Vector3(L.Right + Cell * 1.5f, Center.y, L.RowZ(1))), Is.EqualTo(-1));
@@ -708,6 +943,17 @@ namespace Airlift.Tests
             var p = L.TurnPoint(L.CellCenter(0, 0), 90f);
             bool onGrid = Enumerable.Range(0, 4).Any(r => Enumerable.Range(0, 3).Any(c => Vector3.Distance(turned.CellCenter(r, c), p) < 1e-5f));
             Assert.That(onGrid, Is.True, "a turned cell lands on a cell of the turned grid");
+
+            // Fit: full cells while the longer side fits the depth, the front wall on the front line; the longer side also
+            // sets the centre, so a bed and its turn share both.
+            var small = GardenBedLayout.Fit(0f, 0.05f, -0.3f, 0.5f, 0.09f, 3, 4);
+            Assert.That(small.Cell, Is.EqualTo(0.09f).Within(1e-6f)); Assert.That(small.Center.z, Is.EqualTo(-0.3f + 4 * 0.09f * 0.5f).Within(1e-6f));
+            Assert.That(small.Front, Is.EqualTo(-0.3f + 0.09f * 0.5f).Within(1e-6f), "a 3-row bed centred like its 4-row turn");
+            var big = GardenBedLayout.Fit(0f, 0.05f, -0.3f, 0.5f, 0.09f, 8, 7);
+            Assert.That(big.Cell, Is.EqualTo(0.0625f).Within(1e-6f)); Assert.That(big.Front, Is.EqualTo(-0.3f).Within(1e-6f)); Assert.That(big.Back, Is.EqualTo(0.2f).Within(1e-6f));
+            Assert.That(big.Center.y, Is.EqualTo(0.05f));
+            var turnedFit = GardenBedLayout.Fit(0f, 0.05f, -0.3f, 0.5f, 0.09f, 4, 3);
+            Assert.That(turnedFit.Center, Is.EqualTo(small.Center)); Assert.That(turnedFit.Cell, Is.EqualTo(small.Cell));
         }
 
         [Test] public void CopyRulesAndCrops()

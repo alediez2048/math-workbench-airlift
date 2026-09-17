@@ -24,7 +24,9 @@ using UnityEngine.UI;
 // world-locked root is replaced on every run; Cafe*.mat materials and the CafeTheme asset are created or updated.
 // Builds a cream deck with the Cargo "Workbench" footprint, the coffee counter, espresso machine, awning, menu board,
 // guest table and delivery bike, 4 plates and 6 boxes as drop targets, a pool of 15 grabbable pastries and the
-// "Cafe card" canvas in the Lesson interface frame. Cargo objects are not touched except the shared TableHandle
+// "Cafe card" canvas in the Lesson interface frame. Owner 2026-09-17: pastries are 2x the first build
+// (CafeLayout.PieceScale); the tray and one row of plates or boxes fill the front half, and the counter, guest table
+// and bike stand in the back half (CafeLayout footprints). Cargo objects are not touched except the shared TableHandle
 // piece list and the TypographyBindings inventory. Root inactive by default.
 // Run: unity command run_script --file AgentScripts/BuildCafeWorkbench.cs --entry BuildCafeWorkbench.Run
 public static class BuildCafeWorkbench
@@ -80,7 +82,8 @@ public static class BuildCafeWorkbench
         // 3. Deck: the Cargo footprint, a hair higher so the two decks never z-fight if both show.
         var deckSize = deckSource.sharedMesh.bounds.size;
         Rounded("Cafe deck", root, new Vector3(0, 0.0005f, 0), deckSize, cream, 0.016f);
-        Rounded("Counter mat", root, new Vector3(0, T + 0.0012f, CafeLayout.RowZ), new Vector3(1.0f, 0.002f, 0.2f), latte, 0.001f);
+        var row = CafeLayout.ContainerCenter(CafeTargetKind.Boxes, 0, 1);
+        Rounded("Counter mat", root, new Vector3(0, T + 0.0012f, row.z), new Vector3(1.16f, 0.002f, CafeLayout.BoxDepth + 0.01f), latte, 0.001f);
         foreach (float x in new[] { -1f, 1f })
             Rounded(x < 0 ? "Deck trim left" : "Deck trim right", root, new Vector3(x * (deckSize.x / 2 - 0.02f), T + 0.002f, 0), new Vector3(0.02f, 0.004f, deckSize.z - 0.04f), latte, 0.0019f);
         report.Add("deck " + F(deckSize.x) + " x " + F(deckSize.z) + " m");
@@ -91,7 +94,7 @@ public static class BuildCafeWorkbench
         MenuBoard(props);
         var steam = GuestTable(props);
         var bike = DeliveryBike(props);
-        payoff.steamPuffs = steam; payoff.bike = bike; payoff.bikeParked = CafeLayout.BikeParked;
+        payoff.steamPuffs = steam; payoff.bike = bike; payoff.bikeParked = CafeLayout.BikeParked; payoff.serveScale = CafeLayout.ServeScale;
         payoff.rackCenter = CafeLayout.RackCenter; payoff.rackScale = CafeLayout.RackScale;
         payoff.rackColumnOffset = CafeLayout.RackColumnOffset; payoff.rackLayerHeight = CafeLayout.RackLayerHeight;
         report.Add("props: coffee counter, espresso machine, awning, menu board, guest table (" + steam.Length + " steaming cups), delivery bike");
@@ -163,16 +166,19 @@ public static class BuildCafeWorkbench
     }
 
     // ---- props ----
+    /// Back-left corner: counter with the espresso machine, three cups in front of it and an awning on a low wall at
+    /// the back edge. Everything stays inside CafeLayout.CounterRect and under the card sightline.
     static void CoffeeCounter(Transform parent)
     {
-        var counter = Group("Coffee counter", parent, new Vector3(-0.53f, T, 0.1f));
-        Rounded("Counter body", counter, new Vector3(0, 0.035f, 0), new Vector3(0.2f, 0.07f, 0.46f), coffee, 0.008f);
-        Rounded("Counter top", counter, new Vector3(0, 0.074f, 0), new Vector3(0.22f, 0.008f, 0.48f), latte, 0.0039f);
+        var counter = Group("Coffee counter", parent, CafeLayout.CounterPosition);
+        float w = CafeLayout.CounterSize.x, dz = CafeLayout.CounterSize.y;
+        Rounded("Counter body", counter, new Vector3(0, 0.035f, 0), new Vector3(w - 0.02f, 0.07f, dz - 0.02f), coffee, 0.008f);
+        Rounded("Counter top", counter, new Vector3(0, 0.074f, 0), new Vector3(w, 0.008f, dz), latte, 0.0039f);
         var stripes = new[] { pink, mint, butter };
         for (int i = 0; i < 3; i++)
-            Rounded("Counter panel " + (i + 1), counter, new Vector3(0.1015f, 0.035f, -0.14f + i * 0.14f), new Vector3(0.004f, 0.04f, 0.11f), stripes[i], 0.0019f);
+            Rounded("Counter panel " + (i + 1), counter, new Vector3((w - 0.02f) / 2 + 0.0015f, 0.035f, -0.075f + i * 0.075f), new Vector3(0.004f, 0.04f, 0.06f), stripes[i], 0.0019f);
         float top = 0.078f;
-        var machine = Group("Espresso machine", counter, new Vector3(0, top, 0.14f));
+        var machine = Group("Espresso machine", counter, new Vector3(-0.03f, top, 0.0f));
         Rounded("Machine body", machine, new Vector3(0, 0.035f, 0), new Vector3(0.12f, 0.07f, 0.08f), pink, 0.012f);
         Rounded("Machine top", machine, new Vector3(0, 0.075f, 0), new Vector3(0.124f, 0.01f, 0.084f), espresso, 0.0045f);
         Rounded("Pressure dial", machine, new Vector3(0.028f, 0.05f, -0.042f), new Vector3(0.022f, 0.022f, 0.004f), mint, 0.0019f);
@@ -181,11 +187,11 @@ public static class BuildCafeWorkbench
         Rounded("Drip tray", machine, new Vector3(0, 0.003f, -0.055f), new Vector3(0.1f, 0.006f, 0.03f), latte, 0.0027f);
         Cup(machine, "Espresso cup", new Vector3(-0.02f, 0.006f, -0.055f), butter, 0.02f, 0.02f, false);
         for (int i = 0; i < 3; i++)
-            Cup(counter, "Counter cup " + (i + 1), new Vector3(0.02f, top, -0.12f + i * 0.06f), stripes[i], 0.022f, 0.024f, true);
+            Cup(counter, "Counter cup " + (i + 1), new Vector3(0.07f, top, -0.1f + i * 0.05f), stripes[i], 0.022f, 0.024f, true);
         // Awning on a low back wall behind the machine: canopy stripes stay under the card sightline.
-        var awning = Group("Awning", counter, new Vector3(0, 0, 0.29f));
-        Rounded("Cafe wall", awning, new Vector3(0, 0.075f, 0), new Vector3(0.22f, 0.15f, 0.015f), latte, 0.006f);
-        // Four stripes, 0.2 m wide in total, so the awning stays on the deck (counter centre x -0.53, deck edge -0.65).
+        var awning = Group("Awning", counter, new Vector3(0, 0, dz / 2 - 0.0085f));
+        Rounded("Cafe wall", awning, new Vector3(0, 0.075f, 0), new Vector3(w, 0.15f, 0.015f), latte, 0.006f);
+        // Four stripes, 0.2 m wide in total, so the awning stays on the counter footprint.
         for (int i = 0; i < 4; i++)
         {
             var stripe = Rounded("Awning stripe " + (i + 1), awning, new Vector3(-0.075f + i * 0.05f, 0.155f, -0.035f), new Vector3(0.05f, 0.008f, 0.07f), i % 2 == 0 ? pink : cream, 0.0036f);
@@ -226,20 +232,22 @@ public static class BuildCafeWorkbench
         }
     }
 
+    /// Guest table in the back middle, sized for four served plates (CafeLayout.ServedCenter), a steaming cup behind
+    /// each plate place and a ladder-back chair behind the table.
     static GameObject[] GuestTable(Transform parent)
     {
-        var table = Group("Guest table", parent, new Vector3(0, T, CafeLayout.RowZ + CafeLayout.ServeDistance + 0.02f));
+        float w = CafeLayout.GuestTableWidth, dz = CafeLayout.GuestTableDepth;
+        var table = Group("Guest table", parent, new Vector3(0, T, CafeLayout.GuestTableZ));
         float topY = CafeLayout.GuestTableTop - T;
-        Rounded("Table top", table, new Vector3(0, topY - 0.005f, 0), new Vector3(0.82f, 0.01f, 0.16f), latte, 0.0045f);
-        foreach (float x in new[] { -0.39f, 0.39f }) foreach (float z in new[] { -0.065f, 0.065f })
+        Rounded("Table top", table, new Vector3(0, topY - 0.005f, 0), new Vector3(w, 0.01f, dz), latte, 0.0045f);
+        foreach (float x in new[] { -(w / 2 - 0.02f), w / 2 - 0.02f }) foreach (float z in new[] { -(dz / 2 - 0.02f), dz / 2 - 0.02f })
             Rounded("Table leg", table, new Vector3(x, (topY - 0.01f) / 2, z), new Vector3(0.014f, topY - 0.01f, 0.014f), coffee, 0.006f);
         var seats = new[] { pink, mint, butter, pink };
         var puffs = new List<GameObject>();
-        float[] xs = { -0.33f, -0.11f, 0.11f, 0.33f };
-        for (int i = 0; i < xs.Length; i++)
+        for (int i = 0; i < CafeLayout.ChairX.Length; i++)
         {
             // Ladder-back chair facing the table: legs, seat, two back posts, a slat and a rounded top rail.
-            var chair = Group("Guest chair " + (i + 1), parent, new Vector3(xs[i], T, 0.382f));
+            var chair = Group("Guest chair " + (i + 1), parent, new Vector3(CafeLayout.ChairX[i], T, CafeLayout.ChairZ));
             foreach (float lx in new[] { -0.017f, 0.017f }) foreach (float lz in new[] { -0.013f, 0.013f })
                 Rounded("Chair leg", chair, new Vector3(lx, 0.015f, lz), new Vector3(0.005f, 0.03f, 0.005f), coffee, 0.0022f);
             Rounded("Seat", chair, new Vector3(0, 0.034f, 0), new Vector3(0.042f, 0.008f, 0.034f), seats[i], 0.0036f);
@@ -247,7 +255,11 @@ public static class BuildCafeWorkbench
                 Rounded("Back post", chair, new Vector3(px, 0.063f, 0.014f), new Vector3(0.005f, 0.05f, 0.005f), coffee, 0.0022f);
             Rounded("Back slat", chair, new Vector3(0, 0.066f, 0.014f), new Vector3(0.036f, 0.006f, 0.004f), seats[i], 0.0018f);
             Rounded("Top rail", chair, new Vector3(0, 0.086f, 0.014f), new Vector3(0.046f, 0.01f, 0.007f), seats[i], 0.0031f);
-            var cup = Cup(table, "Guest cup " + (i + 1), new Vector3(xs[i], topY, 0.062f), cream, 0.02f, 0.022f, true);
+        }
+        for (int i = 0; i < CafeLayout.MaxPlates; i++)
+        {
+            float x = CafeLayout.ServedCenter(i, CafeLayout.MaxPlates).x;
+            var cup = Cup(table, "Guest cup " + (i + 1), new Vector3(x, topY, CafeLayout.GuestCupZ), cream, 0.02f, 0.022f, true);
             var puff = Group("Steam puff " + (i + 1), cup, new Vector3(0, 0.036f, 0));
             Rounded("Puff", puff, Vector3.zero, new Vector3(0.014f, 0.014f, 0.014f), steamWhite, 0.0069f);
             Rounded("Puff small", puff, new Vector3(0.006f, 0.012f, 0), new Vector3(0.009f, 0.009f, 0.009f), steamWhite, 0.0044f);
@@ -303,7 +315,7 @@ public static class BuildCafeWorkbench
     {
         var plate = Group(name, parent, center);
         Cylinder("Plate", plate, new Vector3(0, CafeLayout.PlateHeight / 2, 0), new Vector3(CafeLayout.PlateDiameter, CafeLayout.PlateHeight / 2, CafeLayout.PlateDiameter), plateWhite);
-        Cylinder("Plate well", plate, new Vector3(0, CafeLayout.PlateHeight + 0.0003f, 0), new Vector3(CafeLayout.PlateDiameter * 0.72f, 0.0004f, CafeLayout.PlateDiameter * 0.72f), cream);
+        Cylinder("Plate well", plate, new Vector3(0, CafeLayout.PlateHeight + 0.0003f, 0), new Vector3(CafeLayout.PlateDiameter * 0.78f, 0.0004f, CafeLayout.PlateDiameter * 0.78f), cream);
         return plate;
     }
 
@@ -311,19 +323,19 @@ public static class BuildCafeWorkbench
     {
         float w = CafeLayout.BoxWidth, dz = CafeLayout.BoxDepth, h = CafeLayout.BoxHeight, wall = CafeLayout.BoxWall;
         var box = Group(name, parent, center);
-        Rounded("Box floor", box, new Vector3(0, wall / 2, 0), new Vector3(w, wall, dz), m, 0.0019f);
-        Rounded("Front wall", box, new Vector3(0, h / 2, -dz / 2 + wall / 2), new Vector3(w, h, wall), m, 0.0019f);
-        Rounded("Back wall", box, new Vector3(0, h / 2, dz / 2 - wall / 2), new Vector3(w, h, wall), m, 0.0019f);
-        Rounded("Left wall", box, new Vector3(-w / 2 + wall / 2, h / 2, 0), new Vector3(wall, h, dz), m, 0.0019f);
-        Rounded("Right wall", box, new Vector3(w / 2 - wall / 2, h / 2, 0), new Vector3(wall, h, dz), m, 0.0019f);
+        Rounded("Box floor", box, new Vector3(0, wall / 2, 0), new Vector3(w, wall, dz), m, 0.0036f);
+        Rounded("Front wall", box, new Vector3(0, h / 2, -dz / 2 + wall / 2), new Vector3(w, h, wall), m, 0.0036f);
+        Rounded("Back wall", box, new Vector3(0, h / 2, dz / 2 - wall / 2), new Vector3(w, h, wall), m, 0.0036f);
+        Rounded("Left wall", box, new Vector3(-w / 2 + wall / 2, h / 2, 0), new Vector3(wall, h, dz), m, 0.0036f);
+        Rounded("Right wall", box, new Vector3(w / 2 - wall / 2, h / 2, 0), new Vector3(wall, h, dz), m, 0.0036f);
         // Capacity tag on the back rim, facing the learner: above the pastries, never behind the front "Box N" label.
         var tagCenter = CafeLayout.CapacityTagCenter; var tagSize = CafeLayout.CapacityTagSize;
         Rounded("Capacity tag", box, tagCenter, new Vector3(tagSize.x, tagSize.y, 0.004f), cream, 0.0018f);
-        capacity = Text3D("Capacity number", box, tagCenter + new Vector3(0, 0, -0.0025f), "4", 0.22f, style.headingFont, theme.cardPanel, tagSize);
+        capacity = Text3D("Capacity number", box, tagCenter + new Vector3(0, 0, -0.0025f), "4", 0.34f, style.headingFont, theme.cardPanel, tagSize);
         var tagGroup = Group("Order up tag", box, new Vector3(0, CafeLayout.OrderUpTagY, 0));
-        Rounded("Tag plate", tagGroup, new Vector3(0, 0, 0.003f), new Vector3(0.11f, 0.03f, 0.004f), butter, 0.0018f);
+        Rounded("Tag plate", tagGroup, new Vector3(0, 0, 0.003f), new Vector3(0.14f, 0.03f, 0.004f), butter, 0.0018f);
         Rounded("Tag string", tagGroup, new Vector3(0, -0.03f, 0.003f), new Vector3(0.003f, 0.03f, 0.003f), espresso, 0.0013f);
-        Text3D("Order up text", tagGroup, Vector3.zero, "ORDER UP", 0.1f, style.headingFont, theme.cardPanel, new Vector2(0.11f, 0.03f));
+        Text3D("Order up text", tagGroup, Vector3.zero, "ORDER UP", 0.13f, style.headingFont, theme.cardPanel, new Vector2(0.14f, 0.03f));
         tagGroup.gameObject.SetActive(false);
         tag = tagGroup.gameObject;
         return box;
@@ -337,31 +349,34 @@ public static class BuildCafeWorkbench
     }
 
     // ---- pastries ----
+    /// Every size, offset and corner radius is the first build's times CafeLayout.PieceScale.
     static CafeStation.ItemView Pastry(Transform parent, int index)
     {
+        float k = CafeLayout.PieceScale;
+        Vector3 V(float x, float y, float z) => new Vector3(x, y, z) * k;
         var tray = CafeLayout.TrayPosition(index);
         var root = new GameObject("Pastry " + (index + 1)); root.transform.SetParent(parent, false); root.transform.localPosition = tray;
-        var collider = root.AddComponent<BoxCollider>(); collider.size = new Vector3(0.045f, 0.034f, 0.045f); collider.center = new Vector3(0, 0.004f, 0);
-        float b = -CafeLayout.ItemHalfHeight;   // bottom of every shape
+        var collider = root.AddComponent<BoxCollider>(); collider.size = CafeLayout.PieceColliderSize; collider.center = CafeLayout.PieceColliderCenter;
+        float b = -CafeLayout.ItemHalfHeight / k;   // bottom of every shape, first-build units
 
         var croissant = Group("Croissant", root.transform, Vector3.zero);
-        Rounded("Croissant body", croissant, new Vector3(0, b + 0.01f, 0), new Vector3(0.026f, 0.02f, 0.024f), croissantGold, 0.009f);
-        Rounded("Croissant ridge", croissant, new Vector3(0, b + 0.01f, 0), new Vector3(0.004f, 0.021f, 0.025f), cookieTan, 0.0018f);
-        var left = Rounded("Croissant horn left", croissant, new Vector3(-0.014f, b + 0.0065f, -0.004f), new Vector3(0.014f, 0.013f, 0.015f), croissantGold, 0.0055f);
+        Rounded("Croissant body", croissant, V(0, b + 0.01f, 0), V(0.026f, 0.02f, 0.024f), croissantGold, 0.009f * k);
+        Rounded("Croissant ridge", croissant, V(0, b + 0.01f, 0), V(0.004f, 0.021f, 0.025f), cookieTan, 0.0018f * k);
+        var left = Rounded("Croissant horn left", croissant, V(-0.014f, b + 0.0065f, -0.004f), V(0.014f, 0.013f, 0.015f), croissantGold, 0.0055f * k);
         left.transform.localRotation = Quaternion.Euler(0, 25f, 0);
-        var right = Rounded("Croissant horn right", croissant, new Vector3(0.014f, b + 0.0065f, -0.004f), new Vector3(0.014f, 0.013f, 0.015f), croissantGold, 0.0055f);
+        var right = Rounded("Croissant horn right", croissant, V(0.014f, b + 0.0065f, -0.004f), V(0.014f, 0.013f, 0.015f), croissantGold, 0.0055f * k);
         right.transform.localRotation = Quaternion.Euler(0, -25f, 0);
 
         var cookie = Group("Cookie", root.transform, Vector3.zero);
-        Rounded("Cookie disc", cookie, new Vector3(0, b + 0.005f, 0), new Vector3(0.036f, 0.01f, 0.036f), cookieTan, 0.0049f);
+        Rounded("Cookie disc", cookie, V(0, b + 0.005f, 0), V(0.036f, 0.01f, 0.036f), cookieTan, 0.0049f * k);
         foreach (var chip in new[] { new Vector3(-0.008f, 0, 0.006f), new Vector3(0.009f, 0, 0.004f), new Vector3(0.001f, 0, -0.009f) })
-            Rounded("Chocolate chip", cookie, new Vector3(chip.x, b + 0.0105f, chip.z), new Vector3(0.006f, 0.004f, 0.006f), chocolate, 0.0019f);
+            Rounded("Chocolate chip", cookie, V(chip.x, b + 0.0105f, chip.z), V(0.006f, 0.004f, 0.006f), chocolate, 0.0019f * k);
 
         var muffin = Group("Muffin", root.transform, Vector3.zero);
         var cups = new[] { pink, mint, butter };
-        Rounded("Muffin cup", muffin, new Vector3(0, b + 0.007f, 0), new Vector3(0.026f, 0.014f, 0.026f), cups[index % 3], 0.0049f);
-        Rounded("Muffin top", muffin, new Vector3(0, b + 0.019f, 0), new Vector3(0.032f, 0.014f, 0.032f), muffinBrown, 0.0069f);
-        Rounded("Berry", muffin, new Vector3(0, b + 0.0265f, 0), new Vector3(0.007f, 0.006f, 0.007f), pink, 0.0029f);
+        Rounded("Muffin cup", muffin, V(0, b + 0.007f, 0), V(0.026f, 0.014f, 0.026f), cups[index % 3], 0.0049f * k);
+        Rounded("Muffin top", muffin, V(0, b + 0.019f, 0), V(0.032f, 0.014f, 0.032f), muffinBrown, 0.0069f * k);
+        Rounded("Berry", muffin, V(0, b + 0.0265f, 0), V(0.007f, 0.006f, 0.007f), pink, 0.0029f * k);
 
         cookie.gameObject.SetActive(false); muffin.gameObject.SetActive(false);
         QuickActionsAPI.AddGrabInteraction(root);

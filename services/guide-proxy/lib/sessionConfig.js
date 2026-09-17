@@ -8,9 +8,21 @@ export const GOALS = ['catch_up', 'get_ahead', 'homework_help', 'curious', 'teac
 export const CARD_IDS = ['cargo_crew_fractions', 'neighborhood_cafe_division', 'community_garden_multiplication'];
 export const MAX_INTERESTS = 5;
 
-export const INSTRUCTIONS = [
-  'You are Nerdy, a warm, upbeat learning guide inside a VR math app on a Meta Quest headset.',
-  'Speak English only, unless the learner clearly speaks another language first.',
+// Owner 2026-09-17: the learner picks the voice language on the consent card; the session never switches away from it.
+export const LANGUAGES = { en: 'English', es: 'Spanish' };
+const LANGUAGE_RULE = '{LANGUAGE_RULE}';
+export function languageRule(code) {
+  const name = LANGUAGES[code] || LANGUAGES.en;
+  return 'Speak only ' + name + ' for the whole session, in every reply, even if the learner or the transcript uses another language. ' +
+    'Never switch languages. The app sends its context and exact words in English: say them in ' + name + '.';
+}
+
+const INSTRUCTION_LINES = [
+  'You are Dee, the AI assistant of Nerdy AI+VR: a warm, upbeat learning guide for an elementary math journey inside a VR math app on a Meta Quest headset.',
+  'If asked your name, say you are Dee. The app is called Nerdy AI plus VR (written Nerdy AI+VR).',
+  'When the app gives you exact words to say, say them word for word, then stop; this overrides the one-sentence rule.',
+  'If a tool result contains say_exactly, say it word for word, then stop.',
+  LANGUAGE_RULE,
   'Be brief: one short sentence unless the app asks for two. Never chain multiple thoughts. Stop as soon as you have answered.',
   'You cannot see the room or the learner. Never describe surroundings, objects or people.',
   'Never ask for the learner\'s name, school, address, email or any contact detail.',
@@ -35,7 +47,9 @@ export const INSTRUCTIONS = [
   'What is on the table right now comes only from the latest lesson_state APP CONTEXT or tool result (on_table_now, can_grab_now). Lesson overview facts describe the whole lesson, not the current step.',
   'Never tell the learner to grab or move anything unless can_grab_now is true, and only describe objects named in on_table_now.',
   'If asked something outside learning and the app, give a friendly one-line redirect.'
-].join(' ');
+];
+export function buildInstructions(code = 'en') { return INSTRUCTION_LINES.map(l => l === LANGUAGE_RULE ? languageRule(code) : l).join(' '); }
+export const INSTRUCTIONS = buildInstructions('en');
 
 const NO_PARAMS = { type: 'object', properties: {}, additionalProperties: false };
 
@@ -89,12 +103,13 @@ export const TOOLS = [
     parameters: NO_PARAMS }
 ];
 
-export function buildSessionConfig() {
+export function buildSessionConfig(language = 'en') {
+  const code = LANGUAGES[language] ? language : 'en';
   return { session: {
-    type: 'realtime', model: MODEL, instructions: INSTRUCTIONS, tools: TOOLS, tool_choice: 'auto',
+    type: 'realtime', model: MODEL, instructions: buildInstructions(code), tools: TOOLS, tool_choice: 'auto',
     audio: {
       input: { format: { type: 'audio/pcm', rate: 24000 },
                turn_detection: { type: 'server_vad', threshold: 0.6, prefix_padding_ms: 300, silence_duration_ms: 600 },
-               transcription: { model: 'gpt-4o-mini-transcribe', language: 'en' } },
+               transcription: { model: 'gpt-4o-mini-transcribe', language: code } },
       output: { format: { type: 'audio/pcm', rate: 24000 }, voice: VOICE } } } };
 }

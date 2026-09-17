@@ -5,24 +5,25 @@ using UnityEngine;
 
 namespace Airlift.Presentation.Cafe
 {
-    /// A plate or box and the pastries on it; they move together during a payoff.
+    /// A plate or box and the pastries on it; they move together during a payoff. Its "Plate N" / "Box N" deck label
+    /// is hidden once the container has left, so no label stays on an empty spot.
     public sealed class CafeRideGroup
     {
         public Transform container;
+        public Transform label;
         public readonly List<Transform> items = new List<Transform>();
     }
 
     /// Corner Café payoff, narrative only: it never decides whether an order is correct. Accepted plates slide onto
-    /// the guest table and steam rises from the cups; accepted full boxes show ORDER UP, load onto the delivery
-    /// bike's rack and ride off the deck. Outside Play mode (tests, editor previews) every motion jumps to its end.
+    /// the guest table (lined up by CafeLayout.ServedCenter, at serveScale) and steam rises from the cups; accepted
+    /// full boxes show ORDER UP, load onto the delivery bike's rack and ride off the deck. Outside Play mode (tests, editor previews) every motion jumps to its end.
     /// The station restores containers and pastries; ResetAll restores the bike and the steam.
     public sealed class CafePayoff : MonoBehaviour
     {
         [Tooltip("Café root: the station-local space every pose is expressed in.")]
         public Transform space;
         [Header("Serve plates")]
-        public float serveDistance = CafeLayout.ServeDistance;
-        public float serveRise = CafeLayout.GuestTableTop - CafeLayout.DeckTop;
+        public float serveScale = CafeLayout.ServeScale;
         public float serveSeconds = 1.1f;
         public GameObject[] steamPuffs = new GameObject[0];
         [Header("Ship boxes")]
@@ -52,29 +53,34 @@ namespace Airlift.Presentation.Cafe
         public void Serve(IList<CafeRideGroup> groups, Action done)
         {
             FinishNow();
-            var movers = Movers(groups);
-            var starts = new Vector3[movers.Count];
-            for (int i = 0; i < movers.Count; i++) starts[i] = movers[i].position;
-            Vector3 delta = Space.TransformVector(new Vector3(0f, serveRise, serveDistance));
+            var list = Valid(groups);
+            var from = Capture(list);
             Served = true;
-            Run(ServeRoutine(movers, starts, delta), () =>
+            Run(ServeRoutine(list, from), () =>
             {
-                for (int i = 0; i < movers.Count; i++) if (movers[i] != null) movers[i].position = starts[i] + delta;
+                ApplyServe(list, from, 1f);
+                HideLabels(list);
                 SetSteam(true);
                 done?.Invoke();
             });
         }
 
-        IEnumerator ServeRoutine(List<Transform> movers, Vector3[] starts, Vector3 delta)
+        IEnumerator ServeRoutine(List<CafeRideGroup> groups, Pose[][] from)
         {
             float t = 0f;
             while (t < 1f)
             {
                 t = Mathf.Min(1f, t + Time.deltaTime / Mathf.Max(0.01f, serveSeconds));
-                float eased = t * t * (3f - 2f * t);
-                for (int i = 0; i < movers.Count; i++) if (movers[i] != null) movers[i].position = starts[i] + delta * eased;
+                ApplyServe(groups, from, t * t * (3f - 2f * t));
                 yield return null;
             }
+        }
+
+        /// Blend each plate from its counter pose to its place on the guest table; pastries keep their offsets.
+        void ApplyServe(List<CafeRideGroup> groups, Pose[][] from, float t)
+        {
+            for (int g = 0; g < groups.Count; g++)
+                Blend(groups[g], from[g], Space.TransformPoint(CafeLayout.ServedCenter(g, groups.Count)), serveScale, t);
         }
 
         // ---- ship ----
@@ -82,13 +88,13 @@ namespace Airlift.Presentation.Cafe
         {
             FinishNow();
             if (tags != null) foreach (var tag in tags) if (tag != null) tag.SetActive(true);
-            var list = new List<CafeRideGroup>();
-            if (groups != null) foreach (var g in groups) if (g?.container != null) list.Add(g);
+            var list = Valid(groups);
             var from = Capture(list);
             Shipped = true;
             Run(ShipRoutine(list, from), () =>
             {
                 ApplyPose(list, from, 1f);
+                HideLabels(list);
                 if (!holdOnRack && bike != null)
                 {
                     Vector3 delta = Space.TransformVector(Vector3.forward * rideDistance);
@@ -107,6 +113,7 @@ namespace Airlift.Presentation.Cafe
         IEnumerator ShipRoutine(List<CafeRideGroup> groups, Pose[][] from)
         {
             yield return new WaitForSeconds(tagSeconds);   // let ORDER UP read first
+            HideLabels(groups);                              // the boxes leave their spots now
             float t = 0f;
             while (t < 1f)
             {
@@ -151,22 +158,36 @@ namespace Airlift.Presentation.Cafe
         void ApplyPose(List<CafeRideGroup> groups, Pose[][] from, float t)
         {
             if (bike == null) return;
-            float scale = Mathf.Lerp(1f, rackScale, t);
-            for (int g = 0; g < groups.Count; g++)
+            for (int g = 0; g < groups.Count; g++) Blend(groups[g], from[g], bike.TransformPoint(RackSlot(g)), rackScale, t);
+        }
+
+        /// Moves a container from its start pose toward target (world) and scales it toward endScale; its pastries keep
+        /// their offsets from the container, scaled with it.
+        static void Blend(CafeRideGroup group, Pose[] from, Vector3 target, float endScale, float t)
+        {
+            float scale = Mathf.Lerp(1f, endScale, t);
+            Vector3 start = from[0].position;
+            Vector3 pos = Vector3.Lerp(start, target, t);
+            group.container.position = pos;
+            group.container.localScale = Vector3.one * scale;
+            for (int i = 0; i < group.items.Count; i++)
             {
-                var group = groups[g];
-                Vector3 slot = bike.TransformPoint(RackSlot(g));
-                Vector3 start = from[g][0].position;
-                Vector3 pos = Vector3.Lerp(start, slot, t);
-                group.container.position = pos;
-                group.container.localScale = Vector3.one * scale;
-                for (int i = 0; i < group.items.Count; i++)
-                {
-                    var item = group.items[i]; if (item == null) continue;
-                    item.position = pos + (from[g][i + 1].position - start) * scale;
-                    item.localScale = Vector3.one * scale;
-                }
+                var item = group.items[i]; if (item == null) continue;
+                item.position = pos + (from[i + 1].position - start) * scale;
+                item.localScale = Vector3.one * scale;
             }
+        }
+
+        static List<CafeRideGroup> Valid(IList<CafeRideGroup> groups)
+        {
+            var list = new List<CafeRideGroup>();
+            if (groups != null) foreach (var g in groups) if (g?.container != null) list.Add(g);
+            return list;
+        }
+
+        static void HideLabels(List<CafeRideGroup> groups)
+        {
+            foreach (var g in groups) if (g.label != null) g.label.gameObject.SetActive(false);
         }
 
         /// Bike-local rack slot for the index-th box: two across, then a second layer on top.
@@ -212,19 +233,6 @@ namespace Airlift.Presentation.Cafe
             yield return routine;
             motion = null;
             FinishNow();
-        }
-
-        static List<Transform> Movers(IList<CafeRideGroup> groups)
-        {
-            var movers = new List<Transform>();
-            if (groups == null) return movers;
-            foreach (var g in groups)
-            {
-                if (g?.container == null) continue;
-                movers.Add(g.container);
-                foreach (var item in g.items) if (item != null && !movers.Contains(item)) movers.Add(item);
-            }
-            return movers;
         }
 
         // ---- steam ----

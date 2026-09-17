@@ -40,7 +40,7 @@ namespace Airlift.Lessons.Cafe
         /// Story for the lesson briefing card, before chapter 1. CafeStation puts its welcome line ("Welcome to
         /// the Corner Café.") in front, so this never names the café again.
         public const string BriefingStory =
-            "Nerdy is the head barista this morning. Guests share pastries on plates, and orders go out in full boxes.";
+            "Dee is the head barista this morning. Guests share pastries on plates, and orders go out in full boxes.";
 
         public string ItemWord(int count) => count == 1 ? ItemName : ItemPlural;
 
@@ -49,7 +49,7 @@ namespace Airlift.Lessons.Cafe
             new CafeChapter
             {
                 Number = 1, Id = "two_friends", Title = "Two friends",
-                Story = "Two friends sat down at the window table. Nerdy baked 6 croissants for them to share.",
+                Story = "Two friends sat down at the window table. Dee baked 6 croissants for them to share.",
                 Task = "Put all 6 croissants on the 2 plates so both plates match, then check.",
                 ItemName = "croissant", ItemPlural = "croissants", Items = 6,
                 Stages = new[] { new CafeStage { Kind = CafeTargetKind.Plates, Containers = 2 } },
@@ -59,7 +59,7 @@ namespace Airlift.Lessons.Cafe
             new CafeChapter
             {
                 Number = 2, Id = "table_of_three", Title = "Table of three",
-                Story = "Three guests sat down at the big table. Nerdy has a tray of 12 pastries for them.",
+                Story = "Three guests sat down at the big table. Dee has a tray of 12 pastries for them.",
                 Task = "Share all 12 pastries onto the 3 plates so every plate matches, dealing one round at a time if you like, then check.",
                 ItemName = "pastry", ItemPlural = "pastries", Items = 12,
                 Stages = new[] { new CafeStage { Kind = CafeTargetKind.Plates, Containers = 3 } },
@@ -69,7 +69,7 @@ namespace Airlift.Lessons.Cafe
             new CafeChapter
             {
                 Number = 3, Id = "box_it_up", Title = "Box it up",
-                Story = "A phone order came in for 12 cookies, 4 to a box. Nerdy set out 5 empty boxes, more than the order needs.",
+                Story = "A phone order came in for 12 cookies, 4 to a box. Dee set out 5 empty boxes, more than the order needs.",
                 Task = "Pack all 12 cookies so every box you use is full, then check.",
                 ItemName = "cookie", ItemPlural = "cookies", Items = 12,
                 Stages = new[] { new CafeStage { Kind = CafeTargetKind.Boxes, Containers = 5, BoxCapacity = 4 } },
@@ -79,7 +79,7 @@ namespace Airlift.Lessons.Cafe
             new CafeChapter
             {
                 Number = 4, Id = "bigger_order", Title = "Bigger order",
-                Story = "A bigger order came in for 15 muffins, 5 to a box. Nerdy set out 5 empty boxes on the counter.",
+                Story = "A bigger order came in for 15 muffins, 5 to a box. Dee set out 5 empty boxes on the counter.",
                 Task = "Pack all 15 muffins so every box you use is full, then check.",
                 ItemName = "muffin", ItemPlural = "muffins", Items = 15,
                 Stages = new[] { new CafeStage { Kind = CafeTargetKind.Boxes, Containers = 5, BoxCapacity = 5 } },
@@ -89,7 +89,7 @@ namespace Airlift.Lessons.Cafe
             new CafeChapter
             {
                 Number = 5, Id = "fact_family", Title = "Fact family",
-                Story = "Nerdy baked 12 muffins. First 4 guests share them, then the same 12 go out as an order in boxes of 3.",
+                Story = "Dee baked 12 muffins. First 4 guests share them, then the same 12 go out as an order in boxes of 3.",
                 Task = "Share the 12 muffins onto 4 plates, then pack the same muffins into full boxes of 3.",
                 ItemName = "muffin", ItemPlural = "muffins", Items = 12,
                 Stages = new[]

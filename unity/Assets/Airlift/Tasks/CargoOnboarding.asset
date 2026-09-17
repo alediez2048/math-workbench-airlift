@@ -36,8 +36,8 @@ MonoBehaviour:
 
 
     Say "start loading" or "yes" to open Chapter 1. Say "show me the demo" to watch it again.'
-  trayPosition: {x: -0.13, y: 0.047, z: -0.17}
-  targetPosition: {x: 0, y: 0.063, z: 0.02}
+  trayPosition: {x: -0.13, y: 0.0725, z: -0.17}
+  targetPosition: {x: 0, y: 0.08999998, z: 0.02}
   demonstrationSeconds: 4
   placementRadius: 0.16
   boardDistance: 0.65

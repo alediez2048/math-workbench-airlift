@@ -66,6 +66,16 @@ namespace Airlift.Presentation.Garden
 
         public GardenBedLayout Turned() => new GardenBedLayout(Center, Cell, Columns, Rows);
 
+        /// The bed for rows × columns: cells as large as maxCell while the longer side fits maxDepth (smaller only when it
+        /// must), centred on centerX, growing back from the front line frontZ. The longer side sets both the cell and the
+        /// centre, so a bed and its quarter turn share them and turning moves no seedling.
+        public static GardenBedLayout Fit(float centerX, float restY, float frontZ, float maxDepth, float maxCell, int rows, int columns)
+        {
+            int span = Mathf.Max(1, Mathf.Max(rows, columns));
+            float cell = Mathf.Min(maxCell, maxDepth / span);
+            return new GardenBedLayout(new Vector3(centerX, restY, frontZ + span * cell * 0.5f), cell, rows, columns);
+        }
+
         /// Where a point of the grid goes when the bed turns a quarter turn clockwise seen from above
         /// (positive yaw), about the bed centre.
         public Vector3 TurnPoint(Vector3 local, float degrees)

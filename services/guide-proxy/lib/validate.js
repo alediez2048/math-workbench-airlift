@@ -1,3 +1,4 @@
+import { LANGUAGES } from './sessionConfig.js';
 export const CLIENT_MARKER = 'nerdy-quest';
 const NONCE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -7,6 +8,7 @@ export function validateSessionRequest(method, headers, body) {
   if (!body || typeof body !== 'object') return { ok: false, status: 400, error: 'body' };
   if (typeof body.launchNonce !== 'string' || !NONCE.test(body.launchNonce)) return { ok: false, status: 400, error: 'nonce' };
   if (typeof body.build !== 'string' || body.build.length > 40) return { ok: false, status: 400, error: 'build' };
+  if (body.language !== undefined && !Object.hasOwn(LANGUAGES, body.language)) return { ok: false, status: 400, error: 'language' };
   return { ok: true };
 }
 

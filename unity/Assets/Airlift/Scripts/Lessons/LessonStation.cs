@@ -33,6 +33,8 @@ namespace Airlift.Lessons
         public abstract bool ChapterActive { get; }   // false during the briefing
         public abstract bool AnyHeld { get; }
         public abstract LessonChapterFacts Chapter { get; }   // default(LessonChapterFacts) when !ChapterActive
+        /// The concept-intro step on the card right now, or null outside the intro (ConceptIntros).
+        public virtual IntroStep CurrentIntro => null;
         public abstract Airlift.Welcome.GuideStep CurrentStep();
         public virtual string Instruction => body != null ? Airlift.Welcome.GuideSteps.StripDiagnostics(body.text) : "";
         public abstract string[] ToolNames { get; }   // lesson-specific tools this station owns

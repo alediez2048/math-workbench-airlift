@@ -38,6 +38,47 @@ namespace Airlift.Tests
             Assert.That(n.consentRoot.transform.localScale.x, Is.GreaterThan(1.3f), "consent card enlarged");
         }
 
+        // Owner 2026-09-17: the logo vanished from the consent card after the launcher-icon attempt re-imported the
+        // logo as a plain texture, which removes the sprite the Image points at.
+        [Test] public void ConsentCardShowsTheNerdyLogo()
+        {
+            var importer = (TextureImporter)AssetImporter.GetAtPath("Assets/Airlift/Branding/nerdy-logo-green.png");
+            Assert.That(importer.textureType, Is.EqualTo(TextureImporterType.Sprite), "logo imports as a sprite");
+            var logo = Director().consentRoot.GetComponentsInChildren<Image>(true).FirstOrDefault(i => i.name == "Logo");
+            Assert.That(logo, Is.Not.Null, "consent card has a Logo image");
+            Assert.That(logo.gameObject.activeSelf && logo.enabled, Is.True);
+            Assert.That(logo.sprite, Is.Not.Null, "Logo image has its sprite");
+            Assert.That(logo.sprite.texture.name, Is.EqualTo("nerdy-logo-green"));
+        }
+
+        [Test] public void ConsentCardChoosesTheVoiceLanguage()
+        {
+            var n = Director();
+            Assert.That(n.languageButtons, Is.Not.Null); Assert.That(n.languageButtons.Length, Is.EqualTo(2));
+            string[] codes = { "en", "es" }; string[] labels = { "English", "Español" };
+            for (int i = 0; i < 2; i++)
+            {
+                var b = n.languageButtons[i];
+                Assert.That(b.transform.IsChildOf(n.consentRoot.transform), Is.True, "chosen on the first screen, before the voice starts");
+                Assert.That(b.GetComponentInChildren<TMP_Text>(true).text, Is.EqualTo(labels[i]));
+                bool wired = Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Any(k => b.onClick.GetPersistentTarget(k) == n && b.onClick.GetPersistentMethodName(k) == "ChooseLanguage");
+                Assert.That(wired, Is.True, labels[i] + " calls ChooseLanguage");
+            }
+            Assert.That(n.consentRoot.GetComponentsInChildren<TMP_Text>(true).Any(t => t.text == "Voice language"), Is.True);
+            string saved = PlayerPrefs.GetString(GuideLanguage.PrefsKey, "");
+            try
+            {
+                n.ChooseLanguage("es");
+                Assert.That(n.Language, Is.EqualTo("es")); Assert.That(n.guide.language, Is.EqualTo("es"));
+                Assert.That(n.languageButtons[1].GetComponent<Image>().sprite.name, Is.EqualTo("NerdyPillGradient"), "Español shows as chosen");
+                Assert.That(n.languageButtons[0].GetComponent<Image>().sprite.name, Is.EqualTo("NerdyPill"));
+                n.ChooseLanguage("en");
+                Assert.That(n.guide.language, Is.EqualTo("en"));
+                Assert.That(n.languageButtons[0].GetComponent<Image>().sprite.name, Is.EqualTo("NerdyPillGradient"));
+            }
+            finally { if (saved == "") PlayerPrefs.DeleteKey(GuideLanguage.PrefsKey); else PlayerPrefs.SetString(GuideLanguage.PrefsKey, saved); }
+        }
+
         [Test] public void HudHasPauseAndMusicControlsAndSitsAboveTheLessonPanel()
         {
             var n = Director();

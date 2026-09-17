@@ -284,6 +284,50 @@
       ],
       "requiredAssets": [],
       "requiredCueIds": []
+    },
+    "CC-PL-06": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CardPolishTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GuideLanguageTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-PL-07": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "ConceptIntroTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "IntroNarrationTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "SplitterRulesTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "CargoIntroTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "CafeIntroTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GardenIntroTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
     }
   },
   "phaseEnds": {

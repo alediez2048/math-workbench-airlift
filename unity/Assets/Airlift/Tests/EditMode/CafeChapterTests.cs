@@ -146,7 +146,7 @@ namespace Airlift.Tests
                 Assert.That(c.Accepted, Does.Contain(last.Kind == CafeTargetKind.Plates ? "plate" : "box"), c.Id);
                 Assert.That(c.Task, Does.Contain(c.Stages[0].Kind == CafeTargetKind.Plates ? "plates" : "box"), c.Id);
             }
-            Assert.That(CafeChapter.BriefingStory, Does.Contain("Nerdy"));
+            Assert.That(CafeChapter.BriefingStory, Does.Contain("Dee"));
             Assert.That(CafeChapter.BriefingStory, Does.Contain("barista"));
             Assert.That(CafeChapter.BriefingStory, Does.Not.Contain("Welcome"), "the station says the welcome line");
             Assert.That(CafeChapter.BriefingStory.ToLowerInvariant(), Does.Not.Contain("caf"), "the welcome line already names the café");

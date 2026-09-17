@@ -9,9 +9,9 @@ export function createHandler({ apiKey = process.env.OPENAI_API_KEY, fetchImpl =
     if (!check.ok) { res.status(check.status).json({ error: check.error }); return; }
     if (!apiKey) { res.status(503).json({ error: 'not configured' }); return; }
     if (!limit.allow()) { res.status(429).json({ error: 'budget' }); return; }
-    const minted = await mintClientSecret(apiKey, fetchImpl);
+    const minted = await mintClientSecret(apiKey, fetchImpl, req.body.language || 'en');
     if (!minted.ok) { log('mint failed', minted.status, minted.reason); res.status(502).json({ error: 'mint failed' }); return; }
-    log('minted', req.body.build, 'expires', minted.expires_at); // no nonce, no secret, no audio
+    log('minted', req.body.build, req.body.language || 'en', 'expires', minted.expires_at); // no nonce, no secret, no audio
     res.status(200).json({ value: minted.value, expires_at: minted.expires_at, model: minted.model });
   };
 }

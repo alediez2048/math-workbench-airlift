@@ -17,6 +17,8 @@ namespace Airlift.Guide
     public sealed class GuideSession : MonoBehaviour
     {
         public string mintUrl = "";
+        [Tooltip("Voice language (en or es) the session is minted and locked in; set from the consent card before Begin.")]
+        public string language = "en";
         public string clientMarker = "nerdy-quest";
         public string build = "0.2.0";
         public bool adultTesterOnlySatisfied = true;
@@ -88,7 +90,7 @@ namespace Airlift.Guide
             string secret = null;
             if (!string.IsNullOrEmpty(mintUrl))
             {
-                var body = "{\"launchNonce\":\"" + Guid.NewGuid().ToString("N") + "\",\"build\":\"" + build + "\"}";
+                var body = GuideMessages.MintRequestBody(Guid.NewGuid().ToString("N"), build, language);
                 using (var req = new UnityWebRequest(mintUrl, "POST"))
                 {
                     req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body)); req.downloadHandler = new DownloadHandlerBuffer();

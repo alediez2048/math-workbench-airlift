@@ -20,6 +20,13 @@ namespace Airlift.Guide
     /// Pure parser and builders for the OpenAI Realtime GA wire format. No Unity state.
     public static class GuideMessages
     {
+        /// Body of the session mint request; the language (en or es) decides the language the server locks the session to.
+        public static string MintRequestBody(string launchNonce, string build, string language)
+        {
+            string code = language == "es" ? "es" : "en";
+            return new JObject { ["launchNonce"] = launchNonce, ["build"] = build, ["language"] = code }.ToString(Newtonsoft.Json.Formatting.None);
+        }
+
         public static GuideEvent Parse(string json)
         {
             var e = new GuideEvent();

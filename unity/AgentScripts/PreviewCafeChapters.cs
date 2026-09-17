@@ -48,6 +48,13 @@ public static class PreviewCafeChapters
             sb.AppendLine("briefing heading='" + station.heading.text + "' body='" + Flat(station.body.text) + "' hints='" + station.sayHints.text + "' tools=" + string.Join("/", station.ToolsNow));
             var start = station.Advance();
             sb.AppendLine("advance ok=" + start.Ok + " '" + start.Reason + "'");
+            // Concept intro frames (2026-09-17): one render per step, then on to chapter 1.
+            for (int intro = 1; station.CurrentIntro != null && intro < 8; intro++)
+            {
+                Shot(n.head, Path.Combine(dir, "0-intro" + intro + ".png"));
+                sb.AppendLine("intro " + intro + " heading='" + station.heading.text + "' body='" + station.body.text.Replace("\n", " | ") + "'");
+                station.Advance();
+            }
 
             for (int i = 0; i < CafeChapter.All.Count; i++)
             {

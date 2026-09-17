@@ -29,7 +29,7 @@ namespace Airlift.Welcome
                 Description = "Corner Café: share pastries on plates and pack orders into full boxes.",
                 Facts = new[] {
                     "Neighborhood Café is a division lesson set at the Corner Café, a small neighborhood café on a busy morning, on a toy café table.",
-                    "The learner helps run the café and Nerdy is the head barista: pastries come out of the oven, guests share them on plates, and orders go out in boxes.",
+                    "The learner helps run the café and Dee is the head barista: pastries come out of the oven, guests share them on plates, and orders go out in boxes.",
                     "Sharing onto plates: every pastry goes on a plate and every plate holds the same number. Packing into boxes: every pastry goes in a box and every box used is full; the number of boxes is the answer.",
                     "Five chapters: Two friends (6 ÷ 2 = 3), Table of three (12 ÷ 3 = 4), Box it up (12 ÷ 4 = 3), Bigger order (15 ÷ 5 = 3), and Fact family, where the same 12 muffins are shared onto 4 plates and packed into boxes of 3 (12 ÷ 4 = 3, 12 ÷ 3 = 4, 3 × 4 = 12).",
                     "The app checks an order only when asked. Served plates slide to the guest table and full boxes go out on the delivery bike.",
@@ -39,7 +39,7 @@ namespace Airlift.Welcome
                 Description = "Sunny Plot: plant equal rows, turn the bed and split it with a fence.",
                 Facts = new[] {
                     "Community Garden is a multiplication lesson set at Sunny Plot, the neighborhood's shared garden, on a toy garden table.",
-                    "The learner plants the garden and Nerdy is the head gardener: seedlings come in strips, and each strip plants one whole row of a bed.",
+                    "The learner plants the garden and Dee is the head gardener: seedlings come in strips, and each strip plants one whole row of a bed.",
                     "Beds are always read as rows × columns: a 3 × 4 bed is 3 rows of 4. A bed is accepted when every row is planted with the same number of seedlings.",
                     "Five chapters: First rows (3 × 4 = 12), Equal rows (4 × 5 = 20), Turn the bed (3 × 4 = 4 × 3 = 12), Split the bed with a fence (7 × 6 = 7 × 5 + 7 × 1 = 42), and Your own split, where the learner chooses where the fence goes in an 8 × 7 bed.",
                     "The app checks a bed only when asked. Accepted rows sprout into lettuce, carrots, sunflowers and beans.",

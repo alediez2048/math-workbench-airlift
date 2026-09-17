@@ -14,7 +14,8 @@ namespace Airlift.Lessons.Cafe
     /// Neighborhood Café / Corner Café workbench. All arithmetic decisions come from CafeModel; this class maps grabs,
     /// releases, buttons and voice tools to model commands and mirrors the model into the pastry pool, the plates or
     /// boxes, the story card and the payoff. Pastries released over a plate or box are placed there; anywhere else
-    /// they go back to the tray. Nothing is judged until Check.
+    /// they go back to the tray. Nothing is judged until Check. The first Start of an app run shows the concept intro
+    /// "What is dividing?" (ConceptIntros.Cafe) before chapter 1; its visuals pose the pieces, never the model.
     public sealed class CafeStation : LessonStation
     {
         [System.Serializable]
@@ -39,6 +40,8 @@ namespace Airlift.Lessons.Cafe
         public const string ClearedReason = "The pastries are back on the tray.";
         public const string WelcomeLine = "Welcome to the Corner Café.";
         public const string StartLine = "Say yes or press Start.";
+        public const string IntroReason = "Let's finish the intro first: say next or press Next.";
+        static readonly string[] IntroTools = { "advance_step", "request_help", "back_to_lessons" };
 
         [Tooltip("Station-local space for releases and layout; the café root when empty.")]
         public Transform space;
@@ -61,6 +64,8 @@ namespace Airlift.Lessons.Cafe
 
         CafeModel model;
         bool open, briefing = true, initialised;
+        int introIndex = -1;                                       // step on the card, -1 outside the intro
+        bool introSeen;                                            // finished once this app run
         float bodyBaseSize;
         string feedback = "";
         readonly List<string>[] order = { new List<string>(), new List<string>(), new List<string>(), new List<string>(), new List<string>(), new List<string>() };
@@ -70,7 +75,11 @@ namespace Airlift.Lessons.Cafe
         public override string Title => "Neighborhood Café";
         public override string StoryName => "Corner Café";
         public override bool IsOpen => open;
-        public override bool ChapterActive => open && !briefing;
+        public override bool ChapterActive => open && !briefing;   // the intro is part of the briefing
+        static IReadOnlyList<IntroStep> Intro => ConceptIntros.Cafe;
+        bool InIntro => open && introIndex >= 0 && introIndex < Intro.Count;
+        public override IntroStep CurrentIntro => InIntro ? Intro[introIndex] : null;
+        bool LastIntroStep => introIndex == Intro.Count - 1;
         public override bool AnyHeld { get { if (items != null) foreach (var v in items) if (v != null && v.held) return true; return false; } }
 
         /// Read-only view of the engine for tests and editor previews. Buttons and tools go through the actions.
@@ -92,6 +101,7 @@ namespace Airlift.Lessons.Cafe
         {
             if (!open) return new GuideStep("cards", "The lesson cards are showing; no table.", false);
             EnsureInit();
+            if (InIntro) return CafeSteps.Intro(CurrentIntro, LastIntroStep);
             return briefing ? CafeSteps.Briefing() : CafeSteps.ForChapter(model);
         }
 
@@ -103,6 +113,7 @@ namespace Airlift.Lessons.Cafe
             {
                 if (!open) return new string[0];
                 EnsureInit();
+                if (InIntro) return (string[])IntroTools.Clone();
                 return ToolsFor(briefing, model.Stage.Kind, model.ChapterComplete, model.IsLastChapter);
             }
         }
@@ -161,6 +172,7 @@ namespace Airlift.Lessons.Cafe
             EnsureInit();
             open = true;
             briefing = true;
+            introIndex = -1;
             feedback = "";
             ReleaseHolds();
             SetVisualsActive(true);
@@ -175,9 +187,12 @@ namespace Airlift.Lessons.Cafe
             StopAllCoroutines();
             if (payoff != null) payoff.ResetAll();
             ReleaseHolds();
+            bool wasIntro = InIntro;
+            introIndex = -1;                 // an unfinished intro counts as not seen
             if (!model.ChapterComplete) model.ResetTable();
             ClearOrder();
             feedback = "";
+            if (wasIntro) PlaceStage();      // undo the intro's plates or boxes
             if (open) LayoutAll();
             open = false;
             briefing = true;
@@ -196,6 +211,7 @@ namespace Airlift.Lessons.Cafe
             if (payoff != null) payoff.ResetAll();
             model.StartChapter(index);
             briefing = false;
+            introIndex = -1;
             feedback = "";
             if (piecesRoot != null) piecesRoot.SetActive(true);
             ClearOrder();
@@ -296,7 +312,21 @@ namespace Airlift.Lessons.Cafe
         {
             EnsureInit();
             if (!open) return new LessonActionResult(false, ClosedReason);
+            if (InIntro)
+            {
+                if (!LastIntroStep) return ShowIntro(introIndex + 1);
+                introIndex = -1;
+                introSeen = true;
+                return StartFromBriefing();
+            }
             if (!briefing) return NextChapter();
+            if (!introSeen && Intro.Count > 0) return ShowIntro(0);
+            return StartFromBriefing();
+        }
+
+        /// Briefing (or the intro's last step) -> the chapter the café resumes at.
+        LessonActionResult StartFromBriefing()
+        {
             if (model.AllChaptersComplete) model.StartChapter(0);
             else if (model.ChapterComplete) model.NextChapter();
             else model.ResetTable();
@@ -401,6 +431,7 @@ namespace Airlift.Lessons.Cafe
             EnsureInit();
             refusal = default;
             if (!open) { refusal = new LessonActionResult(false, ClosedReason); return false; }
+            if (InIntro) { refusal = Refuse(IntroReason); return false; }
             if (briefing) { refusal = Refuse(BriefingReason); return false; }
             if (AnyHeld) { refusal = Refuse(HeldReason); return false; }
             if (payoff != null) payoff.FinishNow();
@@ -421,7 +452,8 @@ namespace Airlift.Lessons.Cafe
             for (int c = 0; c < model.ContainerCount; c++)
             {
                 if (containers == null || c >= containers.Length || containers[c] == null || model.CountIn(c) == 0) continue;
-                var group = new CafeRideGroup { container = containers[c] };
+                var labels = kind == CafeTargetKind.Plates ? plateLabels : boxLabels;
+                var group = new CafeRideGroup { container = containers[c], label = labels != null && c < labels.Length && labels[c] != null ? labels[c].transform : null };
                 foreach (var id in model.ItemIds)
                     if (model.ContainerOf(id) == c && byId.TryGetValue(id, out var view) && view.piece != null) group.items.Add(view.piece);
                 groups.Add(group);
@@ -434,14 +466,53 @@ namespace Airlift.Lessons.Cafe
         void ShowStage()
         {
             if (payoff != null) payoff.ResetAll();
-            var kind = model.Stage.Kind; int count = model.ContainerCount;
+            PlaceStage();
+            LayoutAll();
+            Refresh();
+        }
+
+        void PlaceStage() => PlaceTargets(model.Stage.Kind, model.ContainerCount, model.Stage.BoxCapacity);
+
+        void PlaceTargets(CafeTargetKind kind, int count, int capacity)
+        {
             PlaceContainers(plates, plateLabels, CafeTargetKind.Plates, kind == CafeTargetKind.Plates ? count : 0, "Plate ");
             PlaceContainers(boxes, boxLabels, CafeTargetKind.Boxes, kind == CafeTargetKind.Boxes ? count : 0, "Box ");
             if (boxCapacityLabels != null)
-                foreach (var label in boxCapacityLabels) if (label != null) label.text = model.Stage.BoxCapacity.ToString();
+                foreach (var label in boxCapacityLabels) if (label != null) label.text = capacity.ToString();
             if (orderUpTags != null) foreach (var tag in orderUpTags) if (tag != null) tag.SetActive(false);
-            LayoutAll();
+        }
+
+        /// Puts intro step index on the card and poses its visual: croissants on the tray, dealt onto plates or packed
+        /// into boxes. CafeModel is never touched, so the chapter starts from a clean table afterwards.
+        LessonActionResult ShowIntro(int index)
+        {
+            introIndex = index;
+            feedback = "";
+            var step = Intro[index];
+            var scene = CafeLayout.IntroScene(step.Visual);
+            if (payoff != null) payoff.ResetAll();
+            PlaceTargets(scene.Kind, scene.Containers, scene.BoxCapacity);
+            if (piecesRoot != null) piecesRoot.SetActive(true);
+            for (int i = 0; items != null && i < items.Length; i++)
+            {
+                var view = items[i]; if (view?.piece == null) continue;
+                bool on = i < scene.Items;
+                view.piece.gameObject.SetActive(on);
+                if (!on) continue;
+                ShowShape(view, CafeLayout.ShapeFor(scene.ItemName, i));
+                SetLocal(view.piece, CafeLayout.IntroItemPosition(scene, i));
+                view.piece.localRotation = Quaternion.identity;
+                view.piece.localScale = Vector3.one;
+            }
             Refresh();
+            return new LessonActionResult(true, step.Say);
+        }
+
+        static void ShowShape(ItemView view, CafeItemShape shape)
+        {
+            if (view.croissant != null) view.croissant.SetActive(shape == CafeItemShape.Croissant);
+            if (view.cookie != null) view.cookie.SetActive(shape == CafeItemShape.Cookie);
+            if (view.muffin != null) view.muffin.SetActive(shape == CafeItemShape.Muffin);
         }
 
         void PlaceContainers(Transform[] containers, TMP_Text[] labels, CafeTargetKind kind, int count, string prefix)
@@ -500,10 +571,7 @@ namespace Airlift.Lessons.Cafe
                 bool exists = index.TryGetValue(view.id ?? "", out int n);
                 view.piece.gameObject.SetActive(exists);
                 if (!exists) continue;
-                var shape = CafeLayout.ShapeFor(model.Chapter.ItemName, n);
-                if (view.croissant != null) view.croissant.SetActive(shape == CafeItemShape.Croissant);
-                if (view.cookie != null) view.cookie.SetActive(shape == CafeItemShape.Cookie);
-                if (view.muffin != null) view.muffin.SetActive(shape == CafeItemShape.Muffin);
+                ShowShape(view, CafeLayout.ShapeFor(model.Chapter.ItemName, n));
                 if (view.held) continue;
                 int c = model.ContainerOf(view.id);
                 Vector3 p = c < 0 ? CafeLayout.TrayPosition(n)
@@ -517,6 +585,8 @@ namespace Airlift.Lessons.Cafe
         void Refresh()
         {
             if (!open) return;
+            if (InIntro) { RefreshIntro(); return; }
+            SetStartLabel("Start");
             var chapter = model.Chapter;
             bool complete = model.ChapterComplete, plateStage = model.Stage.Kind == CafeTargetKind.Plates;
             if (heading != null) heading.text = briefing ? Title + " · " + StoryName : TitleFor(chapter);
@@ -533,6 +603,29 @@ namespace Airlift.Lessons.Cafe
             Show(clearButton, !briefing && !complete);
             Show(nextButton, !briefing && complete && !model.IsLastChapter);
             Show(backButton, true);
+        }
+
+        void RefreshIntro()
+        {
+            var step = CurrentIntro;
+            if (heading != null) heading.text = step.Heading;
+            if (body != null)
+            {
+                body.text = step.Say;
+                if (bodyBaseSize > 0) body.fontSize = CargoLessonDirector.FitFontSize(body, body.text, bodyBaseSize);
+            }
+            if (expressionLine != null) expressionLine.text = step.Expression ?? "";
+            if (sayHints != null) sayHints.text = IntroHintsFor(LastIntroStep);
+            Show(startButton, true);
+            SetStartLabel(LastIntroStep ? "Start" : "Next");
+            Show(dealButton, false); Show(checkButton, false); Show(clearButton, false); Show(nextButton, false);
+            Show(backButton, true);
+        }
+
+        void SetStartLabel(string text)
+        {
+            var label = startButton != null ? startButton.GetComponentInChildren<TMP_Text>(true) : null;
+            if (label != null && label.text != text) label.text = text;
         }
 
         static void Show(Button button, bool on) { if (button != null && button.gameObject.activeSelf != on) button.gameObject.SetActive(on); }
@@ -563,6 +656,9 @@ namespace Airlift.Lessons.Cafe
             if (resume != null) sb.Append("\nWe pick up at ").Append(TitleFor(resume)).Append('.');
             return sb.Append('\n').Append(StartLine).ToString();
         }
+
+        /// Spoken phrase that moves the concept intro on.
+        public static string IntroHintsFor(bool lastStep) => lastStep ? "Say \"start\"" : "Say \"next\"";
 
         /// Spoken phrases the guide understands right now, e.g. Say "deal a round" · "check the order".
         public static string SayHintsFor(bool inBriefing, bool plates, bool complete, bool isLast)

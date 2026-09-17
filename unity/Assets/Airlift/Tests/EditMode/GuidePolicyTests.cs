@@ -5,6 +5,17 @@ namespace Airlift.Tests
 {
     public class GuidePolicyTests
     {
+        // Owner 2026-09-17: the guide is Dee and the story starts with this introduction, spoken word for word.
+        [Test] public void DeeIntroducesNerdyAiVrWithTheOwnerApprovedWords()
+        {
+            const string intro = "Welcome to Nerdy AI plus VR! My name is Dee, and I will be your AI assistant throughout your elementary math journey.";
+            Assert.That(GuideIntro.Spoken, Does.StartWith(intro));
+            Assert.That(GuideIntro.GreetingPrompt, Does.Contain("word for word"));
+            Assert.That(GuideIntro.GreetingPrompt, Does.Contain(GuideIntro.Spoken));
+            Assert.That(GuideIntro.OfflineCaption, Does.StartWith("Welcome to Nerdy AI+VR! My name is Dee"));
+            Assert.That(GuideIntro.OfflineCaption, Does.Contain("Tap the answers below"));
+        }
+
         [Test] public void MicStaysOffDuringConsentAndChipQuestions()
         {
             Assert.That(GuidePolicy.MicOn(WelcomePhase.Consent, muted: false, paused: false), Is.False);

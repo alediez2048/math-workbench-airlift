@@ -324,13 +324,53 @@ namespace Airlift.Tests
             }
         }
 
+        [Test] public void BuiltPastriesAreTwiceTheFirstBuild()
+        {
+            var s = Station();
+            foreach (var v in s.items)
+            {
+                var collider = v.piece.GetComponent<BoxCollider>();
+                Assert.That(collider, Is.Not.Null, v.id);
+                Assert.That(Vector3.Distance(collider.size, CafeLayout.PieceColliderSize), Is.LessThan(1e-4f), v.id + " collider is 2x");
+                Assert.That(v.piece.localScale, Is.EqualTo(Vector3.one), v.id + " pieces keep unit scale; the shapes are built 2x");
+                foreach (var (shape, first) in new[] { (v.croissant, FirstBuildCroissant), (v.cookie, FirstBuildCookie), (v.muffin, FirstBuildMuffin) })
+                {
+                    var b = BoardBounds(v.piece, shape.transform, out _);
+                    Assert.That(Vector3.Distance(b.size, first * CafeLayout.PieceScale), Is.LessThan(2e-3f), v.id + " " + shape.name + " " + b.size.ToString("F4") + " is 2x " + first.ToString("F4"));
+                    Assert.That(b.min.y, Is.EqualTo(-CafeLayout.ItemHalfHeight).Within(1.5e-3f), v.id + " " + shape.name + " rests on its surface");
+                }
+            }
+        }
+
+        [Test] public void PropsAndTargetsStayInsideTheirFootprints()
+        {
+            var d = Onboarding(); var root = CafeRoot(); var s = Station();
+            void Within(string what, Bounds b, Rect r, float slack)
+            {
+                Assert.That(b.min.x >= r.xMin - slack && b.max.x <= r.xMax + slack && b.min.z >= r.yMin - slack && b.max.z <= r.yMax + slack, Is.True,
+                    what + " " + b.min.ToString("F3") + ".." + b.max.ToString("F3") + " inside " + r);
+            }
+            Within("Coffee counter", BoardBounds(d.transform, Named(root, "Coffee counter"), out _), CafeLayout.CounterRect, 0.003f);
+            Within("Guest table", BoardBounds(d.transform, Named(root, "Guest table"), out _), CafeLayout.GuestTableRect, 0.003f);
+            for (int i = 0; i < CafeLayout.ChairX.Length; i++)
+                Within("Guest chair " + (i + 1), BoardBounds(d.transform, Named(root, "Guest chair " + (i + 1)), out _), CafeLayout.ChairRect(i), 0.003f);
+            Within("Delivery bike", BoardBounds(d.transform, s.payoff.bike, out _), CafeLayout.BikeRect, 0.003f);
+            Within("Menu board", BoardBounds(d.transform, Named(root, "Menu board"), out _), CafeLayout.MenuBoardRect, 0.003f);
+            Within("Pastry tray", BoardBounds(d.transform, Named(root, "Pastry tray"), out _), CafeLayout.TrayRect, 0.003f);
+            for (int i = 0; i < s.plates.Length; i++)
+                Within(s.plates[i].name, BoardBounds(d.transform, s.plates[i], out _), CafeLayout.ContainerRect(CafeTargetKind.Plates, i, s.plates.Length), 0.003f);
+            for (int i = 0; i < s.boxes.Length; i++)
+                Within(s.boxes[i].name, BoardBounds(d.transform, s.boxes[i], out _), CafeLayout.ContainerRect(CafeTargetKind.Boxes, i, s.boxes.Length), 0.003f);
+            Assert.That(s.payoff.serveScale, Is.EqualTo(CafeLayout.ServeScale));
+        }
+
         [Test] public void PastryTrayIsAServingTrayForTwoRows()
         {
             var d = Onboarding(); var root = CafeRoot();
             var tray = Named(root, "Pastry tray");
             var b = BoardBounds(d.transform, tray, out _);
-            Assert.That(b.size.x, Is.LessThanOrEqualTo(0.5f), "no deck-wide slab: tray width " + b.size.x);
-            Assert.That(b.size.z, Is.LessThanOrEqualTo(0.16f), "tray depth " + b.size.z);
+            Assert.That(b.size.x, Is.LessThanOrEqualTo(CafeLayout.TrayRect.width + 0.002f), "no deck-wide slab: tray width " + b.size.x);
+            Assert.That(b.size.z, Is.LessThanOrEqualTo(CafeLayout.TrayDepth + 0.002f), "tray depth " + b.size.z);
             Assert.That(b.max.y, Is.LessThan(CafeLayout.TrayTop + 0.006f), "low rim");
             Assert.That(tray.GetComponentsInChildren<MeshRenderer>(true).Select(r => r.sharedMaterial.name).Distinct().Count(), Is.GreaterThanOrEqualTo(2), "pastel trim on the base");
             for (int i = 0; i < CafeLayout.MaxItems; i++)
@@ -340,7 +380,7 @@ namespace Airlift.Tests
             }
             var s = Station();
             foreach (var label in s.plateLabels.Concat(s.boxLabels))
-                Assert.That(b.max.z, Is.LessThan(d.transform.InverseTransformPoint(label.transform.position).z - CafeLayout.LabelDepth / 2 - 0.05f), label.name + " clear of the tray");
+                Assert.That(b.max.z, Is.LessThan(d.transform.InverseTransformPoint(label.transform.position).z - CafeLayout.LabelDepth / 2 - 0.01f), label.name + " clear of the tray");
         }
 
         [Test] public void MenuBoardIsVisibleOnTheDeckAndClearOfTheBike()
@@ -376,14 +416,22 @@ namespace Airlift.Tests
                 {
                     var c = CafeLayout.ContainerCenter(kind, i, n);
                     Assert.That(CafeLayout.NearestContainer(kind, n, c + new Vector3(0, 0.12f, 0)), Is.EqualTo(i), chapter.Id + " release over target " + i);
-                    Assert.That(Mathf.Abs(c.x) + halfW, Is.LessThan(CafeLayout.BikeParked.x - 0.08f), chapter.Id + " target " + i + " clear of the bike");
-                    if (i > 0) Assert.That(c.x - CafeLayout.ContainerCenter(kind, i - 1, n).x - 2 * halfW, Is.GreaterThanOrEqualTo(kind == CafeTargetKind.Plates ? 0.06f : 0.015f), chapter.Id + " targets clearly separated");
+                    if (i > 0) Assert.That(c.x - CafeLayout.ContainerCenter(kind, i - 1, n).x - 2 * halfW, Is.GreaterThanOrEqualTo(kind == CafeTargetKind.Plates ? 0.04f : 0.015f), chapter.Id + " targets clearly separated");
                     if (kind == CafeTargetKind.Boxes)
                         for (int k = 0; k < stage.BoxCapacity; k++)
                         {
                             var p = CafeLayout.SlotPosition(kind, c, k);
-                            Assert.That(Mathf.Abs(p.x - c.x) + 0.017f, Is.LessThanOrEqualTo(CafeLayout.BoxWidth / 2 - CafeLayout.BoxWall), chapter.Id + " slot " + k + " inside the box (x)");
-                            Assert.That(Mathf.Abs(p.z - c.z) + 0.017f, Is.LessThanOrEqualTo(CafeLayout.BoxDepth / 2 - CafeLayout.BoxWall), chapter.Id + " slot " + k + " inside the box (z)");
+                            Assert.That(Mathf.Abs(p.x - c.x) + CafeLayout.BoxItemHalfWidth, Is.LessThanOrEqualTo(CafeLayout.BoxWidth / 2 - CafeLayout.BoxWall + 1e-4f), chapter.Id + " slot " + k + " inside the box (x)");
+                            Assert.That(Mathf.Abs(p.z - c.z) + CafeLayout.BoxItemHalfWidth, Is.LessThanOrEqualTo(CafeLayout.BoxDepth / 2 - CafeLayout.BoxWall + 1e-4f), chapter.Id + " slot " + k + " inside the box (z)");
+                            for (int q = 0; q < k; q++)
+                                Assert.That(Vector3.Distance(p, CafeLayout.SlotPosition(kind, c, q)), Is.GreaterThanOrEqualTo(2 * CafeLayout.BoxItemHalfWidth), chapter.Id + " box slots " + q + "/" + k + " do not overlap");
+                        }
+                    else
+                        for (int k = 0; k < CafeLayout.PlateSlotsPerLayer; k++)
+                        {
+                            var p = CafeLayout.SlotPosition(kind, c, k);
+                            Assert.That(new Vector2(p.x - c.x, p.z - c.z).magnitude + CafeLayout.ItemHalfDepth, Is.LessThanOrEqualTo(CafeLayout.PlateDiameter / 2), chapter.Id + " plate slot " + k + " on the plate");
+                            Assert.That(CafeLayout.NearestContainer(kind, n, p), Is.EqualTo(i), "a pastry lifted from plate slot " + k + " drops back on its plate");
                         }
                     var label = CafeLayout.LabelPosition(kind, c);
                     float front = c.z - CafeLayout.FrontHalfDepth(kind);
@@ -392,7 +440,7 @@ namespace Airlift.Tests
                     Assert.That(Mathf.Abs(label.x - c.x), Is.LessThan(1e-4f));
                     Assert.That(label.y - CafeLayout.LabelHeight / 2 * Mathf.Cos(CafeLayout.LabelTilt * Mathf.Deg2Rad), Is.GreaterThan(CafeLayout.DeckTop), "tilted label clears the deck");
                     for (int t = 0; t < CafeLayout.MaxItems; t++)
-                        Assert.That(CafeLayout.TrayPosition(t).z + 0.025f, Is.LessThan(labelFront - 0.05f), "tray pastry " + t + " never covers " + chapter.Id + " label " + i);
+                        Assert.That(CafeLayout.TrayPosition(t).z + CafeLayout.ItemHalfDepth, Is.LessThan(labelFront - 0.02f), "tray pastry " + t + " never covers " + chapter.Id + " label " + i);
                 }
                 for (int t = 0; t < CafeLayout.MaxItems; t++)
                     Assert.That(CafeLayout.NearestContainer(kind, n, CafeLayout.TrayPosition(t)), Is.EqualTo(-1), "tray slot " + t + " is not a drop target in " + chapter.Id);
@@ -400,20 +448,101 @@ namespace Airlift.Tests
             }
             var trays = Enumerable.Range(0, CafeLayout.MaxItems).Select(CafeLayout.TrayPosition).ToList();
             for (int a = 0; a < trays.Count; a++) for (int b = a + 1; b < trays.Count; b++)
-                Assert.That(Vector3.Distance(trays[a], trays[b]), Is.GreaterThan(0.05f), "tray slots " + a + " and " + b + " do not overlap");
-            // Serving tray: sized for two rows of 15, every tray slot on it with room for the rim.
-            Assert.That(CafeLayout.TrayWidth, Is.LessThanOrEqualTo(0.5f)); Assert.That(CafeLayout.TrayDepth, Is.LessThanOrEqualTo(0.16f));
+                Assert.That(Vector3.Distance(trays[a], trays[b]), Is.GreaterThan(0.08f), "tray slots " + a + " and " + b + " do not overlap");
+            // Serving tray: sized for two rows of 15 big pastries, every tray slot on it with room for the rim.
+            Assert.That(CafeLayout.TrayWidth, Is.LessThanOrEqualTo(0.9f)); Assert.That(CafeLayout.TrayDepth, Is.LessThanOrEqualTo(0.2f));
             foreach (var p in trays)
             {
-                Assert.That(Mathf.Abs(p.x) + 0.024f, Is.LessThanOrEqualTo(CafeLayout.TrayWidth / 2 - 0.008f), "tray slot on the tray (x)");
-                Assert.That(Mathf.Abs(p.z - CafeLayout.TrayCenterZ) + 0.024f, Is.LessThanOrEqualTo(CafeLayout.TrayDepth / 2 - 0.008f), "tray slot on the tray (z)");
+                Assert.That(Mathf.Abs(p.x) + CafeLayout.ItemHalfWidth, Is.LessThanOrEqualTo(CafeLayout.TrayWidth / 2 - 0.008f), "tray slot on the tray (x)");
+                Assert.That(Mathf.Abs(p.z - CafeLayout.TrayCenterZ) + CafeLayout.ItemHalfDepth, Is.LessThanOrEqualTo(CafeLayout.TrayDepth / 2 - 0.008f), "tray slot on the tray (z)");
             }
-            Assert.That(CafeLayout.TrayFrontZ - CafeLayout.TrayDepth, Is.GreaterThan(-CafeLayout.DeckHalfZ - 0.05f), "tray within reach on the deck");
             // The card sightline helper: the card bottom itself is the limit at the card; farther back the limit drops.
             Assert.That(CafeLayout.VisibleUnderCard(CafeLayout.CardZ + 1e-4f), Is.EqualTo(CafeLayout.CardBottomY).Within(1e-3f));
             Assert.That(CafeLayout.VisibleUnderCard(0.39f), Is.LessThan(CafeLayout.CardBottomY));
             Assert.That(CafeLayout.ShapeFor("croissant", 3), Is.EqualTo(CafeItemShape.Croissant));
             Assert.That(CafeLayout.ShapeFor("pastry", 0) != CafeLayout.ShapeFor("pastry", 1), Is.True, "mixed pastries");
+        }
+
+        /// Owner 2026-09-17: "the croissants are too little". Pastries are 2x the first build (0.045 m collider,
+        /// croissant 0.047 m wide) with every chapter's numbers unchanged.
+        [Test] public void PastriesAreTwiceTheFirstBuildAndKeepEveryChapterNumber()
+        {
+            Assert.That(CafeLayout.PieceScale, Is.EqualTo(2f));
+            Assert.That(CafeLayout.ItemHalfHeight, Is.EqualTo(0.022f).Within(1e-5f));
+            Assert.That(CafeLayout.PieceColliderSize.x, Is.EqualTo(0.09f).Within(1e-5f));
+            Assert.That(CafeLayout.PieceColliderSize.y, Is.EqualTo(0.068f).Within(1e-5f));
+            Assert.That(CafeLayout.ItemHalfWidth * 2, Is.GreaterThanOrEqualTo(2 * FirstBuildCroissant.x - 1e-3f), "widest pastry is the 2x croissant");
+            Assert.That(CafeLayout.ItemHalfDepth * 2, Is.GreaterThanOrEqualTo(2 * FirstBuildCookie.z - 1e-3f), "deepest pastry is the 2x cookie");
+            Assert.That(CafeChapter.All.Select(c => c.Items), Is.EqualTo(new[] { 6, 12, 12, 15, 12 }));
+            Assert.That(CafeChapter.All.SelectMany(c => c.Stages).Select(st => st.Containers), Is.EqualTo(new[] { 2, 3, 5, 5, 4, 6 }));
+            Assert.That(CafeChapter.All.SelectMany(c => c.Stages).Select(st => st.BoxCapacity), Is.EqualTo(new[] { 0, 0, 4, 5, 0, 3 }));
+            Assert.That(CafeLayout.MaxItems, Is.GreaterThanOrEqualTo(CafeChapter.All.Max(c => c.Items)));
+            Assert.That(CafeLayout.MaxPlates, Is.GreaterThanOrEqualTo(MaxContainers(CafeTargetKind.Plates)));
+            Assert.That(CafeLayout.MaxBoxes, Is.GreaterThanOrEqualTo(MaxContainers(CafeTargetKind.Boxes)));
+        }
+
+        /// First-build pastry bounds (piece-local metres), measured from the first BuildCafeWorkbench.
+        static readonly Vector3 FirstBuildCroissant = new Vector3(0.0470f, 0.0210f, 0.0263f);
+        static readonly Vector3 FirstBuildCookie = new Vector3(0.0360f, 0.0125f, 0.0360f);
+        static readonly Vector3 FirstBuildMuffin = new Vector3(0.0320f, 0.0295f, 0.0320f);
+
+        /// Every plate or box arrangement a chapter (or the intro) sets out fits the deck, stays within seated reach and
+        /// never overlaps the tray, the carry handle, the counter, the guest table, the chairs, the menu board or the bike.
+        [Test] public void EveryChapterArrangementFitsTheDeckAndClearsTheProps()
+        {
+            var props = new (string name, Rect rect)[] {
+                ("tray", CafeLayout.TrayRect), ("carry handle", CafeLayout.HandleRect), ("coffee counter", CafeLayout.CounterRect),
+                ("guest table", CafeLayout.GuestTableRect), ("menu board", CafeLayout.MenuBoardRect), ("bike", CafeLayout.BikeRect),
+                ("chair 1", CafeLayout.ChairRect(0)), ("chair 2", CafeLayout.ChairRect(1)), ("chair 3", CafeLayout.ChairRect(2)), ("chair 4", CafeLayout.ChairRect(3)) };
+            var inner = CafeLayout.DeckRect;
+            bool Inside(Rect r, Rect outer, float slack = 0f) => r.xMin >= outer.xMin - slack && r.xMax <= outer.xMax + slack && r.yMin >= outer.yMin - slack && r.yMax <= outer.yMax + slack;
+
+            // Props: on the deck and clear of each other (the handle hangs just off the front edge).
+            for (int a = 0; a < props.Length; a++)
+            {
+                if (props[a].name != "carry handle") Assert.That(Inside(props[a].rect, inner, 0.005f), Is.True, props[a].name + " on the deck: " + props[a].rect);
+                for (int b = a + 1; b < props.Length; b++)
+                    Assert.That(props[a].rect.Overlaps(props[b].rect), Is.False, props[a].name + " vs " + props[b].name);
+            }
+            Assert.That(CafeLayout.TrayRect.yMin, Is.GreaterThan(CafeLayout.HandleRect.yMax + 0.01f), "tray clear of the carry handle");
+            Assert.That(CafeLayout.TrayRect.yMax, Is.LessThanOrEqualTo(0f), "tray in the front half");
+
+            var arrangements = CafeChapter.All.SelectMany(c => c.Stages.Select(st => (c.Id, st.Kind, st.Containers))).ToList();
+            foreach (var visual in new[] { "share", "groups", "boxes" })
+            {
+                var scene = CafeLayout.IntroScene(visual);
+                arrangements.Add(("intro " + visual, scene.Kind, scene.Containers));
+            }
+            foreach (var (id, kind, n) in arrangements)
+            {
+                var rects = new List<(string name, Rect rect)>();
+                for (int i = 0; i < n; i++)
+                {
+                    rects.Add((kind + " " + (i + 1), CafeLayout.ContainerRect(kind, i, n)));
+                    rects.Add((kind + " label " + (i + 1), CafeLayout.LabelRect(kind, i, n)));
+                }
+                foreach (var (name, rect) in rects)
+                {
+                    Assert.That(Inside(rect, Rect.MinMaxRect(inner.xMin + 0.02f, inner.yMin, inner.xMax - 0.02f, inner.yMax)), Is.True, id + ": " + name + " inside the deck and its trims: " + rect);
+                    Assert.That(rect.yMax, Is.LessThanOrEqualTo(CafeLayout.ReachBackZ), id + ": " + name + " within seated reach");
+                    foreach (var prop in props) Assert.That(rect.Overlaps(prop.rect), Is.False, id + ": " + name + " vs " + prop.name);
+                }
+                for (int a = 0; a < rects.Count; a++) for (int b = a + 1; b < rects.Count; b++)
+                    Assert.That(rects[a].rect.Overlaps(rects[b].rect), Is.False, id + ": " + rects[a].name + " vs " + rects[b].name);
+            }
+
+            // Served plates: every plate count lines up on the guest table without touching the next plate.
+            foreach (int n in CafeChapter.All.SelectMany(c => c.Stages).Where(st => st.Kind == CafeTargetKind.Plates).Select(st => st.Containers).Distinct())
+                for (int i = 0; i < n; i++)
+                {
+                    var c = CafeLayout.ServedCenter(i, n); float r = CafeLayout.PlateDiameter * CafeLayout.ServeScale / 2;
+                    Assert.That(Inside(Rect.MinMaxRect(c.x - r, c.z - r, c.x + r, c.z + r), CafeLayout.GuestTableRect), Is.True, n + " served plates: plate " + (i + 1) + " on the guest table");
+                    if (i > 0) Assert.That(c.x - CafeLayout.ServedCenter(i - 1, n).x, Is.GreaterThan(2 * r), "served plates apart");
+                    Assert.That(c.z + r, Is.LessThan(CafeLayout.GuestTableZ + CafeLayout.GuestTableDepth / 2 - 0.03f), "room for the guest cups behind the plates");
+                }
+            // Box rack on the bike: every full box of any chapter fits the crate at the rack scale.
+            Assert.That(CafeLayout.BoxWidth * CafeLayout.RackScale / 2 + CafeLayout.RackColumnOffset, Is.LessThanOrEqualTo(CafeLayout.RackWidth / 2 + 0.005f));
+            Assert.That(CafeLayout.BoxDepth * CafeLayout.RackScale, Is.LessThanOrEqualTo(CafeLayout.RackDepth));
         }
 
         // ---- pure copy rules ----
@@ -460,12 +589,23 @@ namespace Airlift.Tests
             station.plates = Enumerable.Range(1, CafeLayout.MaxPlates).Select(i => Child(targets, "plate " + i)).ToArray();
             station.boxes = Enumerable.Range(1, CafeLayout.MaxBoxes).Select(i => Child(targets, "box " + i)).ToArray();
             station.orderUpTags = station.boxes.Select(b => { var tag = Child(b, "tag").gameObject; tag.SetActive(false); return tag; }).ToArray();
+            var labels = Child(root.transform, "labels");
+            station.plateLabels = Enumerable.Range(1, CafeLayout.MaxPlates).Select(i => (TMP_Text)Child(labels, "plate label " + i).gameObject.AddComponent<TextMeshPro>()).ToArray();
+            station.boxLabels = Enumerable.Range(1, CafeLayout.MaxBoxes).Select(i => (TMP_Text)Child(labels, "box label " + i).gameObject.AddComponent<TextMeshPro>()).ToArray();
             var payoff = root.AddComponent<CafePayoff>(); payoff.space = root.transform;
             var bike = Child(root.transform, "bike"); bike.localPosition = CafeLayout.BikeParked;
             payoff.bike = bike; payoff.bikeParked = CafeLayout.BikeParked;
             payoff.steamPuffs = Enumerable.Range(1, 4).Select(i => { var p = Child(root.transform, "puff " + i).gameObject; p.SetActive(false); return p; }).ToArray();
             station.payoff = payoff;
             return new Cafe { root = root, station = station, payoff = payoff, bike = bike };
+        }
+
+        /// Briefing -> "What is dividing?" intro (first time only) -> chapter 1; returns what the last Advance returned.
+        internal static Airlift.Lessons.LessonActionResult Begin(CafeStation s)
+        {
+            var result = s.Advance();
+            for (int guard = 0; s.CurrentIntro != null && guard < 10; guard++) result = s.Advance();
+            return result;
         }
 
         static void AssertNear(Vector3 actual, Vector3 expected, string message) => Assert.That(Vector3.Distance(actual, expected), Is.LessThan(1e-4f), message + ": " + actual + " vs " + expected);
@@ -482,7 +622,7 @@ namespace Airlift.Tests
                 Assert.That(s.Chapter.Number, Is.EqualTo(0), "no chapter facts during the briefing");
                 Assert.That(s.DropAt("item-1", Vector3.zero), Is.False);
 
-                var start = s.Advance();
+                var start = Begin(s);
                 Assert.That(start.Ok, Is.True, start.Reason); Assert.That(start.Reason, Does.StartWith("Chapter 1 · Two friends"));
                 Assert.That(s.ChapterActive, Is.True); Assert.That(s.Chapter.Number, Is.EqualTo(1)); Assert.That(s.piecesRoot.activeSelf, Is.True);
                 var plate0 = CafeLayout.ContainerCenter(CafeTargetKind.Plates, 0, 2);
@@ -508,7 +648,7 @@ namespace Airlift.Tests
             var cafe = MakeCafe(); var s = cafe.station;
             try
             {
-                s.Open(); s.Advance();
+                s.Open(); Begin(s);
                 Assert.That(s.ToolsNow, Does.Contain("cafe_deal_round"));
                 Assert.That(s.TryLessonTool("cafe_deal_round", null, out var dealt), Is.True);
                 Assert.That(dealt.Ok, Is.True, dealt.Reason);
@@ -533,15 +673,19 @@ namespace Airlift.Tests
             var cafe = MakeCafe(); var s = cafe.station;
             try
             {
-                s.Open(); s.Advance();
+                s.Open(); Begin(s);
                 for (int i = 0; i < 3; i++) Assert.That(s.DealRound().Ok, Is.True);
                 var plate0 = s.plates[0].localPosition; var item = cafe.Local("item-1");
+                Assert.That(s.plateLabels[0].gameObject.activeSelf, Is.True);
                 var check = s.TryLessonTool("cafe_check_order", null, out var r) ? r : default;
                 Assert.That(check.Ok, Is.True, check.Reason); Assert.That(check.Reason, Does.EndWith("6 ÷ 2 = 3"));
                 Assert.That(s.Model.ChapterComplete, Is.True); Assert.That(cafe.payoff.Served, Is.True);
-                var delta = new Vector3(0, CafeLayout.GuestTableTop - CafeLayout.DeckTop, CafeLayout.ServeDistance);
-                AssertNear(s.plates[0].localPosition, plate0 + delta, "plate 1 slid onto the guest table");
-                AssertNear(cafe.Local("item-1"), item + delta, "its croissants rode along");
+                var served = CafeLayout.ServedCenter(0, 2);
+                AssertNear(s.plates[0].localPosition, served, "plate 1 slid onto the guest table");
+                AssertNear(s.plates[1].localPosition, CafeLayout.ServedCenter(1, 2), "plate 2 next to it");
+                Assert.That(s.plates[0].localScale.x, Is.EqualTo(CafeLayout.ServeScale).Within(1e-4f));
+                AssertNear(cafe.Local("item-1"), served + (item - plate0) * CafeLayout.ServeScale, "its croissants rode along");
+                Assert.That(s.plateLabels[0].gameObject.activeSelf || s.plateLabels[1].gameObject.activeSelf, Is.False, "no Plate N label left on an empty spot");
                 Assert.That(cafe.payoff.steamPuffs.All(p => p.activeSelf), Is.True, "steam rises from the cups");
                 Assert.That(s.ToolsNow, Does.Contain("next_chapter").And.Not.Contain("cafe_check_order"));
                 Assert.That(s.DropAt("item-1", CafeLayout.ContainerCenter(CafeTargetKind.Plates, 1, 2)), Is.False, "served pastries stay served");
@@ -550,6 +694,8 @@ namespace Airlift.Tests
                 Assert.That(restart.Ok, Is.True);
                 Assert.That(s.Model.ChapterComplete, Is.False);
                 AssertNear(s.plates[0].localPosition, plate0, "plate back on the counter");
+                Assert.That(s.plates[0].localScale, Is.EqualTo(Vector3.one));
+                Assert.That(s.plateLabels[0].gameObject.activeSelf, Is.True, "label back with its plate");
                 AssertNear(cafe.Local("item-1"), CafeLayout.TrayPosition(0), "croissants back on the tray");
                 Assert.That(cafe.payoff.steamPuffs.Any(p => p.activeSelf), Is.False);
             }
@@ -561,7 +707,7 @@ namespace Airlift.Tests
             var cafe = MakeCafe(); var s = cafe.station;
             try
             {
-                s.Open(); s.Advance(); s.JumpToChapter(2);   // 12 cookies, 5 boxes of 4
+                s.Open(); Begin(s); s.JumpToChapter(2);   // 12 cookies, 5 boxes of 4
                 Vector3 Box(int b) => CafeLayout.ContainerCenter(CafeTargetKind.Boxes, b, 5) + new Vector3(0, 0.08f, 0.01f);
                 for (int i = 1; i <= 4; i++) Assert.That(s.DropAt("item-" + i, Box(0)), Is.True, "cookie " + i);
                 Assert.That(s.DropAt("item-5", Box(0)), Is.False, "box 1 is full");
@@ -580,11 +726,14 @@ namespace Airlift.Tests
                 Assert.That(cafe.bike.gameObject.activeSelf, Is.False, "the bike rode off the deck");
                 Assert.That(s.boxes[0].gameObject.activeSelf || cafe.Piece("item-1").gameObject.activeSelf, Is.False, "full boxes and their cookies left with it");
                 Assert.That(s.boxes[2].gameObject.activeSelf, Is.True);
+                Assert.That(new[] { 0, 1, 3 }.Any(b => s.boxLabels[b].gameObject.activeSelf), Is.False, "Box N labels leave with their boxes");
+                Assert.That(new[] { 2, 4 }.All(b => s.boxLabels[b].gameObject.activeSelf), Is.True, "empty boxes keep their labels");
 
                 var next = s.NextChapter();
                 Assert.That(next.Ok, Is.True, next.Reason); Assert.That(s.Chapter.Number, Is.EqualTo(4));
                 Assert.That(cafe.bike.gameObject.activeSelf, Is.True); AssertNear(cafe.bike.localPosition, CafeLayout.BikeParked, "bike back at the kerb");
                 Assert.That(s.boxes[0].gameObject.activeSelf, Is.True); Assert.That(s.boxes[0].localScale, Is.EqualTo(Vector3.one));
+                Assert.That(s.boxLabels.Take(5).All(l => l.gameObject.activeSelf), Is.True, "labels back for the next order");
                 Assert.That(s.orderUpTags.Any(t => t.activeSelf), Is.False);
                 Assert.That(cafe.Piece("item-1").gameObject.activeSelf, Is.True); Assert.That(cafe.Piece("item-1").localScale, Is.EqualTo(Vector3.one));
                 AssertNear(cafe.Local("item-15"), CafeLayout.TrayPosition(14), "15 muffins on the tray");
@@ -597,7 +746,7 @@ namespace Airlift.Tests
             var cafe = MakeCafe(); var s = cafe.station;
             try
             {
-                s.Open(); s.Advance(); s.JumpToChapter(4);
+                s.Open(); Begin(s); s.JumpToChapter(4);
                 Assert.That(s.plates.All(p => p.gameObject.activeSelf), Is.True, "4 plates");
                 for (int i = 0; i < 3; i++) s.DealRound();
                 var check = s.Check();
@@ -623,7 +772,7 @@ namespace Airlift.Tests
                 s.Open();
                 Assert.That(s.Check().Reason, Is.EqualTo(CafeStation.BriefingReason));
                 Assert.That(s.NextChapter().Ok, Is.False);
-                s.Advance();
+                Begin(s);
                 s.items[0].held = true;
                 Assert.That(s.AnyHeld, Is.True);
                 foreach (var result in new[] { s.Check(), s.ResetTable(), s.DealRound(), s.RestartChapter() })
@@ -642,7 +791,7 @@ namespace Airlift.Tests
             var cafe = MakeCafe(); var s = cafe.station;
             try
             {
-                s.Open(); s.Advance();
+                s.Open(); Begin(s);
                 Assert.That(s.DropAt("item-2", CafeLayout.ContainerCenter(CafeTargetKind.Plates, 1, 2)), Is.True);
                 s.Close();
                 Assert.That(s.IsOpen, Is.False); Assert.That(cafe.root.activeSelf, Is.False);
@@ -651,7 +800,7 @@ namespace Airlift.Tests
 
                 s.Open();
                 Assert.That(cafe.root.activeSelf, Is.True); Assert.That(s.ChapterActive, Is.False, "back to the briefing");
-                Assert.That(s.Advance().Ok, Is.True); Assert.That(s.Chapter.Number, Is.EqualTo(1));
+                Assert.That(s.Advance().Ok, Is.True); Assert.That(s.CurrentIntro, Is.Null, "the intro ran once already"); Assert.That(s.Chapter.Number, Is.EqualTo(1));
                 for (int i = 0; i < 3; i++) s.DealRound();
                 Assert.That(s.Check().Ok, Is.True);
                 s.Close();

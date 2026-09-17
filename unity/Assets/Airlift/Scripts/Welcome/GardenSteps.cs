@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using Airlift.Lessons;
 using Airlift.Lessons.Garden;
 
 namespace Airlift.Welcome
@@ -13,6 +14,33 @@ namespace Airlift.Welcome
         public static GuideStep Briefing() => new GuideStep(BriefingId,
             "The Sunny Plot briefing card only; no seedlings or beds are on the table yet. The first chapter starts when the learner says yes or presses Start.",
             false);
+
+        public const string IntroId = "intro";
+
+        /// A concept intro step ("What is multiplying?"): exactly what GardenStation draws for its visual on the chapter 1
+        /// bed. Nothing is grabbable during the intro.
+        public static GuideStep Intro(IntroStep step)
+        {
+            string table;
+            switch (step?.Visual)
+            {
+                case "row":
+                    table = "Concept intro. The Sunny Plot bed has room for 3 rows of 4. Only the back row is planted: one row of 4 seedlings. The trays are empty.";
+                    break;
+                case "rows":
+                    table = "Concept intro. The Sunny Plot bed has 3 equal rows of 4 seedlings planted: 12 seedlings. The trays are empty.";
+                    break;
+                case "times":
+                    table = "Concept intro. The Sunny Plot bed has 3 equal rows of 4 seedlings planted, with row numbers 1, 2 and 3 beside the rows: 12 seedlings. The card shows 3 × 4 = 12.";
+                    break;
+                default:
+                    table = "Concept intro. The Sunny Plot bed for chapter 1.";
+                    break;
+            }
+            var steps = ConceptIntros.Garden;
+            bool last = steps.Count > 0 && step == steps[steps.Count - 1];
+            return new GuideStep(IntroId, table + " Nothing can be grabbed during the intro. Next: say next or press " + (last ? "Start" : "Next") + ".", false);
+        }
 
         public static string StepId(GardenChapter chapter) => "garden_chapter" + chapter.Number + "_" + chapter.Id;
 

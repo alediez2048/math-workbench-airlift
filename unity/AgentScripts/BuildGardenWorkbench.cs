@@ -26,8 +26,9 @@ using UnityEngine.UI;
 // numbers and numbered fence spots, two seedling trays, 8 grabbable seedling strips (8 seedlings each, every seedling
 // able to grow into lettuce, a carrot, a sunflower or beans), a grabbable fence divider, trees, bushes, a back fence,
 // sunflowers, a Sunny Plot sign, the watering can and butterfly for the payoff, and the "Garden card" canvas in the
-// Lesson interface frame. Cargo objects are not touched except the shared TableHandle piece list and the
-// TypographyBindings inventory. Root inactive by default.
+// Lesson interface frame. Owner 2026-09-17 ("the plants are too little"): strips, plants, fence and payoff are twice
+// the first build; positions and sizes come from GardenTableLayout (trays front to back beside the bed). Cargo objects
+// are not touched except the shared TableHandle piece list and the TypographyBindings inventory. Root inactive by default.
 // Run: unity command run_script --file AgentScripts/BuildGardenWorkbench.cs --entry BuildGardenWorkbench.Run
 public static class BuildGardenWorkbench
 {
@@ -38,30 +39,19 @@ public static class BuildGardenWorkbench
     public const string CardName = "Garden card";
     public const string CardId = "community_garden_multiplication";
     public const int StripCount = 8;
-    public const float T = 0.0175f;                       // deck top (station-local)
-    public const float Cell = 0.045f;
-    public static readonly Vector3 BedCenter = new Vector3(0f, 0.0415f, -0.03f);
-    // Two tidy seedling trays, each holding the three tray strips of its side (chapter 2 has six strips, up to 6 long).
-    public const int TraySlots = 3, MaxTrayStripLength = 6;
-    public const float TrayWidth = 0.30f, TrayDepth = 0.215f, TrayCenterX = 0.41f, TrayCenterZ = -0.125f, TrayBase = 0.008f, TrayRim = 0.008f;
-    public const float TrayHeight = T + TrayBase + 0.006f;   // strip body (12 mm) resting on the tray base
-    public const float TrayStepZ = 0.065f, TrayFirstZ = TrayCenterZ + TrayStepZ;
-    public const float TrayLeftX = -TrayCenterX - TrayWidth / 2 + 0.015f, TrayRightX = TrayCenterX - TrayWidth / 2 + 0.015f;
-    public const float RowLabelSize = 0.27f, SpotNumberSize = 0.21f, PartLabelSize = 0.27f, SignTextSize = 0.26f;
-    public static readonly Vector3 FenceHome = new Vector3(0.215f, T, -0.03f);
-    public static readonly Vector3 CanHome = new Vector3(0.44f, T, 0.12f);
-    public static readonly Vector3 ButterflyHome = new Vector3(0.3f, T + 0.07f, 0.34f);
-    const float WallThickness = 0.012f;
+    public const float T = GardenTableLayout.DeckTop;       // deck top (station-local)
+    public const float Cell = GardenTableLayout.StripCell;  // full-size cell: twice the first build's 45 mm
+    // Two tidy seedling trays beside the bed, each holding the three tray strips of its side lying front to back
+    // (chapter 2 has six strips, up to 6 long).
+    public const int MaxTrayStripLength = 6;
+    public const float RowLabelSize = 0.3f, SpotNumberSize = 0.24f, PartLabelSize = 0.27f, SignTextSize = 0.26f;
+    const float WallThickness = GardenTableLayout.WallThickness;
     const float RowY = -196f, RowHeight = 48f, RowWidth = 165f, RowStep = 172f;
 
     static AirliftStyle style;
     static LessonTheme theme;
     static Material grass, grassDark, soil, peat, wood, trayWood, bark, leaf, leafDark, lettuce, bean, sunflower, pink, carrot, can, ink;
     static readonly Dictionary<string, Mesh> meshCache = new Dictionary<string, Mesh>();
-
-    /// Tray slot of strip view i: even views on the left tray, odd views on the right, back to front. Views 6 and 7
-    /// exist only for planted chapters (their strips never rest in a tray) and share the last slot.
-    public static Vector3 TrayLeft(int i) => new Vector3(i % 2 == 0 ? TrayLeftX : TrayRightX, TrayHeight, TrayFirstZ - Mathf.Min(i / 2, TraySlots - 1) * TrayStepZ);
 
     public static string Run()
     {
@@ -95,7 +85,9 @@ public static class BuildGardenWorkbench
         root.localPosition = Vector3.zero; root.localRotation = Quaternion.identity; root.localScale = Vector3.one;
         var station = rootGo.AddComponent<GardenStation>();
         station.cardId = CardId; station.visualRoots = new[] { rootGo }; station.stationRoot = root; station.theme = theme;
-        station.trayHeight = TrayHeight; station.deckTop = T; station.fenceHome = FenceHome;
+        station.trayHeight = GardenTableLayout.TrayRestY; station.trayYaw = GardenTableLayout.TrayYaw; station.deckTop = T; station.fenceHome = GardenTableLayout.FenceHome;
+        station.stripCell = Cell; station.stripDepth = GardenTableLayout.StripColliderSize; station.stripHeight = GardenTableLayout.StripColliderSize;
+        station.splitGap = GardenTableLayout.SplitGap; station.partLabelOffset = GardenTableLayout.PartLabelOffset; station.plantTop = GardenTableLayout.PlantTop;
 
         // 3. Deck: the Cargo footprint, a hair higher so two decks never z-fight if both show.
         var deckSize = deckSource.sharedMesh.bounds.size;
@@ -104,22 +96,17 @@ public static class BuildGardenWorkbench
             Rounded(x < 0 ? "Deck edging left" : "Deck edging right", root, new Vector3(x * (deckSize.x / 2 - 0.02f), T + 0.002f, 0), new Vector3(0.02f, 0.004f, deckSize.z - 0.04f), grassDark, 0.0019f);
         report.Add("deck " + F(deckSize.x) + " x " + F(deckSize.z) + " m");
 
-        // 4. Props (all under 0.19 m so nothing shows through the translucent card).
+        // 4. Props (all under 0.19 m so nothing shows through the translucent card), behind the bed and the trays.
         var props = Group("Garden props", root, Vector3.zero);
-        Tree(props, "Tree left", new Vector3(-0.56f, T, 0.3f));
-        Tree(props, "Tree right", new Vector3(0.56f, T, 0.3f));
-        Bush(props, "Bush 1", new Vector3(-0.62f, T, 0.2f));
-        Bush(props, "Bush 2", new Vector3(0.62f, T, 0.2f));
-        Bush(props, "Bush 3", new Vector3(-0.3f, T, 0.34f));
-        Bush(props, "Bush 4", new Vector3(0.3f, T, 0.34f));
+        Tree(props, "Tree left", GardenTableLayout.TreeLeft);
+        Tree(props, "Tree right", GardenTableLayout.TreeRight);
+        for (int i = 0; i < GardenTableLayout.Bushes.Length; i++) Bush(props, "Bush " + (i + 1), GardenTableLayout.Bushes[i]);
         BackFence(props);
-        Sunflower(props, "Sunflower 1", new Vector3(-0.6f, T, -0.34f));
-        Sunflower(props, "Sunflower 2", new Vector3(0.6f, T, -0.34f));
-        Sunflower(props, "Sunflower 3", new Vector3(0.12f, T, 0.34f));
+        for (int i = 0; i < GardenTableLayout.Sunflowers.Length; i++) Sunflower(props, "Sunflower " + (i + 1), GardenTableLayout.Sunflowers[i]);
         Sign(props);
         var payoff = Group("Garden payoff", root, Vector3.zero);
-        station.wateringCan = WateringCan(payoff); station.wateringCanHome = CanHome;
-        station.butterfly = Butterfly(payoff); station.butterflyHome = ButterflyHome;
+        station.wateringCan = WateringCan(payoff); station.wateringCanHome = GardenTableLayout.CanHome;
+        station.butterfly = Butterfly(payoff); station.butterflyHome = GardenTableLayout.ButterflyHome;
         report.Add("props: 2 trees, 4 bushes, back fence, 3 sunflowers, Sunny Plot sign, watering can, butterfly");
 
         // 5. The raised bed.
@@ -127,8 +114,8 @@ public static class BuildGardenWorkbench
         report.Add("bed: 64 soil cells, 4 walls (" + Cell * 1000 + " mm cells), 8 row numbers, 7 fence spots");
 
         // 6. Trays, strips and fence.
-        SeedlingTray(root, "Seedling tray left", -TrayCenterX);
-        SeedlingTray(root, "Seedling tray right", TrayCenterX);
+        SeedlingTray(root, "Seedling tray left", -GardenTableLayout.TrayCenterX);
+        SeedlingTray(root, "Seedling tray right", GardenTableLayout.TrayCenterX);
         var pieces = Group("Garden pieces", root, Vector3.zero);
         station.pieces = pieces.gameObject;
         station.stripMeshes = new Mesh[GardenBedLayout.MaxColumns + 1];
@@ -166,9 +153,14 @@ public static class BuildGardenWorkbench
             EditorUtility.SetDirty(binding);
         }
 
-        // Closed state: chapter 1 bed laid out, pieces hidden, root inactive.
+        // Closed state: chapter 1 bed laid out, pieces full size in their tray slots and hidden, root inactive.
         station.bed.Apply(GardenChapter.All[0].Rows, GardenChapter.All[0].Columns);
-        for (int i = 0; i < StripCount; i++) station.strips[i].piece.localPosition = GardenStation.TrayPosition(station.strips[i], MaxTrayStripLength, Cell);
+        for (int i = 0; i < StripCount; i++)
+        {
+            var piece = station.strips[i].piece;
+            piece.localPosition = GardenStation.TrayPosition(station.strips[i], MaxTrayStripLength, Cell);
+            piece.localRotation = Quaternion.Euler(0, GardenTableLayout.TrayYaw, 0); piece.localScale = Vector3.one;
+        }
         pieces.gameObject.SetActive(false);
         rootGo.SetActive(false);
         EditorUtility.SetDirty(station); EditorUtility.SetDirty(station.bed); EditorUtility.SetDirty(n);
@@ -183,18 +175,21 @@ public static class BuildGardenWorkbench
     {
         var go = new GameObject("Garden bed"); go.transform.SetParent(root, false);
         var view = go.AddComponent<GardenBedView>();
-        view.stationRoot = root; view.center = BedCenter; view.cell = Cell; view.wallThickness = WallThickness;
-        view.cellHeight = T + 0.009f; view.wallHeight = T + 0.016f; view.labelHeight = T + 0.036f; view.rowLabelOffset = 0.03f;
-        var turnable = Group("Bed turnable", go.transform, new Vector3(BedCenter.x, 0, BedCenter.z));
+        view.stationRoot = root; view.centerX = 0f; view.restHeight = GardenTableLayout.PlantedRestY; view.frontZ = GardenTableLayout.BedFrontZ;
+        view.maxDepth = GardenTableLayout.BedMaxDepth; view.cell = Cell; view.meshCell = Cell; view.wallThickness = WallThickness;
+        view.cellHeight = T + GardenTableLayout.SoilHeight / 2; view.wallHeight = T + GardenTableLayout.WallHeight / 2; view.labelHeight = T + 0.04f;
+        view.rowLabelOffset = GardenTableLayout.RowLabelOffset;
+        var first = view.LayoutFor(GardenChapter.All[0].Rows, GardenChapter.All[0].Columns);
+        var turnable = Group("Bed turnable", go.transform, new Vector3(first.Center.x, 0, first.Center.z));
         view.turnable = turnable;
         view.cells = new GameObject[GardenBedLayout.MaxRows * GardenBedLayout.MaxColumns];
         for (int r = 0; r < GardenBedLayout.MaxRows; r++)
             for (int c = 0; c < GardenBedLayout.MaxColumns; c++)
-                view.cells[r * GardenBedLayout.MaxColumns + c] = Rounded("Soil cell " + (r + 1) + "-" + (c + 1), turnable, Vector3.zero, new Vector3(Cell - 0.005f, 0.018f, Cell - 0.005f), soil, 0.004f);
+                view.cells[r * GardenBedLayout.MaxColumns + c] = Rounded("Soil cell " + (r + 1) + "-" + (c + 1), turnable, Vector3.zero, new Vector3(Cell - 0.01f, GardenTableLayout.SoilHeight, Cell - 0.01f), soil, 0.006f);
         view.longWalls = new Mesh[GardenBedLayout.MaxColumns + 1];
         view.shortWalls = new Mesh[GardenBedLayout.MaxRows + 1];
-        for (int k = 1; k <= GardenBedLayout.MaxColumns; k++) view.longWalls[k] = RoundedMesh(new Vector3(k * Cell + 2 * WallThickness, 0.032f, WallThickness), 0.004f);
-        for (int k = 1; k <= GardenBedLayout.MaxRows; k++) view.shortWalls[k] = RoundedMesh(new Vector3(k * Cell, 0.032f, WallThickness), 0.004f);
+        for (int k = 1; k <= GardenBedLayout.MaxColumns; k++) view.longWalls[k] = RoundedMesh(new Vector3(k * Cell + 2 * WallThickness, GardenTableLayout.WallHeight, WallThickness), 0.006f);
+        for (int k = 1; k <= GardenBedLayout.MaxRows; k++) view.shortWalls[k] = RoundedMesh(new Vector3(k * Cell, GardenTableLayout.WallHeight, WallThickness), 0.006f);
         view.wallBack = Wall(turnable, "Wall back", view.longWalls[4]);
         view.wallFront = Wall(turnable, "Wall front", view.longWalls[4]);
         view.wallLeft = Wall(turnable, "Wall left", view.shortWalls[3]);
@@ -209,8 +204,8 @@ public static class BuildGardenWorkbench
         for (int k = 1; k < GardenBedLayout.MaxColumns; k++)
         {
             var spot = Group("Fence spot " + k, go.transform, Vector3.zero);
-            Rounded("Peg", spot, new Vector3(0, T + 0.035f, 0), new Vector3(0.004f, 0.006f, 0.016f), ink, 0.0015f);
-            var number = DeckText(spot, "Spot number", new Vector3(0, T + 0.034f, -0.032f), k.ToString(), SpotNumberSize, style.headingFont);
+            Rounded("Peg", spot, new Vector3(0, T + GardenTableLayout.WallHeight + 0.004f, 0), new Vector3(0.006f, 0.008f, WallThickness + 0.004f), ink, 0.002f);
+            var number = DeckText(spot, "Spot number", new Vector3(0, T + 0.05f, -GardenTableLayout.SpotNumberOffset), k.ToString(), SpotNumberSize, style.headingFont);
             number.rectTransform.sizeDelta = new Vector2(0.04f, 0.04f);
             view.fenceTicks[k - 1] = spot.gameObject;
         }
@@ -226,15 +221,17 @@ public static class BuildGardenWorkbench
     }
 
     // ---- pieces ----
-    static Mesh StripMesh(int length) => RoundedMesh(new Vector3(length * Cell - 0.004f, 0.012f, 0.036f), 0.005f);
+    static Mesh StripMesh(int length) => RoundedMesh(new Vector3(length * Cell - GardenTableLayout.StripBodyInset, GardenTableLayout.StripBodyHeight, GardenTableLayout.StripBodyDepth), 0.01f);
 
     static GardenStation.StripView Strip(Transform parent, int index, Mesh[] meshes)
     {
         int max = GardenBedLayout.MaxColumns;
         var root = new GameObject("Seedling strip " + (index + 1)); root.transform.SetParent(parent, false);
-        var view = new GardenStation.StripView { trayLeft = TrayLeft(index) };
+        var view = new GardenStation.StripView { trayFront = GardenTableLayout.TrayFront(index) };
         root.transform.localPosition = GardenStation.TrayPosition(view, max, Cell);
-        var collider = root.AddComponent<BoxCollider>(); collider.size = new Vector3(max * Cell, 0.04f, 0.04f); collider.center = new Vector3(0, 0.012f, 0);
+        root.transform.localRotation = Quaternion.Euler(0, GardenTableLayout.TrayYaw, 0);
+        float c = GardenTableLayout.StripColliderSize;
+        var collider = root.AddComponent<BoxCollider>(); collider.size = new Vector3(max * Cell, c, c); collider.center = new Vector3(0, c * 0.3f, 0);
         view.piece = root.transform; view.collider = collider;
         view.bodyLeft = Body(root.transform, "Body left", meshes[max]);
         view.bodyRight = Body(root.transform, "Body right", meshes[1]);
@@ -242,21 +239,23 @@ public static class BuildGardenWorkbench
         view.seedlings = new Transform[max]; view.sprouts = new Transform[max]; view.blooms = new Transform[max];
         for (int k = 0; k < max; k++)
         {
-            var seedling = Group("Seedling " + (k + 1), root.transform, new Vector3(GardenBedLayout.SeedlingX(Cell, k, max), 0.006f, 0));
+            // Every seedling part is the first build's part at twice its size and offset (PieceScale).
+            const float x2 = 2f;
+            var seedling = Group("Seedling " + (k + 1), root.transform, new Vector3(GardenBedLayout.SeedlingX(Cell, k, max), GardenTableLayout.SeedlingY, 0));
             var sprout = Group("Sprout", seedling, Vector3.zero);
-            Rounded("Stem", sprout, new Vector3(0, 0.008f, 0), new Vector3(0.004f, 0.016f, 0.004f), leafDark, 0.0015f);
-            Rounded("Leaves", sprout, new Vector3(0, 0.017f, 0), new Vector3(0.022f, 0.007f, 0.012f), leaf, 0.003f);
+            Rounded("Stem", sprout, x2 * new Vector3(0, 0.008f, 0), x2 * new Vector3(0.004f, 0.016f, 0.004f), leafDark, x2 * 0.0015f);
+            Rounded("Leaves", sprout, x2 * new Vector3(0, 0.017f, 0), x2 * new Vector3(0.022f, 0.007f, 0.012f), leaf, x2 * 0.003f);
             var bloom = Group("Bloom", seedling, Vector3.zero);
-            Rounded("Lettuce head", bloom, new Vector3(0, 0.012f, 0), new Vector3(0.032f, 0.024f, 0.032f), lettuce, 0.01f);
-            Rounded("Carrot top", bloom, new Vector3(0, 0.022f, 0), new Vector3(0.012f, 0.03f, 0.012f), leafDark, 0.004f);
-            Rounded("Carrot root", bloom, new Vector3(0, 0.004f, 0), new Vector3(0.022f, 0.014f, 0.022f), carrot, 0.006f);
-            Rounded("Sunflower stalk", bloom, new Vector3(0, 0.025f, 0), new Vector3(0.005f, 0.05f, 0.005f), leafDark, 0.002f);
-            var petals = Rounded("Sunflower petals", bloom, new Vector3(0, 0.055f, -0.004f), new Vector3(0.034f, 0.034f, 0.006f), sunflower, 0.0027f);
+            Rounded("Lettuce head", bloom, x2 * new Vector3(0, 0.012f, 0), x2 * new Vector3(0.032f, 0.024f, 0.032f), lettuce, x2 * 0.01f);
+            Rounded("Carrot top", bloom, x2 * new Vector3(0, 0.022f, 0), x2 * new Vector3(0.012f, 0.03f, 0.012f), leafDark, x2 * 0.004f);
+            Rounded("Carrot root", bloom, x2 * new Vector3(0, 0.004f, 0), x2 * new Vector3(0.022f, 0.014f, 0.022f), carrot, x2 * 0.006f);
+            Rounded("Sunflower stalk", bloom, x2 * new Vector3(0, 0.025f, 0), x2 * new Vector3(0.005f, 0.05f, 0.005f), leafDark, x2 * 0.002f);
+            var petals = Rounded("Sunflower petals", bloom, x2 * new Vector3(0, 0.055f, -0.004f), x2 * new Vector3(0.034f, 0.034f, 0.006f), sunflower, x2 * 0.0027f);
             petals.transform.localRotation = Quaternion.Euler(25f, 0, 0);
-            var centre = Rounded("Sunflower centre", bloom, new Vector3(0, 0.056f, -0.008f), new Vector3(0.015f, 0.015f, 0.008f), bark, 0.0036f);
+            var centre = Rounded("Sunflower centre", bloom, x2 * new Vector3(0, 0.056f, -0.008f), x2 * new Vector3(0.015f, 0.015f, 0.008f), bark, x2 * 0.0036f);
             centre.transform.localRotation = Quaternion.Euler(25f, 0, 0);
-            Rounded("Bean pole", bloom, new Vector3(0.006f, 0.03f, 0), new Vector3(0.004f, 0.06f, 0.004f), wood, 0.0015f);
-            Rounded("Bean pods", bloom, new Vector3(-0.003f, 0.028f, 0), new Vector3(0.016f, 0.03f, 0.012f), bean, 0.005f);
+            Rounded("Bean pole", bloom, x2 * new Vector3(0.006f, 0.03f, 0), x2 * new Vector3(0.004f, 0.06f, 0.004f), wood, x2 * 0.0015f);
+            Rounded("Bean pods", bloom, x2 * new Vector3(-0.003f, 0.028f, 0), x2 * new Vector3(0.016f, 0.03f, 0.012f), bean, x2 * 0.005f);
             bloom.localScale = Vector3.zero;
             bloom.gameObject.SetActive(false);
             view.seedlings[k] = seedling; view.sprouts[k] = sprout; view.blooms[k] = bloom;
@@ -279,13 +278,16 @@ public static class BuildGardenWorkbench
     static (Transform, Grabbable) Fence(Transform parent)
     {
         var root = new GameObject("Fence divider"); root.transform.SetParent(parent, false);
-        root.transform.localPosition = FenceHome;
-        var collider = root.AddComponent<BoxCollider>(); collider.size = new Vector3(0.03f, 0.08f, 0.4f); collider.center = new Vector3(0, 0.04f, 0);
-        for (int i = 0; i < 5; i++)
-            Rounded("Post " + (i + 1), root.transform, new Vector3(0, 0.03f, -0.18f + i * 0.09f), new Vector3(0.01f, 0.06f, 0.01f), wood, 0.003f);
-        Rounded("Rail high", root.transform, new Vector3(0, 0.05f, 0), new Vector3(0.006f, 0.008f, 0.38f), wood, 0.0025f);
-        Rounded("Rail low", root.transform, new Vector3(0, 0.025f, 0), new Vector3(0.006f, 0.008f, 0.38f), wood, 0.0025f);
-        Rounded("Grip knob", root.transform, new Vector3(0, 0.068f, -0.19f), new Vector3(0.022f, 0.022f, 0.022f), sunflower, 0.008f);
+        // Twice the first build's posts, rails and knob, long enough to span the deepest bed.
+        float length = GardenTableLayout.FenceLength, height = GardenTableLayout.FenceHeight;
+        root.transform.localPosition = GardenTableLayout.FenceHome;
+        var collider = root.AddComponent<BoxCollider>(); collider.size = new Vector3(0.06f, 0.16f, length + 0.02f); collider.center = new Vector3(0, 0.08f, 0);
+        const int posts = 7;
+        for (int i = 0; i < posts; i++)
+            Rounded("Post " + (i + 1), root.transform, new Vector3(0, height / 2, -length / 2 + 0.01f + i * (length - 0.02f) / (posts - 1)), new Vector3(0.02f, height, 0.02f), wood, 0.006f);
+        Rounded("Rail high", root.transform, new Vector3(0, 0.1f, 0), new Vector3(0.012f, 0.016f, length), wood, 0.005f);
+        Rounded("Rail low", root.transform, new Vector3(0, 0.05f, 0), new Vector3(0.012f, 0.016f, length), wood, 0.005f);
+        Rounded("Grip knob", root.transform, new Vector3(0, 0.136f, -length / 2), new Vector3(0.044f, 0.044f, 0.044f), sunflower, 0.016f);
         QuickActionsAPI.AddGrabInteraction(root);
         var grabbable = root.GetComponentInChildren<Grabbable>();
         if (grabbable == null) throw new InvalidOperationException("SDK did not create Grabbable for the fence");
@@ -311,7 +313,7 @@ public static class BuildGardenWorkbench
 
     static void BackFence(Transform parent)
     {
-        var fence = Group("Back fence", parent, new Vector3(0, T, 0.37f));
+        var fence = Group("Back fence", parent, GardenTableLayout.BackFence);
         for (int i = 0; i < 7; i++) Rounded("Fence post " + (i + 1), fence, new Vector3(-0.45f + i * 0.15f, 0.035f, 0), new Vector3(0.014f, 0.07f, 0.014f), wood, 0.004f);
         Rounded("Fence rail high", fence, new Vector3(0, 0.05f, 0.006f), new Vector3(0.92f, 0.01f, 0.008f), wood, 0.003f);
         Rounded("Fence rail low", fence, new Vector3(0, 0.025f, 0.006f), new Vector3(0.92f, 0.01f, 0.008f), wood, 0.003f);
@@ -331,7 +333,7 @@ public static class BuildGardenWorkbench
 
     static void Sign(Transform parent)
     {
-        var sign = Group("Sunny Plot sign", parent, new Vector3(-0.36f, T, 0.33f));
+        var sign = Group("Sunny Plot sign", parent, GardenTableLayout.Sign);
         foreach (float x in new[] { -0.055f, 0.055f }) Rounded(x < 0 ? "Sign post left" : "Sign post right", sign, new Vector3(x, 0.03f, 0.006f), new Vector3(0.008f, 0.06f, 0.008f), bark, 0.003f);
         Rounded("Sign board", sign, new Vector3(0, 0.1f, 0), new Vector3(0.15f, 0.085f, 0.008f), trayWood, 0.0036f);
         var text = WorldText("Sign text", sign, new Vector3(0, 0.1f, -0.0045f), "SUNNY\nPLOT", SignTextSize, Quaternion.identity, style.headingFont, ink);
@@ -339,36 +341,42 @@ public static class BuildGardenWorkbench
         text.lineSpacing = -20f;
     }
 
-    /// A tidy wooden seedling tray with a green rim, just big enough for three strips of up to 6 seedlings.
+    /// A tidy wooden seedling tray with a green rim beside the bed, just big enough for three strips of up to 6
+    /// seedlings lying front to back.
     static void SeedlingTray(Transform root, string name, float centerX)
     {
-        var tray = Group(name, root, new Vector3(centerX, T, TrayCenterZ));
-        Rounded("Tray base", tray, new Vector3(0, TrayBase / 2, 0), new Vector3(TrayWidth, TrayBase, TrayDepth), wood, 0.003f);
-        Rounded("Rim back", tray, new Vector3(0, TrayBase + 0.004f, TrayDepth / 2 - TrayRim / 2), new Vector3(TrayWidth, 0.008f, TrayRim), leafDark, 0.003f);
-        Rounded("Rim front", tray, new Vector3(0, TrayBase + 0.004f, -TrayDepth / 2 + TrayRim / 2), new Vector3(TrayWidth, 0.008f, TrayRim), leafDark, 0.003f);
-        Rounded("Rim left", tray, new Vector3(-TrayWidth / 2 + TrayRim / 2, TrayBase + 0.004f, 0), new Vector3(TrayRim, 0.008f, TrayDepth - 2 * TrayRim), leafDark, 0.003f);
-        Rounded("Rim right", tray, new Vector3(TrayWidth / 2 - TrayRim / 2, TrayBase + 0.004f, 0), new Vector3(TrayRim, 0.008f, TrayDepth - 2 * TrayRim), leafDark, 0.003f);
+        float w = GardenTableLayout.TrayWidth, d = GardenTableLayout.TrayDepth, b = GardenTableLayout.TrayBase, rim = GardenTableLayout.TrayRim;
+        var tray = Group(name, root, new Vector3(centerX, T, GardenTableLayout.TrayCenterZ));
+        Rounded("Tray base", tray, new Vector3(0, b / 2, 0), new Vector3(w, b, d), wood, 0.003f);
+        Rounded("Rim back", tray, new Vector3(0, b + 0.004f, d / 2 - rim / 2), new Vector3(w, 0.008f, rim), leafDark, 0.003f);
+        Rounded("Rim front", tray, new Vector3(0, b + 0.004f, -d / 2 + rim / 2), new Vector3(w, 0.008f, rim), leafDark, 0.003f);
+        Rounded("Rim left", tray, new Vector3(-w / 2 + rim / 2, b + 0.004f, 0), new Vector3(rim, 0.008f, d - 2 * rim), leafDark, 0.003f);
+        Rounded("Rim right", tray, new Vector3(w / 2 - rim / 2, b + 0.004f, 0), new Vector3(rim, 0.008f, d - 2 * rim), leafDark, 0.003f);
     }
 
     static Transform WateringCan(Transform parent)
     {
-        var c = Group("Watering can", parent, CanHome);
-        Rounded("Can body", c, new Vector3(0, 0.025f, 0), new Vector3(0.06f, 0.05f, 0.04f), can, 0.012f);
-        var spout = Rounded("Spout", c, new Vector3(-0.045f, 0.035f, 0), new Vector3(0.05f, 0.008f, 0.008f), can, 0.0036f);
+        // One and a half times the first build, so it reads next to the bigger plants.
+        const float k = 1.5f;
+        var c = Group("Watering can", parent, GardenTableLayout.CanHome);
+        Rounded("Can body", c, k * new Vector3(0, 0.025f, 0), k * new Vector3(0.06f, 0.05f, 0.04f), can, k * 0.012f);
+        var spout = Rounded("Spout", c, k * new Vector3(-0.045f, 0.035f, 0), k * new Vector3(0.05f, 0.008f, 0.008f), can, k * 0.0036f);
         spout.transform.localRotation = Quaternion.Euler(0, 0, -25f);
-        Rounded("Rose", c, new Vector3(-0.07f, 0.047f, 0), new Vector3(0.008f, 0.016f, 0.016f), can, 0.0036f);
-        Rounded("Handle", c, new Vector3(0.005f, 0.058f, 0), new Vector3(0.04f, 0.008f, 0.01f), can, 0.0036f);
-        Rounded("Handle back", c, new Vector3(0.025f, 0.045f, 0), new Vector3(0.008f, 0.03f, 0.01f), can, 0.0036f);
+        Rounded("Rose", c, k * new Vector3(-0.07f, 0.047f, 0), k * new Vector3(0.008f, 0.016f, 0.016f), can, k * 0.0036f);
+        Rounded("Handle", c, k * new Vector3(0.005f, 0.058f, 0), k * new Vector3(0.04f, 0.008f, 0.01f), can, k * 0.0036f);
+        Rounded("Handle back", c, k * new Vector3(0.025f, 0.045f, 0), k * new Vector3(0.008f, 0.03f, 0.01f), can, k * 0.0036f);
         return c;
     }
 
     static Transform Butterfly(Transform parent)
     {
-        var b = Group("Butterfly", parent, ButterflyHome);
-        Rounded("Body", b, Vector3.zero, new Vector3(0.004f, 0.004f, 0.02f), ink, 0.0015f);
-        var left = Rounded("Wing left", b, new Vector3(-0.009f, 0.002f, 0), new Vector3(0.016f, 0.002f, 0.014f), pink, 0.0009f);
+        // Twice the first build, like the plants it lands on.
+        const float k = 2f;
+        var b = Group("Butterfly", parent, GardenTableLayout.ButterflyHome);
+        Rounded("Body", b, Vector3.zero, k * new Vector3(0.004f, 0.004f, 0.02f), ink, k * 0.0015f);
+        var left = Rounded("Wing left", b, k * new Vector3(-0.009f, 0.002f, 0), k * new Vector3(0.016f, 0.002f, 0.014f), pink, k * 0.0009f);
         left.transform.localRotation = Quaternion.Euler(0, 0, 25f);
-        var right = Rounded("Wing right", b, new Vector3(0.009f, 0.002f, 0), new Vector3(0.016f, 0.002f, 0.014f), sunflower, 0.0009f);
+        var right = Rounded("Wing right", b, k * new Vector3(0.009f, 0.002f, 0), k * new Vector3(0.016f, 0.002f, 0.014f), sunflower, k * 0.0009f);
         right.transform.localRotation = Quaternion.Euler(0, 0, -25f);
         return b;
     }

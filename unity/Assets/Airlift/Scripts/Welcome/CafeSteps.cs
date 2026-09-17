@@ -1,5 +1,7 @@
 using System.Text;
+using Airlift.Lessons;
 using Airlift.Lessons.Cafe;
+using Airlift.Presentation.Cafe;
 
 namespace Airlift.Welcome
 {
@@ -12,6 +14,28 @@ namespace Airlift.Welcome
         public static GuideStep Briefing() => new GuideStep(BriefingId,
             "The Corner Café briefing card only; no pastry is on the counter yet. The first chapter starts when the learner says yes or presses Start.",
             false);
+
+        /// A concept-intro step ("What is dividing?"): exactly what the intro visual poses on the counter. Nothing can
+        /// be grabbed; the learner moves on with Next (Start on the last step).
+        public static GuideStep Intro(IntroStep step, bool lastStep)
+        {
+            var scene = CafeLayout.IntroScene(step != null ? step.Visual : null);
+            var sb = new StringBuilder("Intro card: ");
+            int n = scene.Containers, per = scene.PerContainer;
+            string items = scene.Items + " " + (scene.Items == 1 ? scene.ItemName : scene.ItemPlural);
+            string perWord = per == 1 ? scene.ItemName : scene.ItemPlural;
+            if (scene.Items == 0 || n == 0) sb.Append("the counter is empty. ");
+            else if (!scene.Placed)
+                sb.Append(items).Append(" on the tray and ").Append(n).Append(" empty ").Append(Container(scene.Kind, n)).Append(" on the counter. ");
+            else if (scene.Kind == CafeTargetKind.Plates)
+                sb.Append(n).Append(' ').Append(Container(scene.Kind, n)).Append(" on the counter with ").Append(per).Append(' ').Append(perWord).Append(" on each; the tray is empty. ");
+            else
+                sb.Append(n).Append(' ').Append(Container(scene.Kind, n)).Append(" on the counter with ").Append(per).Append(' ').Append(perWord).Append(" in each; the tray is empty. ");
+            sb.Append("Nothing can be grabbed yet. Next: say ").Append(lastStep ? "start or press Start." : "next or press Next.");
+            return new GuideStep("intro", Fit(sb), false);
+        }
+
+        static string Container(CafeTargetKind kind, int n) => kind == CafeTargetKind.Plates ? (n == 1 ? "plate" : "plates") : (n == 1 ? "box" : "boxes");
 
         /// One chapter on the counter: the plates or boxes with the count on each, the loose pastries on the tray,
         /// and the earned expression. After an accepted chapter the plates are served or the boxes leave on the

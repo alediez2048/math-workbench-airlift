@@ -14,6 +14,8 @@ namespace Airlift.Lessons.Garden
     /// Community Garden / Sunny Plot. Presentation adapter only: every arithmetic decision comes from GardenModel.
     /// Maps strip and fence grabs, buttons and voice tools to model commands and mirrors the model into the bed,
     /// the seedling strip pool, the fence and the Garden card. Accepted beds grow into flowers and vegetables.
+    /// The first start after the briefing runs the concept intro "What is multiplying?" (ConceptIntros.Garden) once per
+    /// app run: planted rows of 4 on the chapter 1 bed, drawn without touching GardenModel.
     public sealed class GardenStation : LessonStation
     {
         [System.Serializable]
@@ -27,8 +29,8 @@ namespace Airlift.Lessons.Garden
             public Transform[] seedlings = new Transform[0];
             public Transform[] sprouts = new Transform[0];
             public Transform[] blooms = new Transform[0];
-            [Tooltip("Station-local left end of this strip's tray slot (y = tray rest height).")]
-            public Vector3 trayLeft;
+            [Tooltip("Station-local front end of this strip's tray slot (y = tray rest height); the strip lies front to back.")]
+            public Vector3 trayFront;
             [System.NonSerialized] public string id;
             [System.NonSerialized] public int length;
             [System.NonSerialized] public bool held;
@@ -42,6 +44,8 @@ namespace Airlift.Lessons.Garden
         public const string FenceHeldReason = "Let go of the fence first.";
         public const string ClosedReason = "The garden lesson is not open.";
         public const string BriefingReason = "Start the first chapter first: say yes or press Start.";
+        public const string IntroReason = "Let's finish the intro first: say next or press Next.";
+        public const string IntroSayHints = "Say \"next\" · \"back to the lessons\"";
         public const string TurningReason = "The bed is still turning.";
         public const string CheckedReason = "This bed is already checked. Go to the next chapter or start this one over.";
         public const string NotCompleteReason = "Plant the bed and check it first.";
@@ -58,17 +62,21 @@ namespace Airlift.Lessons.Garden
         public GardenBedView bed;
         public GameObject pieces;
         public StripView[] strips = new StripView[0];
-        [Tooltip("Index n: strip body covering n seedlings.")]
+        [Tooltip("Index n: strip body covering n seedlings at full size.")]
         public Mesh[] stripMeshes = new Mesh[GardenBedLayout.MaxColumns + 1];
-        public float trayHeight = 0.0315f;
-        public float stripDepth = 0.04f, stripHeight = 0.04f;
-        public float splitGap = 0.03f;
+        [Tooltip("Seedling pitch on a full-size strip; a bed with smaller cells scales the whole strip piece.")]
+        public float stripCell = GardenTableLayout.StripCell;
+        public float trayHeight = GardenTableLayout.TrayRestY;
+        [Tooltip("Yaw of a strip resting in its tray (front to back).")]
+        public float trayYaw = GardenTableLayout.TrayYaw;
+        public float stripDepth = GardenTableLayout.StripColliderSize, stripHeight = GardenTableLayout.StripColliderSize;
+        public float splitGap = GardenTableLayout.SplitGap;
         public float turnSeconds = 0.8f;
         [Header("Fence")]
         public Transform fence;
         public Grabbable fenceGrabbable;
-        public Vector3 fenceHome = new Vector3(0.215f, 0.0175f, -0.03f);
-        public float deckTop = 0.0175f;
+        public Vector3 fenceHome = GardenTableLayout.FenceHome;
+        public float deckTop = GardenTableLayout.DeckTop;
         [Header("Payoff")]
         public Transform wateringCan;
         public Vector3 wateringCanHome;
@@ -76,14 +84,17 @@ namespace Airlift.Lessons.Garden
         public Vector3 butterflyHome;
         public TMP_Text[] partLabels = new TMP_Text[2];
         [Tooltip("Distance of the part labels in front of the bed's front wall face.")]
-        public float partLabelOffset = 0.03f;
+        public float partLabelOffset = GardenTableLayout.PartLabelOffset;
+        [Tooltip("Strip-local top of the tallest grown crop; the watering can and butterfly clear it.")]
+        public float plantTop = GardenTableLayout.PlantTop;
         [Header("Card")]
         public TMP_Text expressionLine;
         public TMP_Text sayHints;
         public Button startButton, turnButton, checkButton, clearButton, nextButton, backButton;
 
         readonly GardenModel model = new GardenModel();
-        bool active, briefing, animating, payoffShown, initialized, fenceHeld;
+        bool active, briefing, animating, payoffShown, initialized, fenceHeld, introSeen;
+        int introIndex = -1;   // concept intro step on the card, -1 outside the intro
         float bodyBaseSize;
         string feedback = "";
         Coroutine running;
@@ -93,7 +104,7 @@ namespace Airlift.Lessons.Garden
         public override string Title => LessonTitle;
         public override string StoryName => Story;
         public override bool IsOpen => active;
-        public override bool ChapterActive => active && !briefing;
+        public override bool ChapterActive => active && !briefing && introIndex < 0;
         public override bool AnyHeld { get { if (!active) return false; if (fenceHeld) return true; foreach (var v in Views()) if (v.held) return true; return false; } }
         public override string[] ToolNames => new[] { ToolTurn, ToolSplit, ToolCheck, ToolClear };
 
@@ -107,9 +118,14 @@ namespace Airlift.Lessons.Garden
             }
         }
 
+        static IReadOnlyList<IntroStep> IntroSteps => ConceptIntros.Garden;
+
+        public override IntroStep CurrentIntro => active && introIndex >= 0 && introIndex < IntroSteps.Count ? IntroSteps[introIndex] : null;
+
         public override GuideStep CurrentStep()
         {
             if (!active) return new GuideStep("cards", "The lesson cards are showing; no table.", false);
+            if (InIntro) return GardenSteps.Intro(CurrentIntro);
             if (briefing) return GardenSteps.Briefing();
             return GardenSteps.ForChapter(model);
         }
@@ -120,6 +136,7 @@ namespace Airlift.Lessons.Garden
             {
                 var tools = new List<string> { "request_help" };
                 if (!active) return tools.ToArray();
+                if (InIntro) return new[] { "advance_step", "request_help", "back_to_lessons" };
                 if (briefing) { tools.Add("advance_step"); tools.Add("back_to_lessons"); return tools.ToArray(); }
                 var c = model.Chapter;
                 if (model.ChapterComplete)
@@ -144,11 +161,18 @@ namespace Airlift.Lessons.Garden
         // ---- public state for tests, previews and the guide ----
         public GardenModel Model => model;
         public bool InBriefing => active && briefing;
+        public bool InIntro => active && introIndex >= 0;
+        /// True once the concept intro ran to its end in this app run (a close during the intro does not count).
+        public bool IntroSeen => introSeen;
         public bool Animating => animating;
         public bool PayoffShown => payoffShown;
         public string Feedback => feedback;
         public string ExpressionText => model.Expression;
-        public GardenBedLayout BedLayout => bed != null ? bed.LayoutFor(model.Rows, model.Columns) : new GardenBedLayout(new Vector3(0, 0.0415f, -0.03f), 0.045f, model.Rows, model.Columns);
+        public GardenBedLayout BedLayout => LayoutFor(model.Rows, model.Columns);
+
+        GardenBedLayout LayoutFor(int rows, int columns) => bed != null ? bed.LayoutFor(rows, columns) : GardenTableLayout.BedFor(rows, columns);
+
+        float PieceScale(GardenBedLayout layout) => stripCell > 0f ? layout.Cell / stripCell : 1f;
 
         public StripView ViewOf(string id)
         {
@@ -192,7 +216,7 @@ namespace Airlift.Lessons.Garden
         {
             EnsureInit();
             StopRunning();
-            active = true; briefing = true; feedback = "";
+            active = true; briefing = true; introIndex = -1; feedback = "";
             fenceHeld = false;
             foreach (var v in Views()) v.held = false;
             SetRoots(true);
@@ -210,12 +234,13 @@ namespace Airlift.Lessons.Garden
             foreach (var v in Views()) v.held = false;
             if (!model.ChapterComplete) model.RestartChapter();
             bool wasActive = active;
-            active = false; briefing = false; feedback = "";
+            active = false; briefing = false; introIndex = -1; feedback = "";   // a closed intro counts as not seen
             LayoutAll();
             if (expressionLine != null) expressionLine.text = "";
             if (sayHints != null) sayHints.text = "";
             if (body != null && bodyBaseSize > 0) body.fontSize = bodyBaseSize;
             SetRoots(false);
+            SetStartLabel("Start");
             if (wasActive) Debug.Log("[Nerdy] Garden closed at chapter " + model.Chapter.Number);
         }
 
@@ -235,11 +260,25 @@ namespace Airlift.Lessons.Garden
         }
 
         // ---- shared actions ----
+        /// Briefing -> concept intro (first time in this app run) -> chapter 1; each Next inside the intro shows the next
+        /// step and returns its words; inside a chapter: next chapter.
         public override LessonActionResult Advance()
         {
             if (!active) return new LessonActionResult(false, ClosedReason);
             if (AnyHeld) return Refuse(HeldReasonNow());
+            if (introIndex >= 0)
+            {
+                if (introIndex < IntroSteps.Count - 1) return ShowIntroStep(introIndex + 1);
+                introIndex = -1; introSeen = true;
+                return StartFromBriefing();
+            }
             if (!briefing) return NextChapter();
+            if (!introSeen && IntroSteps.Count > 0) { briefing = false; return ShowIntroStep(0); }
+            return StartFromBriefing();
+        }
+
+        LessonActionResult StartFromBriefing()
+        {
             briefing = false;
             if (model.AllChaptersComplete || (model.ChapterComplete && model.IsLastChapter)) model.StartChapter(0);
             else if (model.ChapterComplete) model.NextChapter();
@@ -360,6 +399,7 @@ namespace Airlift.Lessons.Garden
         LessonActionResult? Gate()
         {
             if (!active) return new LessonActionResult(false, ClosedReason);
+            if (introIndex >= 0) return new LessonActionResult(false, IntroReason);
             if (briefing) return new LessonActionResult(false, BriefingReason);
             if (AnyHeld) return Refuse(HeldReasonNow());
             if (animating) return new LessonActionResult(false, TurningReason);
@@ -513,6 +553,7 @@ namespace Airlift.Lessons.Garden
             float gap = split > 0 ? splitGap : 0f;
             if (bed != null) bed.Apply(model.Rows, model.Columns, split, gap);
             var layout = BedLayout;
+            float scale = PieceScale(layout);
             var ids = model.StripIds;
             int i = 0;
             foreach (var v in Views())
@@ -525,10 +566,12 @@ namespace Airlift.Lessons.Garden
                 if (v.id == null) continue;
                 int length = Mathf.Clamp(model.StripLength(v.id), 1, GardenBedLayout.MaxColumns);
                 int row = model.RowOf(v.id);
-                SetLength(v, length, layout.Cell, row >= 0 ? split : 0, gap);
+                // Strips are built at full size; on the 7 × 6 and 8 × 7 beds the whole piece shrinks to the bed's cell.
+                v.piece.localScale = Vector3.one * scale;
+                SetLength(v, length, stripCell, row >= 0 ? split : 0, scale > 0f ? gap / scale : gap);
                 if (v.held) continue;
                 v.piece.localPosition = row >= 0 ? layout.StripPosition(row, length) : TrayPosition(v, length, layout.Cell);
-                v.piece.localRotation = Quaternion.identity;
+                v.piece.localRotation = row >= 0 ? Quaternion.identity : Quaternion.Euler(0f, trayYaw, 0f);
             }
             if (fence != null)
             {
@@ -564,10 +607,11 @@ namespace Airlift.Lessons.Garden
             return new Vector3(x, deckTop + 0.004f, layout.Front - wallThickness - offset);
         }
 
-        public static Vector3 TrayPosition(StripView view, int length, float cell) => view.trayLeft + new Vector3(length * cell * 0.5f, 0, 0);
+        /// Root of a strip resting in its tray, lying front to back from the slot's front end.
+        public static Vector3 TrayPosition(StripView view, int length, float cell) => GardenTableLayout.TrayPosition(view.trayFront, length, cell);
 
-        /// Shows `length` seedlings centred on the strip root. With a split after `split` columns the seedlings and
-        /// body right of the fence slide right by the gap.
+        /// Shows `length` seedlings centred on the strip root, in strip-local units (full-size pitch `cell`). With a split
+        /// after `split` columns the seedlings and body right of the fence slide right by the gap.
         void SetLength(StripView v, int length, float cell, int split, float gap)
         {
             v.length = length;
@@ -610,6 +654,18 @@ namespace Airlift.Lessons.Garden
                 SetButtons(false, false, false, false, false);
                 return;
             }
+            if (introIndex >= 0)
+            {
+                var step = CurrentIntro;
+                if (heading != null) heading.text = step.Heading;
+                SetBody(step.Say);
+                if (expressionLine != null) expressionLine.text = step.Expression ?? "";
+                if (sayHints != null) sayHints.text = IntroSayHints;
+                SetButtons(true, false, false, false, false);
+                SetStartLabel(IntroButtonLabel(introIndex, IntroSteps.Count));
+                return;
+            }
+            SetStartLabel("Start");
             if (briefing)
             {
                 if (heading != null) heading.text = BriefingHeading;
@@ -633,6 +689,12 @@ namespace Airlift.Lessons.Garden
             if (body == null) return;
             body.text = text;
             if (bodyBaseSize > 0) body.fontSize = CargoLessonDirector.FitFontSize(body, text, bodyBaseSize);
+        }
+
+        void SetStartLabel(string text)
+        {
+            var label = startButton != null ? startButton.GetComponentInChildren<TMP_Text>(true) : null;
+            if (label != null && label.text != text) label.text = text;
         }
 
         void SetButtons(bool start, bool turn, bool check, bool clear, bool next)
@@ -753,9 +815,9 @@ namespace Airlift.Lessons.Garden
 
             if (wateringCan != null)
             {
-                float y = 0.13f;
-                var from = new Vector3(layout.Left - 0.06f, y, layout.Center.z);
-                var to = new Vector3(layout.Right + splitGap + 0.06f, y, layout.Center.z);
+                float y = layout.Center.y + plantTop * PieceScale(layout) + 0.02f;   // just over the grown crops
+                var from = new Vector3(layout.Left - 0.09f, y, layout.Center.z);
+                var to = new Vector3(layout.Right + splitGap + 0.09f, y, layout.Center.z);
                 wateringCan.localRotation = Quaternion.Euler(0, 0, -20f);
                 for (t = 0f; t < 1f;)
                 {
@@ -775,7 +837,7 @@ namespace Airlift.Lessons.Garden
                 {
                     t = Mathf.Min(1f, t + Time.deltaTime / 1.3f);
                     var p = Vector3.Lerp(start, landing, t);
-                    p.y += 0.06f * Mathf.Sin(t * Mathf.PI) + 0.006f * Mathf.Sin(t * Mathf.PI * 10f) * (1f - t);
+                    p.y += 0.08f * Mathf.Sin(t * Mathf.PI) + 0.008f * Mathf.Sin(t * Mathf.PI * 10f) * (1f - t);
                     butterfly.localPosition = p;
                     yield return null;
                 }
@@ -787,7 +849,7 @@ namespace Airlift.Lessons.Garden
         Vector3 ButterflyLanding(GardenBedLayout layout)
         {
             float x = layout.ColumnX(Mathf.Max(0, layout.Columns / 2 - 1));
-            return new Vector3(x, layout.Center.y + 0.075f, layout.RowZ(0));
+            return new Vector3(x, layout.Center.y + plantTop * PieceScale(layout), layout.RowZ(0));
         }
 
         void ApplyPayoffFinal()
@@ -818,8 +880,71 @@ namespace Airlift.Lessons.Garden
         {
             model.StartChapter(index);
             feedback = "";
-            if (active) { briefing = false; ShowChapter(); }
+            if (active) { briefing = false; introIndex = -1; ShowChapter(); }
         }
+
+        /// Development and editor preview only: show concept intro step `index` inside the open station.
+        public void JumpToIntro(int index)
+        {
+            if (!active || IntroSteps.Count == 0) return;
+            briefing = false;
+            ShowIntroStep(Mathf.Clamp(index, 0, IntroSteps.Count - 1));
+        }
+
+        // ---- concept intro: "What is multiplying?" ----
+        public const int IntroBedRows = 3, IntroBedColumns = 4;
+
+        LessonActionResult ShowIntroStep(int index)
+        {
+            introIndex = index;
+            feedback = "";
+            StopRunning();
+            RestorePayoff();
+            LayoutIntro(CurrentIntro);
+            Refresh();
+            return new LessonActionResult(true, CurrentIntro.Say);
+        }
+
+        /// The intro picture on the chapter 1 bed (3 rows of 4): IntroPlantedRows full strips of 4, back row first, row
+        /// numbers only on the "times" step, trays and fence empty. Pieces stay locked (ChapterActive is false) and
+        /// GardenModel is not touched; the next LayoutAll puts every strip back where the model says.
+        void LayoutIntro(IntroStep step)
+        {
+            string visual = step?.Visual;
+            int planted = IntroPlantedRows(visual);
+            if (pieces != null) pieces.SetActive(true);
+            if (bed != null)
+            {
+                bed.Apply(IntroBedRows, IntroBedColumns);
+                bed.ShowLabels(IntroShowsRowNumbers(visual), false);
+            }
+            var layout = LayoutFor(IntroBedRows, IntroBedColumns);
+            float scale = PieceScale(layout);
+            int row = 0;
+            foreach (var v in Views())
+            {
+                int r = row++;
+                if (v.piece == null) continue;
+                bool on = r < planted;
+                v.piece.gameObject.SetActive(on);
+                if (!on) continue;
+                v.held = false;
+                v.piece.localScale = Vector3.one * scale;
+                SetLength(v, IntroBedColumns, stripCell, 0, 0f);
+                v.piece.localPosition = layout.StripPosition(r, IntroBedColumns);
+                v.piece.localRotation = Quaternion.identity;
+            }
+            if (fence != null) fence.gameObject.SetActive(false);
+            if (partLabels != null) foreach (var label in partLabels) if (label != null) label.gameObject.SetActive(false);
+        }
+
+        /// Rows of 4 planted for an intro visual: one row, then three equal rows.
+        public static int IntroPlantedRows(string visual) => visual == "row" ? 1 : visual == "rows" || visual == "times" ? IntroBedRows : 0;
+
+        public static bool IntroShowsRowNumbers(string visual) => visual == "times";
+
+        /// The card's primary button inside the intro: Next, and Start on the last step.
+        public static string IntroButtonLabel(int index, int count) => index >= count - 1 ? "Start" : "Next";
 
         // ---- pure text helpers (unit-tested) ----
         public static string TitleFor(GardenChapter chapter) => "Chapter " + chapter.Number + " · " + chapter.Title;
