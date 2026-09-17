@@ -103,6 +103,9 @@ def main():
                     suite['filter'].removesuffix('SceneTests') in requested]
         if any(not any(s['filter'] == name for s in selected) for name in requested):
             raise RuntimeError('Unknown suite; update the milestone manifest in its owning ticket.')
+    # PlayMode suites return zero results when run after many EditMode suites in one editor
+    # session (observed 2026-09-15/16); running them first is the verified working order.
+    selected.sort(key=lambda suite: 0 if suite['mode'] == 'playmode' else 1)
     for ticket in tickets.values():
         for asset in ticket['requiredAssets']:
             if not (PROJECT/asset).is_file(): raise RuntimeError('Required milestone asset missing: '+asset)

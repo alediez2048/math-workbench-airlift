@@ -1,5 +1,12 @@
 # Cargo Crew — phased ticket backlog
 
+## September 16 (night) — Phase 1R "Dock 7" drafted (awaiting owner approval)
+
+Owner accepted voice actions on build 190518 and asked for a voice-first workbench, a dock story and
+more chapters. Draft plan and tickets CC-D-01..09: [PHASE-1R-DOCK-CREW.md](PHASE-1R-DOCK-CREW.md).
+If approved they replace the P1-06..P2-06 order for the deadline; the old tickets they map to are listed
+in the plan's chapter table. Nothing implemented from it yet.
+
 ## September 16 (evening) — Phase 0 added, voice un-deferred (draft for owner approval)
 
 Owner accepted the Cargo workbench (toy look, carry handle, whole/halves) and re-scoped:

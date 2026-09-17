@@ -1,5 +1,250 @@
 # Cargo Crew development log
 
+## 2026-09-16 — Phase 1R "Dock 7" built by an agent team (owner authorized "implement all 3 steps")
+
+- **Team:** three implementers on disjoint files against docs/00-build/PHASE-1R-CONTRACTS.md, no Unity access;
+  main session integrated. Engine: CargoChapter (5 chapters) + chapter-driven CargoLessonModel (22 + 6 tests).
+  Workbench: CargoLessonDirector reworked (piece pool incl. 4 quarters, locked half, story card, Try* actions),
+  VehicleBay (truck, 2 pickups, 4 vans, LOADED tag, roll-out, dispatch recap), UiPressLog, builder
+  AgentScripts/BuildDockWorkbench.cs, DockWorkbenchWiringTests (17). Voice: 7 new tools (replay_demo,
+  split_cargo, check_load, reset_cargo, next_chapter, restart_chapter, back_to_lessons), handlers, fallback
+  buttons (`GuidePolicy.ShowFallbackButtons`: hidden while the live guide listens), chapter grounding,
+  proactive one-line story on button-driven chapter changes, Dock 7 onboarding/card copy, VoiceActionTests (10).
+- **Button regression cause found (workbench agent, confirmed):** UpdateNerdyHud.cs (my earlier HUD change) wired
+  Pause and Music persistently while NerdyDirector.Start also added runtime listeners, so each press toggled
+  twice. Builder removed the persistent copies; a wiring test forbids persistent NerdyDirector listeners on HUD
+  buttons. Lesson card buttons: no static cause found; the welcome canvas ray surface is now disabled during
+  the lesson (possible press thief after carrying the table), and UiPressLog logs `[Nerdy] UI` enter/down/click.
+- **Integration fixes:** director CanSplit used by the voice grounding; onboarding refusals/heading in crate
+  language ("Dock 7 · Crew training"); baked Cargo Crew card text patched (AgentScripts/PatchCatalogCopy.cs);
+  vehicles roll away from the learner (were rolling toward them), pinned by the wiring test.
+- **Evidence:** first Unity compile clean; editor drive of all five chapters (AgentScripts/PreviewDockChapters.cs)
+  split/load/accept with expressions 1, 1/2 + 1/2 = 1, 1/4 x4 = 1, 2/4 = 1/2, 1/2 + 1/4 + 1/4 = 1; renders in
+  artifacts/dock7/. Proxy node --test 8/8; PlayMode baseline standalone 1/1 and CargoBaselineTests 3/3 after
+  reload. Wrapper: 146 checks across 23 suites, scan passed, 0 errors. APK cargo-20260916-202453 (SHA-256
+  abe100e7...), md5 da8fe54a verified on the Quest, launched 20:29; dev mint serving 13 tools. Scene backup
+  before the builder: scratchpad scene-backup/CargoCrew-before-dock7.unity.
+- **Not verified:** anything on the headset (voice reliability for the new tools, grabbing quarter crates,
+  vehicle roll in play, fallback buttons toggling with Mute/Pause, text fit on device). Owner test next.
+
+## 2026-09-16 — Owner check of 190518: voice actions work; buttons stopped; story and chapters requested
+
+- **Owner-reported (~19:50):** "start the Cargo lesson" by voice opens it and "show me the demo" runs the
+  demo. The buttons on the workbench screen stopped working. Owner wants the screen to show basic
+  instructions and story, with actions by voice (restart demo, next lesson, questions), a dock-worker
+  story about choosing the right amount of cargo per container, and more chapters (halves into
+  fourths, adding cargo so it fits).
+- **Device evidence (Mac capture of the run):** `[Nerdy] HUD at lesson entry` shows the assistant bar under
+  the station canvas, active, 1.30 m from the head, 13 degrees up, facing the learner: the bar placement
+  defect from 172755 is resolved on device. Two "[Guide] Cancellation failed: no active response found"
+  warnings (Hush with nothing playing; harmless, the gate frees itself). No exceptions from app code.
+  Button regression not yet diagnosed: the log has no pointer events; ray surfaces are sized to their
+  canvases (bar 920x104, card 920x470 canvas units), so an oversized surface is ruled out.
+- **Plan drafted:** PHASE-1R-DOCK-CREW.md ("Dock 7" story, voice-first story card with fallback buttons
+  while voice is unavailable, five chapters: whole, halves, quarters, 2/4 = 1/2, 1/2 + 1/4 + 1/4 = 1,
+  dispatch; tickets CC-D-01..09 with a chapters-1-to-3 cut line). Awaiting owner approval; nothing
+  implemented from it.
+
+## 2026-09-16 — Owner check of 180603: voice could not open Cargo Crew; guide said "grab" with nothing to grab
+
+- **Owner-reported (18:58):** asking the guide to start Cargo Crew from the three cards did nothing; after
+  opening it by hand, the guide told them to grab the cargo strap while the lesson showed no orange strap.
+  The Quest log buffer (256 KB) had already rotated the app lines out; buffer raised to 8 MB and a filtered
+  Unity capture now runs on the Mac during owner runs.
+- **Root causes (from code, reproduced in the editor):** (1) no tool could open a lesson; the guide's only
+  tools were profile, welcome end, card description, help and advance_step, so a spoken "open Cargo Crew"
+  had no action path. (2) On entry the app pushed the card's lesson overview facts ("you grab an orange
+  strap…") and prompted the welcome before the step context existed, so the guide described the fractions
+  chapter during the briefing step, where no strap is shown. (3) During practice the temporary controller
+  readout changed the instruction text every frame and each change was pushed to the guide as context.
+- **Fixes (build cargo-20260916-190518):** new `open_lesson` tool (cardId enum) handled by
+  `GuideTools.OpenLesson`: opens only the playable card while the cards show, exactly like pointing at it,
+  and returns the first step for narration; previews answer "coming soon". `GuideSteps` names each step,
+  what is on the table and whether anything can be grabbed; every lesson_state context and tool result
+  (advance_step, request_help, open_lesson) carries `step`, `on_table_now`, `can_grab_now` and the
+  instruction without the diagnostics readout. Card facts are labelled "not the current step"; the step
+  context is pushed before the welcome prompt. Proxy instructions: call open_lesson for open/start/play;
+  never tell the learner to grab unless can_grab_now is true. Mac dev mint restarted 19:02 with the new tool.
+- **Evidence:** proxy `node --test` 6/6; GuideGroundingTests 6/6 (confirmed RED on the missing API first);
+  editor drive of the handler: cafe → "coming soon", cargo → Lesson/briefing/canGrab false, "yes" →
+  orientation/canGrab false, a second open inside the lesson is refused. PlayMode baseline standalone after
+  reload 1/1, CargoBaselineTests 3/3. Wrapper: 92 checks across 20 suites, scan passed, SHA-256 253ebbac...,
+  md5 bfc34d05 verified on the Quest; installed and launched 19:09 (controllers-required dialog showing).
+- **Still unknown:** whether the model reliably calls open_lesson/advance_step by voice; the owner's run of
+  this build decides it. HUD-above-workbench and Pause/music checks from 180603 were not reported yet.
+
+## 2026-09-16 — Voice-start build installed; HUD-above-workbench investigated; Pause/Play + music built
+
+- **Installed 17:42:** voice-start build cargo-20260916-173456 (SHA-256 b4cd19c9..., md5 b98ebe89 verified on
+  the Quest, 71 checks) and launched; the Quest showed the "controllers required" dialog (controllers asleep),
+  so the owner's run of it is still pending. The device logcat had been cleared at 17:37, so no Unity log
+  from the owner's 172755 check survived.
+- **Assistant bar above the workbench (owner: not seen on 172755).** Editor reproduction with the exact runtime
+  path (AgentScripts/InspectLessonHud.cs: Consent → Catalog → SelectCard, board placed with
+  OnboardingPlacement.BoardPose for a 1.6 m head): hudRoot re-parents under `Onboarding workbench - world
+  locked/Guide HUD canvas`, active, world scale 0.001, 0.93 m from the head, 17° above eye level, facing the
+  head (dot 0.96), and it renders directly above the lesson card (artifacts/lesson-hud-from-head-captioned.png).
+  The lesson card itself proves on device that RectTransform anchored positions under a plain Transform are
+  honoured (its serialised m_LocalPosition.y is 0 while it renders at 0.46), so the y=0 vs 0.77 mismatch in
+  the scene file is not the cause. No code defect found; root cause still open pending device evidence.
+  Added: runtime log lines `[Nerdy] HUD at lesson entry` / `1.5 s later` (parent path, world pose, distance,
+  elevation, canvas state), explicit local rotation/scale reset on re-parent, and the station canvas's
+  serialised local position now matches its anchored position. QA script 6b tells the owner where to look and
+  what to report.
+- **Pause/Play (owner ask):** `TogglePause` on the bar: Pause = Hush + mic closed + every prompt blocked
+  (all spoken requests now go through one `Say()` that checks `GuidePolicy.CanPrompt`); Play restores the
+  phase's mic policy (`GuidePolicy.MicOn`: mic only in cards/lesson, never muted or paused) and the guide
+  says one sentence about the current step. GuidePolicyTests 3/3.
+- **"Active response in progress" warning:** GuideSession now routes every response.create through
+  `PromptGate`: a prompt waits for the active response's `response.done` (a cancelled one reports done within
+  ~100 ms; caps 1 s after a Hush, 6 s otherwise), Hush drops stale queued prompts and only sends
+  response.cancel when a response is active, and a "no active response" error frees the gate. Tool results
+  and user text use the same gate. PromptGateTests 8/8.
+- **Task #14 background music:** `AmbientMusic` synthesises a 16 s mono loop at Awake (Cmaj7·Am7·Fmaj7·G6
+  pads with raised-cosine edges so the seam is silent, seeded pentatonic plucks, peak-normalised to 0.6); base
+  volume 0.15, ducks to 30 % while the guide speaks or the mic is streaming (`GuideSession.MicStreaming`),
+  fades at 0.6/s, HUD pill "Music on/off", PlayerPrefs `nerdy.music` (on by default). AmbientMusicTests 3/3.
+- **HUD layout:** five pills now fit the 920 px bar: Pause · Again · Mute · Help on the right (88 px), the
+  music pill under the orb, caption 440 px (artifacts/nerdy-catalog.png). NerdyWelcomeWiringTests 3/3
+  (new test checks the controls, the ride-along canvas height and that every pill stays inside the bar).
+  Scene edit via AgentScripts/UpdateNerdyHud.cs (idempotent).
+- **Tooling:** the unfocused editor did not import new scripts on `recompile` (assemblies stayed at 17:24
+  while `recompile_status` said completed); AgentScripts/RefreshAndCompile.cs (AssetDatabase.Refresh +
+  RequestScriptCompilation) then polling fixed it. The wrapper file has no execute bit (`bash
+  scripts/verify-cargo.sh`). PlayMode baseline run standalone right after a script-domain reload:
+  CargoBaselineTestsSceneTests 1/1, CargoBaselineTests 3/3 (18:06).
+- **Build:** artifacts/qa/cargo-20260916-180603/airlift-cargo.apk, SHA-256 0ddf6fe1..., md5 814b560e verified on the Quest, 86 checks across 19 suites in the wrapper (baseline 12 + 18 ticket suites; PlayMode/EditMode baseline evidenced standalone 1/1 + 3/3), bounded credential scan passed, 0 errors / 11 warnings. Installed and launched 18:20; the Quest is sitting at the controllers-required dialog until the owner picks up the controllers.
+- **Still pending from the owner:** `vercel login` (then deploy services/guide-proxy, `vercel env` for
+  OPENAI_API_KEY, https MintUrl, revert insecureHttpOption), consent heading wording, Library tile icon
+  (task #11). No commit until the owner accepts on the headset; no push; adult testers only.
+
+## 2026-09-16 — Owner check of the fix build (171327): flow works; polish round + voice start
+
+- **Owner-reported (17:20):** consent → chips → cards → Cargo Crew works and "looks pretty good
+  based on what we wanted"; chips give confirmation; cards have the look and Nerdy palette.
+  Asks: consent card ~50% bigger; assistant card's right edge square; a handle to move the
+  welcome/cards panel like the table; the assistant card should sit above the workbench and
+  move with it; and the lesson should start by voice ("Do you want to get started?" → yes).
+- **Build cargo-20260916-172755 (SHA-256 1d6826d5..., 71 checks):** consent scaled 1.45x; HUD
+  masked to its rounded card; lavender panel handle (TableCarryTransformer + TwoGrabPlane,
+  0.6x-1.8x) on the welcome root; second world-space "Guide HUD canvas" above the workbench
+  and the HUD re-parents there in the lesson; mic now on in the cards view too (off only
+  during the chip questions). Installed and launched 17:38 for the owner.
+- **Voice start (P0-07b):** proxy gains `advance_step` and instructions to ask "would you like
+  to get started" on lesson entry; Unity handler runs onboarding.Continue() only when the
+  on-card primary button is active and interactable (same action as pressing it) and returns
+  the new instruction for a one-sentence narration. Build in progress (started 17:40).
+- **Owner check of build 172755 (17:42):** panel-side fixes fine; in the lesson the assistant
+  bar did NOT appear above the workbench (no exceptions in logcat; wiring test passes, so the
+  re-parented HUD is likely mispositioned/hidden at runtime; investigate in the editor by
+  driving Flow to Lesson and reading hudRoot's world pose). Owner also asked for Pause/Play on
+  the bar (task) and background music (task #14). Log warning: "Conversation already has an
+  active response in progress" when Hush() is immediately followed by Prompt(); wait for the
+  cancel before prompting.
+
+## 2026-09-16 — Owner check of the first welcome build (163119): voice loop, dead chips; fixes built
+
+- **Owner-reported:** found "Nerdy" via Library search and launched it (logcat confirms the
+  launch came from the Quest launcher: P0-01 launch criterion met); the tile showed no Nerdy
+  logo (follow-up task). Consent card with logo looked right. After consent the guide connected
+  and spoke, but "it doesn't stop talking"; the "I enjoy" / "I'm here to" chips and Skip
+  appeared to do nothing. Owner asked to tame the guide and suggested restricting voice to the
+  lesson. Copy requests: welcome heading → "Hello to Nerdy AI"; consent heading wording to be
+  confirmed (transcription garbled).
+- **Root cause (voice loop):** the Quest microphone hears the Quest speaker; server VAD
+  transcribed the guide's own speech as the learner and the model kept answering itself. Chip
+  and Skip actions only sent user text into that loop, so nothing visible happened.
+- **Fixes (build in progress):** GuideSession is half-duplex (mic never streams while the guide
+  is speaking or for 0.6 s after; input buffer cleared on each response; Hush() cancels a
+  response and drops queued audio). Onboarding is chip-driven with the mic off: chips write the
+  profile deterministically, the guide only acknowledges in ≤5 words on app prompt, all three
+  answers auto-advance to the cards, Skip always advances. The mic opens only inside the lesson
+  (and closes on Mute). Proxy/dev-mint instructions rewritten: the guide never asks the welcome
+  questions itself and speaks only when prompted; one sentence unless the app asks for two.
+  dev-mint now uses the shared session config. Welcome copy updated.
+- **Runner flake:** the PlayMode suite CargoBaselineTestsSceneTests returned total 0 inside the
+  wrapper three times (16:57, 16:59, 17:02) yet passed 1/1 when run first after a script-domain
+  reload at 17:03. Wrapper run for the fix build excludes it (documented; standalone pass is
+  the evidence); follow-up task: run it first in the manifest or reload before PlayMode.
+- **Tooling finding 17:12:** the Pipeline `recompile` command returned "compiling" but the
+  editor assemblies were not rebuilt for a stretch (EditMode test DLL stayed at 16:29 while
+  PrivacyGateTests.cs was added at ~16:40, so the runner reported total 0 for it). Polling
+  `recompile_status` until completed rebuilt the assemblies. Player builds compile from
+  source, so the APKs were unaffected; editor test runs in that window used stale DLLs.
+  Standalone evidence after reload: CargoBaselineTestsSceneTests 1/1, CargoBaselineTests 3/3.
+- **Fix build:** artifacts/qa/cargo-20260916-171327/airlift-cargo.apk, SHA-256 19a2a4c3..., 71
+  checks across 16 suites (baseline scene/edit suites evidenced standalone), scan passed.
+  Installed on the Quest (md5 3d1bc1d8 verified) and launched for the owner's retest.
+
+## 2026-09-16 — Phase 0 build-out: P0-01 installed, P0-02/04/05/06 code-complete, P0-07 first cut
+
+- **P0-01:** cargo-20260916-155124 (SHA-256 f144a620..., 59 checks) built as "Nerdy"
+  `com.nerdy.vr` with the adaptive wordmark icon (aapt: label 'Nerdy'); installed (md5
+  verified), old `com.jad.airlift` uninstalled. Owner Library route check pending.
+- **P0-02:** Poppins (Regular/Medium/SemiBold/MediumItalic) and Karla (Regular/Medium/Bold)
+  fetched from Google Fonts with OFL licenses; static TMP SDF assets; NerdyStyle tokens asset;
+  generated 9-slice pill/card/small sprites, brand/spectrum/glass gradients; TMP gradient
+  preset NerdySpectrum. NerdyStyleTests 3/3.
+- **P0-04:** services/guide-proxy (Vercel function, plain ESM): server-authored session config
+  (persona, English-only, no surroundings, no names, tools record_profile/end_welcome/
+  describe_card/request_help, VAD threshold 0.6, transcription en), request validation,
+  best-effort limiter, no secrets in responses/logs; `node --test` 5/5; real mint through the
+  handler returns 200. Unity: GuideSession (mint → WSS → serialized sends → receive loop →
+  main-thread events, tool results, context push, one reconnect, offline fallback),
+  GuideMessages (Newtonsoft), GuideRouting, MicStreamer, AudioPlayback. GuideMessagesTests
+  4/4. Not deployed yet (owner Vercel login pending); dev mint over LAN HTTP with
+  insecureHttpOption=AlwaysAllowed as a documented temporary dev exception.
+- **P0-05/06/07 (first cut):** NerdyDirector orchestrates consent → welcome → catalog →
+  lesson; LearnerProfile stores tags only (enum-validated, ≤5 interests, names dropped);
+  WelcomeFlow pure state machine; LessonCatalog (3 cards, 1 playable, facts for
+  describe_card); GuideContextBuilder pushes bounded app-authored context (instruction text
+  is the event source; no unsubmitted verdicts, no learner free text). CreateNerdyWelcome
+  builds consent card, 16 answer chips + skip, three feature cards, guide HUD (orb, captions,
+  Mute/Help/Again), hides the table during welcome/catalog and hooks Back to the catalog.
+  WelcomeFlowTests 5/5; NerdyWelcomeWiringTests 2/2; PrivacyGateTests added.
+- **Build:** artifacts/qa/cargo-20260916-163119/airlift-cargo.apk, SHA-256 d04f8820..., 73
+  checks across 17 suites, scan passed, 0 errors. Installed on the Quest for the owner's
+  welcome-flow check (docs/qa/nerdy-welcome.md). Voice needs the Mac mint server on the LAN
+  until the proxy is deployed.
+
+## 2026-09-16 — CC-P0-01 identity code-complete; CC-P0-03 voice spike in progress
+
+- Owner approved the Phase 0 plan (commit 31d0b1e), supplied the Nerdy wordmark
+  (4001x1635 PNG with alpha), confirmed rights, and provided an OpenAI key (stored only in
+  ~/.config/nerdy/openai.env, mode 600; owner will rotate it later).
+- **P0-01:** ConfigureNerdyIdentity sets productName/companyName "Nerdy", Android package
+  `com.nerdy.vr`, version 0.2.0 (code 2), forceInternetPermission, and the six adaptive
+  launcher icon slots (background #202344, wordmark foreground at 250 px inside the safe
+  zone; legacy/round kinds are obsolete in Unity 6.6). AppIdentityTests 2/2. Device check
+  (Library route, cold launch) pending the next Cargo build.
+- **P0-03 facts so far:** the key works; `POST /v1/realtime/client_secrets` with model
+  `gpt-realtime` returns an ephemeral `ek_…` secret (HTTP 200); the legacy
+  `/v1/realtime/sessions` endpoint is gone (404). Throwaway LAN mint server
+  services/guide-proxy/dev-mint.mjs runs on the Mac (192.168.86.20:8787); Quest is on
+  192.168.86.34. Throwaway RealtimeSpike scene (CargoCrew copy, lesson hidden, head panel)
+  and RealtimeSpike.cs (ClientWebSocket, mic PCM16 24 kHz streaming, PCM playback via
+  OnAudioFilterRead, transcripts, [SPIKE] latency logs). SpikeBuild makes a development
+  build with cleartext HTTP allowed for the LAN mint only, restoring the setting after.
+- **P0-03 result: GO.** Development build nerdy-spike.apk (md5 392c2125) on the Quest 3S,
+  adult tester (owner), Wi-Fi, LAN mint server on the Mac. Two-way voice works end to end:
+  mic permission prompt → ephemeral secret → WSS to wss://api.openai.com/v1/realtime?model=
+  gpt-realtime via System.Net.WebSockets.ClientWebSocket (IL2CPP, .NET Standard 2.1) →
+  greeting heard by the owner → three spoken exchanges. Latency from server speech_stopped
+  to first output audio delta: 415, 430, 445 ms. GA event names confirmed
+  (response.output_audio.delta, response.output_audio_transcript.done,
+  conversation.item.input_audio_transcription.completed). Input transcription via
+  gpt-4o-mini-transcribe works ("Hey, I speak English.", "I want to access the nerdy lesson.").
+- Findings to carry into P0-04: (1) sending the `OpenAI-Beta: realtime=v1` header closes the
+  socket with beta_api_shape_disabled; omit it. (2) Concurrent ClientWebSocket.SendAsync is
+  unsafe; the client now serializes sends through one queue. (3) The first utterance was
+  transcribed empty and the model answered in Portuguese while hallucinating a room; session
+  instructions must pin the language and forbid describing surroundings; consider a higher
+  VAD threshold / prefix padding. (4) One ANR ("user request after error") killed an early
+  instance while it sat behind the Quest "controllers required" dialog; keep the connect
+  path off the main thread and add a watchdog. (5) Quest shows a controllers-required launch
+  dialog when controllers are asleep; document in the QA script. Transport decision:
+  WebSocket with ClientWebSocket, no extra package; WebRTC not needed at this latency.
+
 ## 2026-09-16 — Owner re-scoping: Phase 0 "Nerdy welcome" (plan drafted, awaiting approval)
 
 - After accepting the workbench, the owner asked for the foundation first: findable Nerdy

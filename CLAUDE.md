@@ -1,17 +1,87 @@
 # Math Workbench: Airlift — instructions for Claude
 
-## September 16 evening: owner re-scoped — Phase 0 "Nerdy welcome" before more fractions
+## September 16, 8:30 PM: Phase 1R "Dock 7" built and installed (owner headset test pending)
 
-Owner accepted the Cargo workbench and asked for the foundation first: a findable "Nerdy"
-app in Quest Library with the owner's logo, a two-way voice welcome with a Nerdy AI guide
-that asks age band, interests and goal, three Nerdy-branded lesson cards, per-lesson
-workbenches, and the guide inside the Cargo workbench. Owner decisions: two-way voice for
-adult testers, OpenAI (Realtime), app identity "Nerdy" / `com.nerdy.vr`. This supersedes the
-September 16 voice deferral. Draft plan: docs/00-build/PHASE-0-NERDY-WELCOME.md and
-tickets CC-P0-01..09, awaiting owner approval; no Phase 0 implementation yet. Still not
-authorized: purchases beyond the approved OpenAI key, child data processing, push, submission.
-Privacy baseline while Phase 0 is built: adult testers only; audio streams to OpenAI for
-live transcription and is never persisted by our proxy; profile = tags on device, no names.
+Owner authorized implementing all three steps of `docs/00-build/PHASE-1R-DOCK-CREW.md` with an agent team
+(contracts: `PHASE-1R-CONTRACTS.md`). Build cargo-20260916-202453 (146 checks, 23 suites) is on the Quest:
+voice-first story card, 7 new voice tools, five chapters (whole, halves, quarters, 2/4 = 1/2, top-up), vehicles
+and dispatch, Pause/Music double-listener bug fixed, `[Nerdy] UI` press logging. Do not rerun
+CreateFractionChapter.cs, ApplyCargoStyle.cs or CreateNerdyWelcome.cs (they overwrite Dock 7 copy or HUD
+fixes); BuildDockWorkbench.cs and PatchCatalogCopy.cs are idempotent. No commit until owner acceptance.
+
+## September 16, 8:00 PM: owner accepted voice actions; Phase 1R "Dock 7" plan drafted, awaiting approval
+
+Owner on build 190518: voice open and voice demo work; workbench buttons stopped working (not yet
+diagnosed); assistant bar placement confirmed by device log. Owner wants a voice-first story card screen,
+a dock story, and more chapters. Read `docs/00-build/PHASE-1R-DOCK-CREW.md` and wait for the owner's
+approval before implementing CC-D tickets (start with CC-D-01, the button regression).
+
+## September 16, 6:15 PM: Phase 0 "Nerdy welcome" — Pause/Play, music, HUD diagnostics built; owner retest pending
+
+Read `docs/00-build/PHASE-0-NERDY-WELCOME.md` (plan), `docs/00-build/DEV-LOG.md` (newest entry first),
+`docs/qa/nerdy-welcome.md` (headset script, steps 6b/9b/9c are new) before touching code.
+
+**Newest since 5:30 PM (all uncommitted, awaiting owner acceptance on the headset):**
+- Voice start (`advance_step` → onboarding.Continue) was in build cargo-20260916-173456 (installed 17:42;
+  the owner has not run it yet: controllers-required dialog).
+- Assistant bar above the workbench: owner did not see it on 172755. Editor drive of the exact runtime path
+  renders it correctly above the lesson card (17° above eye level, 0.93 m); no code defect found. The new
+  build logs `[Nerdy] HUD …` lines at lesson entry for device evidence; QA step 6b says where to look.
+- Pause/Play pill on the bar (Hush + mic off + prompts blocked via `GuidePolicy`/`Say()`), music pill
+  (`AmbientMusic`, synthesized 16 s loop, 15 %, ducks under speech and open mic, PlayerPrefs `nerdy.music`),
+  `PromptGate` serialises response.create behind the active response (fixes the "active response in
+  progress" warning after Hush → Prompt). Suites PromptGateTests/GuidePolicyTests/AmbientMusicTests under
+  manifest ticket CC-P0-07. Scene edited by `AgentScripts/UpdateNerdyHud.cs`.
+- Tooling: unfocused editor needs `AgentScripts/RefreshAndCompile.cs` before `recompile_status` means
+  anything; wrapper via `bash scripts/verify-cargo.sh`; OnboardingFlowTests is the baseline (never pass it
+  to `--suite`); PlayMode baseline runs standalone after a script-domain reload.
+- Build: cargo-20260916-180603 (SHA-256 0ddf6fe1..., 86 checks, scan passed) installed 18:20 and launched; owner ran it 18:55: voice could not open Cargo Crew and the guide said "grab" during the briefing.
+- 19:09 build cargo-20260916-190518 (SHA-256 253ebbac..., 92 checks): `open_lesson` tool + step-grounded guide
+  (`GuideSteps`: step / on_table_now / can_grab_now in every lesson_state and tool result; diagnostics readout
+  stripped). Mac dev mint restarted with the new tool. Owner retest pending. Quest log buffer set to 8 MB;
+  capture Unity lines on the Mac during owner runs (`adb logcat -v time -s Unity:I > file`).
+
+## September 16, 5:30 PM: Phase 0 "Nerdy welcome" is built and under owner iteration
+
+Read `docs/00-build/PHASE-0-NERDY-WELCOME.md` (plan), `docs/00-build/DEV-LOG.md` (newest
+entries), `docs/qa/nerdy-welcome.md` (headset script) and the task list before touching code.
+
+**What exists now (all in `unity/Assets/Airlift/Scenes/CargoCrew.unity`, package `com.nerdy.vr`,
+display name "Nerdy", version 0.2.0):**
+- Consent card (adult testers, mic explanation, logo) → chip-driven welcome (age band, interests,
+  goal; mic OFF here) → three Nerdy feature cards (Cargo Crew playable; Café and Garden are
+  honest previews) → Cargo workbench with the toy look, carry handle and whole/halves chapter.
+- Live voice guide: OpenAI Realtime (`gpt-realtime`) over WSS via `GuideSession`; half-duplex
+  mic (never streams while the guide speaks); mic on only in the cards view and the lesson;
+  short, prompted-only speech; tools `record_profile`, `end_welcome`, `describe_card`,
+  `request_help`, `advance_step` (voice "yes/next" → same as pressing Begin briefing/Continue;
+  Unity handler pending at the time of writing). Guide HUD (orb, captions, Again/Mute/Help)
+  sits on the welcome panel and moves above the workbench in the lesson.
+- Panel handle (lavender bar) carries/resizes the welcome and cards panel like the table handle.
+- Nerdy design system: Poppins/Karla (OFL) TMP assets, `NerdyStyle.asset` tokens, generated
+  pill/card/gradient sprites, TMP gradient preset `NerdySpectrum`.
+- Proxy: `services/guide-proxy` (Vercel function, `node --test` 5/5) mints budgeted ephemeral
+  client secrets bound to the server-authored persona/tools. NOT deployed: owner `vercel login`
+  pending. Dev mint runs on the Mac (`~/.config/nerdy/start-dev-mint.sh`, LAN :8787);
+  `GuideEndpoints.MintUrl` is that LAN URL and `insecureHttpOption=AlwaysAllowed` is a
+  documented temporary exception (revert when the https proxy is live).
+- Tests: 16 EditMode suites + 1 PlayMode (73 checks at 16:31; later builds 71 with the baseline
+  suites evidenced standalone). Wrapper: `scripts/verify-cargo.sh --suite … --build
+  --approved-dirty-build`; the PlayMode suite only passes right after a script-domain reload
+  (task #12); poll `recompile_status` after `recompile` or editor assemblies stay stale.
+
+**Owner-reported on device (build 171327, 17:20):** flow works end to end; asked for a bigger
+consent card, rounded HUD corners, a handle for the panel, the HUD above the workbench, and a
+voice-driven lesson start. First four are in the build compiling at 17:28; voice start is next.
+
+**Open:** Vercel deploy (owner login), Library tile shows no logo (task #11), PlayMode runner
+flake (task #12), consent heading wording (owner's request was garbled), P0-09 acceptance, then
+resume fractions at P1-06. Not authorized: purchases beyond the approved OpenAI key, child data
+processing, push, submission. Adult testers only until PRIVACY-GATE.md records a child-use go.
+Key location: `~/.config/nerdy/openai.env` (never in repo/APK/docs).
+
+**Commits today:** 2149adf halves loop · 147dbfb toy look · 38e3afd carry handle ·
+31d0b1e Phase 0 plan. Everything after 31d0b1e is uncommitted pending owner acceptance.
 
 ## September 16 evening: table carry handle ACCEPTED by owner on headset
 
@@ -193,7 +263,7 @@ assets, commit/push or skipping owner font comparison implied.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (1960 symbols, 2896 relationships, 53 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (2810 symbols, 4431 relationships, 139 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

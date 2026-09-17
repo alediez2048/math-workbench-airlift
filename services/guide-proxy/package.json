@@ -1,0 +1,9 @@
+{
+  "name": "nerdy-guide-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mints budgeted OpenAI Realtime client secrets for the Nerdy Quest app. The provider key lives only in the environment.",
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" }
+}

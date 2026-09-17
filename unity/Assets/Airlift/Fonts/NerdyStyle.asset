@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2cb9c34f68a44fc182d7a3c18756ce1, type: 3}
+  m_Name: NerdyStyle
+  m_EditorClassIdentifier: Airlift.Runtime::Airlift.Presentation.NerdyStyle
+  displayFont: {fileID: 11400000, guid: 4200d01d730e546b5a5059618ff9ef3c, type: 2}
+  displayItalic: {fileID: 11400000, guid: de83968e0ef02496e88a347a8728a4e0, type: 2}
+  bodyFont: {fileID: 11400000, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
+  bodySemibold: {fileID: 11400000, guid: 9fc5ccebfe0a34b91aa60f46a48ef177, type: 2}
+  altFont: {fileID: 11400000, guid: acbb073ca613040b4b7262cd2ddaadf7, type: 2}
+  altBold: {fileID: 11400000, guid: a4ea74a140a22406690a4cc6949bd632, type: 2}
+  baseColor: {r: 0.1254902, g: 0.13725491, b: 0.26666668, a: 1}
+  surface: {r: 0.08627451, g: 0.10980392, b: 0.17254902, a: 1}
+  line: {r: 0.42352942, g: 0.43137255, b: 0.5294118, a: 1}
+  text: {r: 1, g: 1, b: 1, a: 1}
+  textMuted: {r: 1, g: 1, b: 1, a: 0.64}
+  paper: {r: 0.98039216, g: 0.9764706, b: 0.9607843, a: 1}
+  indigo: {r: 0.23529412, g: 0.29803923, b: 0.85882354, a: 1}
+  lavender: {r: 0.61960787, g: 0.5921569, b: 1, a: 1}
+  amber: {r: 1, g: 0.7647059, b: 0.16862746, a: 1}
+  magenta: {r: 0.9843137, g: 0.2627451, b: 0.85490197, a: 1}
+  orchid: {r: 0.8392157, g: 0.5176471, b: 1, a: 1}
+  cyan: {r: 0.09019608, g: 0.8862745, b: 0.91764706, a: 1}
+  pill: {fileID: 21300000, guid: e491ff7a4807c4af3a53252e4c4f8dad, type: 3}
+  card: {fileID: 21300000, guid: 98b35869f6384492c83f81c5351614f7, type: 3}
+  small: {fileID: 21300000, guid: 24e683017151846cb9df092d89f8861d, type: 3}
+  brandGradient: {fileID: 21300000, guid: f871bac19229940f1b71d6d44726123c, type: 3}
+  spectrumGradient: {fileID: 21300000, guid: 723c278d3d44c4e9cbbc483b596be072, type: 3}
+  glass: {fileID: 21300000, guid: 2078690e48c284f629ec373e7c2dcc2b, type: 3}

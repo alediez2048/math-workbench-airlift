@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Text;
 using Airlift.Presentation;
 using Oculus.Interaction;
 using TMPro;
@@ -7,9 +9,17 @@ using UnityEngine.UI;
 
 namespace Airlift.Lessons
 {
-    /// Presentation adapter for the whole-and-halves chapter. All arithmetic decisions
-    /// come from CargoLessonModel; this class only maps grabs, releases and buttons to
-    /// model commands and mirrors the model back into positions, labels and text.
+    /// Result of a lesson action requested by a button or by the voice guide. Reason is short and is
+    /// spoken as-is, so it describes the load or the table, never the learner.
+    public readonly struct LessonActionResult
+    {
+        public readonly bool Ok; public readonly string Reason;
+        public LessonActionResult(bool ok, string reason) { Ok = ok; Reason = reason; }
+    }
+
+    /// Presentation adapter for the Dock 7 chapters. All arithmetic decisions come from CargoLessonModel;
+    /// this class maps grabs, releases, buttons and voice tools to model commands and mirrors the model
+    /// back into a pool of crate views, the story card and the vehicle bay.
     public sealed class CargoLessonDirector : MonoBehaviour
     {
         [System.Serializable]
@@ -20,58 +30,128 @@ namespace Airlift.Lessons
             public Grabbable grabbable;
             public FractionNotationView label;
             public Vector3 trayPosition;
+            public GameObject lockedMark;
             [System.NonSerialized] public bool held;
+            [System.NonSerialized] public MonoBehaviour[] interactables;
         }
+
+        public const string HeldReason = "Let go of the crate first.";
+        public const string ClosedReason = "The cargo lesson is not open.";
+        public const string NoSplitReason = "There is nothing to split in this chapter.";
+        public const string SplitDoneReason = "The crates are already split as far as this chapter needs.";
+        public const string NotCompleteReason = "Load this container correctly first.";
+        public const string LastChapterReason = "That was the last chapter.";
+        public const string LoadedReason = "This load is already checked. Go to the next chapter or start this one over.";
 
         public Transform stationRoot;
         public Transform ruler;
         public float restHeight = 0.08f;
+        [Header("Piece pool (ids: whole; half-1, half-2; quarter-1..4)")]
         public PieceView whole;
         public PieceView halfA;
         public PieceView halfB;
+        public PieceView[] quarters = new PieceView[0];
+        [Header("Scene objects")]
         public GameObject chapterObjects;
         public GameObject chapterButtons;
+        public CanvasGroup chapterButtonGroup;
         public Button splitButton;
         public Button submitButton;
         public Button resetButton;
+        public Button nextButton;
+        public GameObject[] halfMarks = new GameObject[0];
+        public VehicleBay vehicles;
+        [Header("Story card")]
         public TMP_Text heading;
         public TMP_Text body;
+        public TMP_Text expressionLine;
+        public TMP_Text sayHints;
         public GameObject[] hideWhileActive;
+        public float dispatchDelay = 1.2f;
 
         readonly CargoLessonModel model = new CargoLessonModel();
+        readonly List<CargoChapter> completed = new List<CargoChapter>();
         bool active;
-        bool wholeAccepted;
+        float bodyBaseSize;
+        string feedback = "";
+        Coroutine dispatch;
+
+        // ---- public state ----
+        public bool AnyPieceHeld => active && AnyHeld;
+        public bool IsActive => active;
+        public CargoChapter Chapter => model.Chapter;
+        public bool ChapterComplete => model.ChapterComplete;
+        public bool AllChaptersComplete => model.AllChaptersComplete;
+        public bool IsLastChapter => model.IsLastChapter;
+        public bool CanSplit => active && model.CanSplit;
+        public string ExpressionText => model.Expression;
+        public string Feedback => feedback;
 
         void Awake()
         {
-            Subscribe(whole); Subscribe(halfA); Subscribe(halfB);
+            foreach (var view in Views()) { CacheInteractables(view); Subscribe(view); }
             SetActiveObjects(false);
         }
 
-        void OnDestroy() { Unsubscribe(whole); Unsubscribe(halfA); Unsubscribe(halfB); }
+        IEnumerable<PieceView> Views()
+        {
+            if (whole != null) yield return whole;
+            if (halfA != null) yield return halfA;
+            if (halfB != null) yield return halfB;
+            if (quarters != null) foreach (var q in quarters) if (q != null) yield return q;
+        }
+
+        static void CacheInteractables(PieceView view)
+        {
+            if (view?.piece == null) return;
+            var list = new List<MonoBehaviour>();
+            foreach (var behaviour in view.piece.GetComponentsInChildren<MonoBehaviour>(true))
+                if (behaviour is IInteractable) list.Add(behaviour);
+            view.interactables = list.ToArray();
+        }
 
         void Subscribe(PieceView view) { if (view?.grabbable != null) view.grabbable.WhenPointerEventRaised += evt => OnPointer(view, evt); }
-        void Unsubscribe(PieceView view) { }
 
+        // ---- lifecycle ----
         public void Begin()
         {
             active = true;
-            wholeAccepted = false;
+            foreach (var view in Views()) view.held = false;
+            StopDispatch();
+            if (model.AllChaptersComplete) { completed.Clear(); model.StartChapter(0); }
+            else if (model.ChapterComplete) model.NextChapter();
+            else model.RestartChapter();
             SetActiveObjects(true);
-            foreach (var go in hideWhileActive) if (go != null) go.SetActive(false);
-            PlaceInTray(whole); PlaceInTray(halfA); PlaceInTray(halfB);
-            whole.piece.gameObject.SetActive(true);
-            halfA.piece.gameObject.SetActive(false);
-            halfB.piece.gameObject.SetActive(false);
-            whole.label.ShowWhole(1);
-            halfA.label.Show(1, 2); halfB.label.Show(1, 2);
-            Refresh();
+            if (hideWhileActive != null) foreach (var go in hideWhileActive) if (go != null) go.SetActive(false);
+            feedback = "";
+            if (body != null && bodyBaseSize <= 0) bodyBaseSize = body.fontSize;
+            ShowChapter();
         }
 
         public void Exit()
         {
             active = false;
+            StopDispatch();
             SetActiveObjects(false);
+            if (body != null && bodyBaseSize > 0) body.fontSize = bodyBaseSize;
+            if (expressionLine != null) expressionLine.text = "";
+            if (sayHints != null) sayHints.text = "";
+            if (vehicles != null) vehicles.ResetBay();
+        }
+
+        /// Development and editor preview only: jump straight to a chapter. Not wired to any button or tool.
+        public void JumpToChapter(int index)
+        {
+            StopDispatch();
+            model.StartChapter(index);
+            feedback = "";
+            if (active) ShowChapter();
+        }
+
+        void StopDispatch()
+        {
+            if (dispatch != null) StopCoroutine(dispatch);
+            dispatch = null;
         }
 
         void SetActiveObjects(bool on)
@@ -80,16 +160,17 @@ namespace Airlift.Lessons
             if (chapterButtons != null) chapterButtons.SetActive(on);
         }
 
-        bool AnyHeld => whole.held || halfA.held || halfB.held;
-        public bool AnyPieceHeld => active && AnyHeld;
+        bool AnyHeld { get { foreach (var view in Views()) if (view.held) return true; return false; } }
 
+        // ---- grabbing ----
         void OnPointer(PieceView view, PointerEvent evt)
         {
             if (!active) return;
             if (evt.Type == PointerEventType.Select)
             {
+                if (model.IsLocked(view.id)) return;
                 view.held = true;
-                model.Undock(view.id);
+                if (model.Undock(view.id)) SnapDocked();
             }
             else if (evt.Type == PointerEventType.Unselect || evt.Type == PointerEventType.Cancel)
             {
@@ -102,15 +183,42 @@ namespace Airlift.Lessons
         {
             yield return null; // let the SDK finish transferring ownership before we move the piece
             if (!active || view.held) yield break;
+            if (model.IsLocked(view.id)) { SnapDocked(); yield break; }
             Vector3 local = stationRoot.InverseTransformPoint(view.piece.position);
             if (RulerLayout.InDockZone(ruler.localPosition, local) && model.Dock(view.id, false))
+            {
                 SnapDocked();
+                feedback = "";
+            }
             Refresh();
+        }
+
+        /// Locked crates cannot be grabbed. TableHandle re-enables every piece after a carry, so the lock is
+        /// re-applied each frame; unlocked crates only have their behaviour switched back on.
+        void LateUpdate()
+        {
+            if (!active) return;
+            foreach (var view in Views())
+            {
+                if (view.interactables == null || view.piece == null || !view.piece.gameObject.activeInHierarchy) continue;
+                bool locked = model.IsLocked(view.id);
+                foreach (var behaviour in view.interactables)
+                {
+                    if (behaviour == null) continue;
+                    if (locked)
+                    {
+                        if (behaviour.enabled) behaviour.enabled = false;
+                        var interactable = (IInteractable)behaviour;
+                        if (interactable.State != InteractableState.Disabled) interactable.Disable();
+                    }
+                    else if (!behaviour.enabled) behaviour.enabled = true;
+                }
+            }
         }
 
         void SnapDocked()
         {
-            foreach (var view in new[] { whole, halfA, halfB })
+            foreach (var view in Views())
             {
                 if (view.piece == null || !model.IsDocked(view.id)) continue;
                 var piece = model.Piece(view.id);
@@ -119,61 +227,215 @@ namespace Airlift.Lessons
             }
         }
 
-        public void Split()
+        // ---- actions (buttons call the void wrappers; the voice guide calls Try*) ----
+        public void Split() => TrySplit();
+        public void Submit() => TryLoad();
+        public void ResetPieces() => TryReset();
+        public void NextChapter() => TryNextChapter();
+        public void RestartChapter() => TryRestartChapter();
+
+        public LessonActionResult TrySplit()
         {
-            if (!active) return;
-            if (AnyHeld) { body.text = "Release the strap before splitting."; return; }
-            if (!model.Split(false, model.Generation)) return;
-            whole.piece.gameObject.SetActive(false);
-            halfA.piece.gameObject.SetActive(true);
-            halfB.piece.gameObject.SetActive(true);
-            PlaceInTray(halfA); PlaceInTray(halfB);
-            Refresh(model.LastFeedback);
+            if (!active) return new LessonActionResult(false, ClosedReason);
+            if (AnyHeld) return Refuse(HeldReason);
+            if (model.Chapter.SplitTo <= 0) return Refuse(NoSplitReason);
+            if (!model.CanSplit) return Refuse(SplitDoneReason);
+            if (!model.Split(false, model.Generation)) return Refuse(SplitDoneReason);
+            feedback = model.LastFeedback;
+            LayoutPieces();
+            Refresh();
+            return new LessonActionResult(true, model.LastFeedback);
         }
 
-        public void Submit()
+        public LessonActionResult TryLoad()
         {
-            if (!active) return;
-            if (AnyHeld) { body.text = "Release the piece, then submit."; return; }
+            if (!active) return new LessonActionResult(false, ClosedReason);
+            if (AnyHeld) return Refuse(HeldReason);
+            if (model.ChapterComplete)
+                return new LessonActionResult(true, "This load is already checked. " + model.Chapter.Accepted);
             bool ok = model.Submit();
-            if (ok && model.Stage == CargoLessonStage.Whole) wholeAccepted = true;
-            Refresh(model.LastFeedback);
+            feedback = model.LastFeedback;
+            if (ok)
+            {
+                if (!completed.Contains(model.Chapter)) completed.Add(model.Chapter);
+                if (vehicles != null) vehicles.MarkLoaded();
+                if (model.AllChaptersComplete) Dispatch();
+            }
+            Refresh();
+            return new LessonActionResult(ok, model.LastFeedback);
         }
 
-        public void ResetPieces()
+        public LessonActionResult TryReset()
         {
-            if (!active || AnyHeld) return;
+            if (!active) return new LessonActionResult(false, ClosedReason);
+            if (AnyHeld) return Refuse(HeldReason);
+            if (model.ChapterComplete) return Refuse(LoadedReason);
             model.ResetPieces();
-            if (model.Stage == CargoLessonStage.Whole) PlaceInTray(whole); else { PlaceInTray(halfA); PlaceInTray(halfB); }
+            feedback = "The crates are back in the tray.";
+            LayoutPieces();
+            Refresh();
+            return new LessonActionResult(true, feedback);
+        }
+
+        public LessonActionResult TryNextChapter()
+        {
+            if (!active) return new LessonActionResult(false, ClosedReason);
+            if (AnyHeld) return Refuse(HeldReason);
+            if (!model.ChapterComplete) return Refuse(NotCompleteReason);
+            if (model.IsLastChapter) return Refuse(LastChapterReason);
+            if (!model.NextChapter()) return Refuse(NotCompleteReason);
+            StopDispatch();
+            feedback = "";
+            ShowChapter();
+            return new LessonActionResult(true, TitleFor(model.Chapter) + ". " + model.Chapter.Story);
+        }
+
+        public LessonActionResult TryRestartChapter()
+        {
+            if (!active) return new LessonActionResult(false, ClosedReason);
+            if (AnyHeld) return Refuse(HeldReason);
+            StopDispatch();
+            model.RestartChapter();
+            feedback = "";
+            ShowChapter();
+            return new LessonActionResult(true, "Chapter restarted. " + model.Chapter.Task);
+        }
+
+        LessonActionResult Refuse(string reason)
+        {
+            feedback = reason;
+            Refresh();
+            return new LessonActionResult(false, reason);
+        }
+
+        void Dispatch()
+        {
+            if (vehicles == null) return;
+            if (!Application.isPlaying || !isActiveAndEnabled) { vehicles.DispatchAll(); return; }
+            StopDispatch();
+            dispatch = StartCoroutine(DispatchLater());
+        }
+
+        IEnumerator DispatchLater()
+        {
+            yield return new WaitForSeconds(dispatchDelay);
+            dispatch = null;
+            if (active && vehicles != null) vehicles.DispatchAll();
+        }
+
+        // ---- presentation ----
+        void ShowChapter()
+        {
+            if (vehicles != null) vehicles.ShowChapter(model.Chapter);
+            if (halfMarks != null) foreach (var mark in halfMarks) if (mark != null) mark.SetActive(model.Chapter.ShowHalfMark);
+            LayoutPieces();
             Refresh();
         }
 
-        void PlaceInTray(PieceView view)
+        /// Activates exactly the views whose ids exist in the model; locked pieces sit docked, the rest wait in the tray.
+        void LayoutPieces()
         {
-            if (view?.piece == null) return;
-            view.piece.localPosition = view.trayPosition;
-            view.piece.localRotation = Quaternion.identity;
+            var ids = new HashSet<string>(model.PieceIds);
+            foreach (var view in Views())
+            {
+                if (view.piece == null) continue;
+                bool exists = ids.Contains(view.id);
+                view.piece.gameObject.SetActive(exists);
+                bool locked = exists && model.IsLocked(view.id);
+                if (view.lockedMark != null) view.lockedMark.SetActive(locked);
+                if (!exists) continue;
+                var state = model.Piece(view.id);
+                if (view.label != null)
+                {
+                    if (state.Notation.Denominator == 1) view.label.ShowWhole(1);
+                    else view.label.Show(1, state.Notation.Denominator);
+                }
+                if (!model.IsDocked(view.id))
+                {
+                    view.piece.localPosition = view.trayPosition;
+                    view.piece.localRotation = Quaternion.identity;
+                }
+            }
+            SnapDocked();
         }
 
-        void Refresh(string feedback = null)
+        void Refresh()
         {
-            heading.text = "Cargo Crew · Fractions";
-            splitButton.gameObject.SetActive(model.Stage == CargoLessonStage.Whole && wholeAccepted);
-            switch (model.Stage)
+            var chapter = model.Chapter;
+            if (heading != null) heading.text = TitleFor(chapter);
+            string recap = model.AllChaptersComplete ? RecapLine(completed) : "";
+            if (body != null)
             {
-                case CargoLessonStage.Whole:
-                    body.text = wholeAccepted
-                        ? "One whole strap: 1.\n\nThe next parcel needs half this length. Choose Split to cut the whole into two equal parts."
-                        : "This strap is one whole, labeled 1. The ruler on the pad runs from 0 to 1.\n\nGrab the strap, lay it along the ruler, release, then choose Submit.";
-                    break;
-                case CargoLessonStage.Halves:
-                    body.text = "Two equal parts. Each is one half: 1/2.\n\nMove the halves. Dock both on the ruler, side by side from 0, then Submit to rebuild the whole.";
-                    break;
-                case CargoLessonStage.Rebuilt:
-                    body.text = "1/2 + 1/2 = 1. Two halves rebuild the whole strap.\n\nKeep moving the pieces to compare them with the ruler, or return to lessons.";
-                    break;
+                body.text = ComposeBody(chapter, feedback, recap);
+                if (bodyBaseSize > 0) body.fontSize = FitFontSize(body, body.text, bodyBaseSize);
             }
-            if (!string.IsNullOrEmpty(feedback)) body.text += "\n\n" + feedback;
+            if (expressionLine != null) expressionLine.text = model.Expression;
+            if (sayHints != null) sayHints.text = SayHintsFor(chapter, model.ChapterComplete, model.CanSplit, model.IsLastChapter);
+            if (splitButton != null) splitButton.gameObject.SetActive(chapter.SplitTo > 0 && model.CanSplit);
+            if (nextButton != null) nextButton.gameObject.SetActive(model.ChapterComplete && !model.IsLastChapter);
+        }
+
+        // ---- pure text helpers (unit-tested) ----
+        public static string TitleFor(CargoChapter chapter) => "Chapter " + chapter.Number + " · " + chapter.Title;
+
+        /// Story line, task line, then feedback and the dispatch recap. The guide reads this text, so it always
+        /// starts with the chapter's story and task.
+        public static string ComposeBody(CargoChapter chapter, string feedback, string recap)
+        {
+            var sb = new StringBuilder();
+            sb.Append(chapter.Story).Append('\n').Append(chapter.Task);
+            if (!string.IsNullOrEmpty(feedback)) sb.Append("\n\n").Append(feedback);
+            if (!string.IsNullOrEmpty(recap)) sb.Append(string.IsNullOrEmpty(feedback) ? "\n\n" : "\n").Append(recap);
+            return sb.ToString();
+        }
+
+        /// One honest line naming only the chapters that were actually loaded in this session.
+        public static string RecapLine(IReadOnlyList<CargoChapter> done)
+        {
+            if (done == null || done.Count == 0) return "";
+            var names = new List<string>();
+            foreach (var chapter in done) names.Add(chapter.Title);
+            return "Dispatched from Dock 7: " + string.Join(" · ", names) + ".";
+        }
+
+        /// Spoken phrases the guide understands for the current state, e.g. Say "split it" · "load it".
+        public static string SayHintsFor(CargoChapter chapter, bool complete, bool canSplit, bool isLast)
+        {
+            var hints = new List<string>();
+            if (complete)
+            {
+                if (!isLast) hints.Add("\"next chapter\"");
+                hints.Add("\"start this chapter over\"");
+                if (isLast) hints.Add("\"back to the lessons\"");
+            }
+            else
+            {
+                if (chapter.SplitTo > 0 && canSplit) hints.Add("\"split it\"");
+                hints.Add("\"load it\"");
+                hints.Add("\"reset\"");
+            }
+            return "Say " + string.Join(" · ", hints);
+        }
+
+        /// Largest font size (100% down to 65% of the card's base size) at which the text fits the fixed card
+        /// rect, so the story card never overflows. The text itself stays free of size tags for the guide.
+        public static float FitFontSize(TMP_Text target, string text, float baseSize)
+        {
+            if (target == null || baseSize <= 0) return baseSize;
+            var rect = target.rectTransform.rect;
+            if (rect.width <= 0 || rect.height <= 0) return baseSize;
+            float original = target.fontSize;
+            float chosen = baseSize * 0.6f;
+            try
+            {
+                foreach (float scale in new[] { 1f, 0.9f, 0.8f, 0.72f, 0.65f })
+                {
+                    target.fontSize = baseSize * scale;
+                    if (target.GetPreferredValues(text, rect.width, 10000f).y <= rect.height) { chosen = baseSize * scale; break; }
+                }
+            }
+            finally { target.fontSize = original; }
+            return chosen;
         }
     }
 }

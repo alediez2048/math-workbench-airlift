@@ -252,6 +252,24 @@ lesson is not built and full Phase 1 QA remains incomplete.
   before more fraction chapters. Plan and nine tickets drafted in docs/00-build;
   awaiting owner approval, logo, OpenAI key and hosting choice. Nothing implemented.
 
+### September 16 — Phase 0 started: identity done in code, voice spike building
+
+- Owner approved Phase 0; P0-01 identity ("Nerdy", com.nerdy.vr, logo icon) code-complete
+  with tests; P0-03 spike: key verified against the Realtime client-secret endpoint, LAN
+  mint server up, spike scene and client written, development APK building. Owner
+  heard the greeting and held three exchanges at 415-445 ms latency: spike is a GO. Key stored outside the repo.
+
+### September 16 — Phase 0 welcome build installed (owner check pending)
+
+- Build cargo-20260916-163119 (SHA-256 d04f8820...): 73 checks, 17 suites, scan passed.
+  Consent → voice welcome (chips fallback) → three Nerdy cards → Cargo workbench with the
+  guide HUD. Installed on the Quest; owner check per docs/qa/nerdy-welcome.md. Proxy not
+  deployed (Vercel login pending); dev mint over LAN. Not committed.
+- Owner's first check found a voice feedback loop (Quest mic hears its speaker) and dead
+  chips. Fix build cargo-20260916-171327 (71 checks): half-duplex mic, chip-driven
+  onboarding with the mic off, mic only inside the lesson, deterministic Skip, terse guide
+  instructions. Installed for retest.
+
 ## Ongoing update policy
 
 - Update this log after each meaningful milestone, failure or decision; do not

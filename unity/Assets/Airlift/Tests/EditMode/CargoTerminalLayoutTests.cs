@@ -64,7 +64,7 @@ namespace Airlift.Tests
             Assert.That(lesson.ruler.localPosition.x,Is.EqualTo(0f).Within(1e-4f));
             Assert.That(lesson.ruler.localPosition.z,Is.EqualTo(d.content.targetPosition.z).Within(1e-4f));
             // Tray pieces start clear of the pad so the release check cannot fire from the tray.
-            foreach(var view in new[]{lesson.whole,lesson.halfA,lesson.halfB})
+            foreach(var view in new[]{lesson.whole,lesson.halfA,lesson.halfB}.Concat(lesson.quarters))
                 Assert.That(Vector3.Distance(view.trayPosition,d.content.targetPosition),Is.GreaterThan(d.content.placementRadius),view.id);
             Assert.That(Vector3.Distance(d.content.trayPosition,d.content.targetPosition),Is.GreaterThan(d.content.placementRadius));
         }
@@ -86,7 +86,7 @@ namespace Airlift.Tests
             Assert.That(bar.GetComponent<Oculus.Interaction.TwoGrabPlaneTransformer>(),Is.Not.Null);
             Assert.That(bar.GetComponent<Collider>(),Is.Not.Null);
             Assert.That(handle.handleInteractable,Is.Not.Null);Assert.That(handle.handleInteractable.transform.IsChildOf(bar),Is.True);
-            Assert.That(handle.pieceInteractables.Length,Is.GreaterThanOrEqualTo(4),"practice strap + whole + two halves");
+            Assert.That(handle.pieceInteractables.Length,Is.GreaterThanOrEqualTo(8),"practice strap + whole + two halves + four quarters");
             Assert.That(handle.pieceInteractables,Has.None.EqualTo(handle.handleInteractable));
             Assert.That(handle.placement,Is.Not.Null);Assert.That(handle.lesson,Is.Not.Null);
             Assert.That(d.content.orientation.ToLower(),Does.Contain("handle"));

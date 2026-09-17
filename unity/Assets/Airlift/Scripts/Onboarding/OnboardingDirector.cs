@@ -24,6 +24,9 @@ namespace Airlift.Onboarding
         public Button help;
         public UnityEvent whenReadyContinue = new UnityEvent();
         public bool IsReady => flow.Stage == OnboardingStage.Ready;
+        public OnboardingStage Stage => flow.Stage;
+        /// Read-only: the practice crate is in a hand (voice replay and back refuse while it is).
+        public bool IsHolding => holding;
         // TEMPORARY: show live input readings on the practice panel until the grab defect is closed.
         public bool showInputDiagnostics = true;
         readonly OnboardingFlow flow = new OnboardingFlow();
@@ -74,7 +77,7 @@ namespace Airlift.Onboarding
 
         public void Continue()
         {
-            if (holding) { SetBody("Release the strap before changing steps."); return; }
+            if (holding) { SetBody("Let go of the crate before changing steps."); return; }
             if (flow.Stage == OnboardingStage.Ready) { whenReadyContinue.Invoke(); return; }
             if (!flow.Continue()) return;
             Refresh();
@@ -83,14 +86,14 @@ namespace Airlift.Onboarding
 
         public void Help()
         {
-            if (holding) { SetBody("Keep holding the grip to move the strap. Release above the outlined pad. Release it before replaying the demo."); return; }
+            if (holding) { SetBody("Keep holding the grip to move the crate. Let go above the loading pad. Let go before replaying the demo."); return; }
             if (flow.ReplayDemonstration(false)) { Refresh(); StartDemonstration(); }
             else Refresh();
         }
 
         public void Back()
         {
-            if (!flow.BackToCatalog(holding)) { SetBody("Release the strap before returning to lessons."); return; }
+            if (!flow.BackToCatalog(holding)) { SetBody("Let go of the crate before returning to lessons."); return; }
             generation++;
             if (demonstration != null) StopCoroutine(demonstration);
             if (release != null) StopCoroutine(release);
@@ -183,7 +186,7 @@ namespace Airlift.Onboarding
             strap.gameObject.SetActive(flow.Stage == OnboardingStage.Practice || flow.Stage == OnboardingStage.Ready);
             demonstrationStrap.gameObject.SetActive(flow.Stage == OnboardingStage.Demonstration || flow.Stage == OnboardingStage.Orientation);
             if (flow.Stage == OnboardingStage.Orientation) demonstrationStrap.localPosition = content.trayPosition;
-            heading.text = "Cargo Crew · Fractions";
+            heading.text = "Dock 7 · Crew training";
             primary.gameObject.SetActive(flow.Stage == OnboardingStage.Overview || flow.Stage == OnboardingStage.Orientation || flow.Stage == OnboardingStage.Ready);
             help.gameObject.SetActive(flow.Stage != OnboardingStage.Demonstration && !isCatalog);
             switch (flow.Stage)

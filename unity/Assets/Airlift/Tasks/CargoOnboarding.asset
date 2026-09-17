@@ -12,33 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 869bc7110f9684e3483ae6545f9935d1, type: 3}
   m_Name: CargoOnboarding
   m_EditorClassIdentifier: Airlift.Runtime::Airlift.Onboarding.OnboardingContent
-  overview: 'Join the Cargo Crew. Help prepare parcels for an aircraft delivery.
+  overview: 'Welcome to Dock 7. Ships bring full crates; each truck, pickup or van takes a share of one container.
 
 
-    First, practise moving a strap to the measuring pad. Fraction activities come next; this build is onboarding only.'
-  orientation: 'The orange piece is a strap. The outlined pad is the measuring station.
+    You are the load planner. First, practise moving a crate to the loading pad.'
+  orientation: 'The orange piece is a crate. The outlined pad is the loading pad.
 
 
-    Watch the demo, then try it yourself. Never lean on the virtual surface. Move the table by its yellow handle; two hands resize it.'
-  demonstration: 'Watch the example strap move from the tray to the pad.
+    Say yes to watch the demo. Never lean on the virtual surface. Move the table by its yellow handle; two hands resize it.'
+  demonstration: 'Watch the example crate move from the tray onto the loading pad.
 
 
-    Next, you will try the same movement. This is controller practice, not a fraction question.'
-  practice: 'Touch the orange strap with a controller.
+    Next, you move a crate the same way. This is controller practice, not a fraction question.'
+  practice: 'Touch the orange crate with a controller.
 
 
-    Hold the grip under your middle finger. Move the strap above the pad, then release.
+    Hold the grip under your middle finger. Move the crate above the pad, then release.
 
 
-    Need help? Replay the demo.'
-  retry: 'Try again: hold the grip while moving, then release above the pad. You can replay the demo.'
-  ready: 'You moved the strap to the measuring station.
+    Need help? Say "show me the demo".'
+  retry: 'Try again: hold the grip while moving, then release above the loading pad. Say "show me the demo" to watch it again.'
+  ready: 'The crate is on the loading pad. You are ready to plan loads at Dock 7.
 
 
-    It will represent one whole in the fraction activity.
-
-
-    Choose Start fractions, replay the demo, or return to lessons.'
+    Say "start loading" or "yes" to open Chapter 1. Say "show me the demo" to watch it again.'
   trayPosition: {x: -0.13, y: 0.047, z: -0.17}
   targetPosition: {x: 0, y: 0.063, z: 0.02}
   demonstrationSeconds: 4

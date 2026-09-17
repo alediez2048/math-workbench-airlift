@@ -1,6 +1,15 @@
 {
   "name": "Airlift.Runtime",
   "rootNamespace": "Airlift",
-  "references": ["Oculus.Interaction", "Oculus.VR", "Unity.TextMeshPro", "Unity.ugui"],
-  "autoReferenced": true
+  "references": [
+    "Oculus.Interaction",
+    "Oculus.VR",
+    "Unity.TextMeshPro",
+    "Unity.ugui"
+  ],
+  "autoReferenced": true,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "Newtonsoft.Json.dll"
+  ]
 }

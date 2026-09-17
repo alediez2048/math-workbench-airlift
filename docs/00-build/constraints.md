@@ -18,7 +18,8 @@ Status: proposed revision for review, except existing safety/authorization bound
    controller fallback for every shortcut. No mandatory two-hand dexterity,
    speech, color perception or hearing. Physical reach remains to be measured.
 7. Core AI voice explains validated lesson state, never grades or advances it.
-   Baseline has no learner microphone, raw room-camera access or child identifiers.
+   September 16 revision: two-way voice (learner microphone) is enabled for adult testers
+   only, per PRIVACY-GATE.md; no raw room-camera access or child identifiers.
    OpenAI access, output safety and adult live proof are early gates; all child use
    remains separately blocked pending data/privacy review. See AI-VOICE-GUIDE.md.
 8. **ElevenLabs is gated now, not just at live-agent implementation.** Its

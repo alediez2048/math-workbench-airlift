@@ -1,17 +1,9 @@
 # Math Workbench: Airlift — instructions for Codex
 
-## September 16 evening: owner re-scoped — Phase 0 "Nerdy welcome" before more fractions
+## September 16, 5:30 PM: Phase 0 "Nerdy welcome" built; see CLAUDE.md top section
 
-Owner accepted the Cargo workbench and asked for the foundation first: a findable "Nerdy"
-app in Quest Library with the owner's logo, a two-way voice welcome with a Nerdy AI guide
-that asks age band, interests and goal, three Nerdy-branded lesson cards, per-lesson
-workbenches, and the guide inside the Cargo workbench. Owner decisions: two-way voice for
-adult testers, OpenAI (Realtime), app identity "Nerdy" / `com.nerdy.vr`. This supersedes the
-September 16 voice deferral. Draft plan: docs/00-build/PHASE-0-NERDY-WELCOME.md and
-tickets CC-P0-01..09, awaiting owner approval; no Phase 0 implementation yet. Still not
-authorized: purchases beyond the approved OpenAI key, child data processing, push, submission.
-Privacy baseline while Phase 0 is built: adult testers only; audio streams to OpenAI for
-live transcription and is never persisted by our proxy; profile = tags on device, no names.
+CLAUDE.md's first section is the current state (Nerdy identity, voice guide, welcome/cards,
+panel handle, proxy status, temporary exceptions, open items). Keep the two files aligned.
 
 ## September 16 handoff checkpoint
 
@@ -155,7 +147,7 @@ legibility and world payoff > submission evidence > Cargo Grid > hands > voice.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (1960 symbols, 2896 relationships, 53 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (2810 symbols, 4431 relationships, 139 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

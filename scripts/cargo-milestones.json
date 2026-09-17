@@ -73,6 +73,125 @@
       ],
       "requiredAssets": [],
       "requiredCueIds": []
+    },
+    "CC-P0-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "AppIdentityTests"
+        }
+      ],
+      "requiredAssets": [
+        "Assets/Airlift/Branding/icon-adaptive-fg.png"
+      ],
+      "requiredCueIds": []
+    },
+    "CC-P0-04": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "GuideMessagesTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-P0-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "NerdyStyleTests"
+        }
+      ],
+      "requiredAssets": [
+        "Assets/Airlift/Fonts/Nerdy/OFL-Poppins.txt",
+        "Assets/Airlift/Fonts/Nerdy/OFL-Karla.txt"
+      ],
+      "requiredCueIds": []
+    },
+    "CC-P0-05": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "WelcomeFlowTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-P0-06": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "NerdyWelcomeWiringTests"
+        }
+      ],
+      "requiredAssets": [
+        "Assets/Airlift/Fonts/NerdyStyle.asset"
+      ],
+      "requiredCueIds": []
+    },
+    "CC-P0-08": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "PrivacyGateTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-P0-07": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "PromptGateTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GuidePolicyTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "AmbientMusicTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GuideGroundingTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-D-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "DockWorkbenchWiringTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-D-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "VoiceActionTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-D-04": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "CargoChapterTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
     }
   },
   "phaseEnds": {
