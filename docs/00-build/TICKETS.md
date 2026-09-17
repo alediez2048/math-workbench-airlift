@@ -153,6 +153,31 @@ scope cuts and review decisions. HITL means owner/device review is needed to clo
 | [CC-P4-03](tickets/CC-P4-03.md) | Constrain spoken questions to current lesson help | L | CC-P4-02 | draft |
 | [CC-P4-04](tickets/CC-P4-04.md) | Evaluate conversation failures and child-release readiness | M | CC-P4-03 | draft |
 
+## Phase 5 — Nerdy lounge and onboarding (11 tickets, after the Friday 2026-09-18 submission)
+
+Design: [lounge spec](../superpowers/specs/2026-09-17-nerdy-front-door-design.md). Signatures, file ownership and
+team rules: [FRONT-DOOR-CONTRACTS.md](FRONT-DOOR-CONTRACTS.md). Structural reference:
+[REFERENCE-THEATRE-ELSEWHERE.md](REFERENCE-THEATRE-ELSEWHERE.md). **One scene, one place**: the app opens in the
+Nerdy lounge, Dee appears beside the onboarding cards we already have, the learner picks AR or VR, gets a rundown
+of how the experience works, and lands on an expanded dashboard; lessons run as they do today. The owner rejected
+the earlier two-scene draft (no scene router, no persistent core, no loading screen). The onboarding and the
+rundown ship in full; the VR room is the first thing cut if time contracts. Cargo Crew stays locked apart from the
+agreed `LessonStation.Open(int)` addition. **Nothing here is authorized until the Friday submission is done.**
+
+| Ticket | Outcome | Owner | Dependency | Status |
+|---|---|---|---|---|
+| CC-FD-01 | Lounge root (the home: arrival, onboarding and browsing) from the style tokens; AR/VR choice; existing onboarding cards reparented into it | lounge-bench | Friday submission | draft |
+| CC-FD-02 | Dee's seat in the lounge: the existing guide HUD given a place and an accent glow — no body, no mascot | lounge-bench | CC-FD-01 | draft |
+| CC-FD-03 | Arrival: logo animation from the supplied vector, progress bar driven by real startup work | lounge-bench | CC-FD-01 | draft |
+| CC-FD-04 | WelcomeFlow gains Arrival/Scenery/Rundown/Dashboard; NerdyDirector drives the lounge | director | CC-FD-01 | draft |
+| CC-FD-05 | The rundown: six gated stops across wall and workbench, helper controller card, always-visible skip, replay | rundown | CC-FD-04 | draft |
+| CC-FD-06 | SettingsStore and LibraryStore: versioned JSON, defaults, clear data | stores | CC-FD-04 | draft |
+| CC-FD-07 | Discovery wall: 3 lesson + 15 chapter + 6 coming-soon tiles (Route 9, Ten & Trade, Corner Store, Platform Clock, Tailor's Bench, Mile Marker), Continue ribbon, tile art | dashboard | CC-FD-06 | draft |
+| CC-FD-07b | Toolbar under the wall: Featured / Newest / Most viewed, scenery selector and gear in the corner | dashboard | CC-FD-07 | draft |
+| CC-FD-08 | `LessonStation.Open(int chapterIndex)` in all three stations; golden unchanged | director | CC-FD-07 | draft |
+| CC-FD-09 | Settings panel and the dashboard voice tools; proxy redeploy | stores + director | CC-FD-06, CC-FD-07 | draft |
+| CC-FD-10 | LoungeStyleTests, performance run (room budget is a release gate), QA script, headset acceptance | integrator + owner | CC-FD-01..09 | draft |
+
 ## Closing a ticket
 
 Keep the status and completion checklist consistent with the ticket evidence. Record

@@ -42,3 +42,6 @@ mono_crash.*
 /unity/Assets/Resources/PerformanceTestRunInfo.json*
 /unity/Assets/Resources/PerformanceTestRunSettings.json*
 /unity/Assets/StreamingAssets/RuntimeActionBindings.json*
+
+# Vercel CLI link + local env pulls
+.vercel/

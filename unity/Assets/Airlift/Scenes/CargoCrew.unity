@@ -75870,7 +75870,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a85f46982a5444b8b605b9bd1f6e028, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Airlift.Runtime::Airlift.Guide.GuideSession
-  mintUrl: http://192.168.86.20:8787/session
+  mintUrl: https://nerdy-guide-proxy.vercel.app/session
   language: en
   clientMarker: nerdy-quest
   build: 0.2.0

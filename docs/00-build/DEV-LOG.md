@@ -1,5 +1,26 @@
 # Cargo Crew development log
 
+## 2026-09-17 evening — Guide proxy deployed to Vercel; the scene mints over https
+
+Owner ran `vercel login` (account alediez2048), which unblocked the last piece of the AI/privacy contract that was
+still running on the Mac. `services/guide-proxy` is deployed as project **nerdy-guide-proxy**, aliased at
+`https://nerdy-guide-proxy.vercel.app`, with `OPENAI_API_KEY` stored encrypted in the production environment only
+(read straight from `~/.config/nerdy/openai.env`; never printed, never in the repo or APK).
+
+- **Route parity:** `vercel.json` rewrites `/session` to the `api/session` function, so the dev mint and production
+  differ only by host. `.vercel/` is gitignored.
+- **Proven live:** GET 405, missing `x-nerdy-client` 403, bad nonce 400, `language: "fr"` 400; real mints in English
+  and Spanish return `gpt-realtime` and a secret that expires in 10 minutes. `node --test` 14/14 before deploying.
+- **Scene:** `GuideSession.mintUrl` is serialised in CargoCrew.unity, so the `GuideEndpoints` constant was only
+  documentation. Added `AgentScripts/SetMintUrl.cs` (idempotent) to bake it, and pinned it in
+  NerdyWelcomeWiringTests: the scene URL must equal `GuideEndpoints.MintUrl` and start with `https://`. The
+  assertion was watched failing against the old LAN URL before the bake.
+- **Deliberately not done yet:** `insecureHttpOption` stays AlwaysAllowed for one build, so the Mac dev mint remains
+  a fallback if https misbehaves on the device. Revert it to NotAllowed after the owner hears Dee over the deployed
+  proxy on the headset. The installed build 124258 still mints from the Mac; the https path reaches the Quest only
+  with the next build.
+
+
 ## 2026-09-17 afternoon — Concept intros, Dock 7 splitter, chunky practice crate, 2x café/garden pieces
 
 Owner after build 112858 ("starting to look incredibly good"): more voice onboarding at lesson start (what

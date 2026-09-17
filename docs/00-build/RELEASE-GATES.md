@@ -17,7 +17,8 @@ gate is **open** until the fix or owner decision is recorded here.
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `http://192.168.86.20:8787/session` | dev mint on the owner's Mac (LAN, cleartext) | **open**: temporary. Needs owner `vercel login`, deploy `services/guide-proxy`, set `GuideEndpoints.MintUrl` to https, revert `insecureHttpOption` (currently 2 = AlwaysAllowed) |
+| `https://nerdy-guide-proxy.vercel.app/session` | production mint (deployed 2026-09-17, project `nerdy-guide-proxy`) | ok: https, key only in the Vercel production environment, budget limiter per instance; baked into the scene and pinned by NerdyWelcomeWiringTests |
+| `http://192.168.86.20:8787/session` | dev mint on the owner's Mac (LAN, cleartext) | **open**, narrowed: no longer the shipped endpoint, kept as the offline fallback. Revert `insecureHttpOption` (2 = AlwaysAllowed → 0) once Dee is heard over the deployed proxy on the headset |
 | `wss://api.openai.com/v1/realtime` | live guide session with an ephemeral client secret | ok; the provider key never ships (secret scan passes each build) |
 | `https://api.openai.com/v1/realtime/client_secrets` | called only by the proxy / dev mint, never by the app | ok |
 
@@ -49,6 +50,6 @@ gate is **open** until the fix or owner decision is recorded here.
 
 ## Summary of open gates
 
-1. Dev HTTP mint and `insecureHttpOption` (owner `vercel login`).
+1. `insecureHttpOption` still AlwaysAllowed (the proxy is deployed and the scene mints over https; the cleartext allowance stays for one build as the dev-mint fallback).
 2. BLUETOOTH permission still present (store submission only).
 3. Owner confirmation of vendor SDK and OpenAI terms for the contest.

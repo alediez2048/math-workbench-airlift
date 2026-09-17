@@ -50,12 +50,16 @@ language lock and `say_exactly` rule. History and evidence: DEV-LOG Sept 17 entr
 - Parallel agents: disjoint file ownership, contract file first, agents never run Unity (they compile offline with
   Unity's Roslyn). Editor-only test assemblies cannot host MonoBehaviours used with AddComponent.
 
-**Voice server:** dev mint on the Mac (`~/.config/nerdy/start-dev-mint.sh`, port 8787). The app calls
-`http://192.168.86.20:8787/session`; the Mac's DHCP address changed to .35, so the owner added an alias
-(`sudo ifconfig en1 alias 192.168.86.20 255.255.255.0`, lost on reboot). Restart the mint after proxy changes.
+**Voice server:** **deployed 2026-09-17** to Vercel as `nerdy-guide-proxy`, aliased
+`https://nerdy-guide-proxy.vercel.app` (`/session` rewrites to `api/session`); `OPENAI_API_KEY` lives only in its
+production environment. The scene now mints from it (baked by `AgentScripts/SetMintUrl.cs`, pinned by
+NerdyWelcomeWiringTests). The Mac dev mint (`~/.config/nerdy/start-dev-mint.sh`, port 8787,
+`http://192.168.86.20:8787/session` via `sudo ifconfig en1 alias 192.168.86.20 255.255.255.0`, lost on reboot)
+stays as the offline fallback while `insecureHttpOption` is AlwaysAllowed; restart it after proxy changes. Deploy
+proxy changes with `vercel deploy --prod --yes` from `services/guide-proxy` after `node --test`.
 
-**Open owner items:** `vercel login` → deploy `services/guide-proxy`, https MintUrl, revert
-`insecureHttpOption`; consent heading wording; AI-requirement decision (voice guide vs hint router CC-P3-01);
+**Open owner items:** revert `insecureHttpOption` to NotAllowed once Dee is heard over the deployed proxy on the
+headset (the installed build 124258 still mints from the Mac); consent heading wording; AI-requirement decision (voice guide vs hint router CC-P3-01);
 Library tile (sideloaded apps show only under Unknown Sources; a normal tile needs a Meta release channel); performance run on the Quest; BLUETOOTH permission
 still in the APK; demo footage. Deadline: Friday 2026-09-18, internal target 18:00 CDT.
 

@@ -30,7 +30,9 @@ namespace Airlift.Tests
             var back = n.onboarding.transform.Find("Lesson interface").GetComponentsInChildren<Button>(true).First(b => b.name == "Back to lessons");
             bool hooked = Enumerable.Range(0, back.onClick.GetPersistentEventCount()).Any(i => back.onClick.GetPersistentTarget(i) is NerdyDirector);
             Assert.That(hooked, Is.True, "Back returns to the Nerdy catalog");
-            Assert.That(n.guide.mintUrl, Does.StartWith("http"));
+            // Deployed 2026-09-17: the scene mints from the Vercel proxy, not the Mac's LAN alias, which dies on reboot.
+            Assert.That(n.guide.mintUrl, Is.EqualTo(GuideEndpoints.MintUrl), "bake the endpoint with AgentScripts/SetMintUrl.cs");
+            Assert.That(n.guide.mintUrl, Does.StartWith("https://"), "no cleartext mint in a shipped scene");
             Assert.That(n.hudWelcomeCanvas, Is.Not.Null); Assert.That(n.hudStationCanvas, Is.Not.Null);
             Assert.That(n.hudStationCanvas.IsChildOf(n.onboarding.transform), Is.True, "assistant card rides with the workbench in the lesson");
             var panelHandle = n.GetComponent<TableHandle>(); Assert.That(panelHandle, Is.Not.Null, "welcome panel has a carry handle");
