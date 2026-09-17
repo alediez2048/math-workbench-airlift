@@ -7,6 +7,10 @@ namespace Airlift.Welcome
         public static bool MicOn(WelcomePhase phase, bool muted, bool paused) =>
             !muted && !paused && (phase == WelcomePhase.Catalog || phase == WelcomePhase.Lesson);
 
+        /// Dee speaks from the moment the learner arrives, so her bar is up from the first card: the controls that
+        /// stop her — Mute, Pause — must never be further away than her voice. It waits only for the logo arrival.
+        public static bool AssistantBarVisible(WelcomePhase phase, bool arriving) => !arriving;
+
         public static bool CanPrompt(bool paused, bool live) => live && !paused;
 
         /// A tool result normally asks the guide to narrate it; while paused the guide stays silent.

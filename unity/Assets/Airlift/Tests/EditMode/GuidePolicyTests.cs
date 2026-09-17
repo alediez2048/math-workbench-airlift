@@ -16,6 +16,20 @@ namespace Airlift.Tests
             Assert.That(GuideIntro.OfflineCaption, Does.Contain("Tap the answers below"));
         }
 
+        // Owner 2026-09-17: Dee greets on arrival, so her bar has to be there from the first card — a voice with
+        // no Mute, Pause or Help in reach is worse than no voice.
+        [Test] public void TheAssistantBarIsThereFromTheFirstCard()
+        {
+            Assert.That(GuidePolicy.AssistantBarVisible(WelcomePhase.Consent, arriving: false), Is.True);
+            Assert.That(GuidePolicy.AssistantBarVisible(WelcomePhase.Welcome, arriving: false), Is.True);
+            Assert.That(GuidePolicy.AssistantBarVisible(WelcomePhase.Lesson, arriving: false), Is.True);
+        }
+
+        [Test] public void TheAssistantBarWaitsForTheLogoToFinish()
+        {
+            Assert.That(GuidePolicy.AssistantBarVisible(WelcomePhase.Consent, arriving: true), Is.False);
+        }
+
         [Test] public void MicStaysOffDuringConsentAndChipQuestions()
         {
             Assert.That(GuidePolicy.MicOn(WelcomePhase.Consent, muted: false, paused: false), Is.False);

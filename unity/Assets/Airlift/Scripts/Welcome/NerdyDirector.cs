@@ -23,6 +23,11 @@ namespace Airlift.Welcome
         public Transform head;
         public GameObject consentRoot, welcomeRoot, catalogRoot, hudRoot;
         public GameObject[] stationVisuals;
+        [Tooltip("The Nerdy lounge: the home the learner arrives in, is onboarded in and browses in. CC-FD-01.")]
+        public Airlift.Lounge.LoungeRoom lounge;
+        [Tooltip("The logo arrival that plays before anything else. CC-FD-03.")]
+        public Airlift.Lounge.LoungeArrival arrival;
+        bool arriving;
         public Transform welcomeAnchor;          // world-locked root placed in front of the head once
         public Transform hudWelcomeCanvas, hudStationCanvas;   // the assistant card lives on the welcome panel, then above the workbench
         public Vector2 hudWelcomePosition = new Vector2(0, -262);
@@ -62,6 +67,7 @@ namespace Airlift.Welcome
             ChooseLanguage(savedLanguage);
             ShowPhase();
             StartCoroutine(PlaceWhenTracked());
+            StartCoroutine(RunArrival());
             if (guide != null)
             {
                 guide.adultTesterOnlySatisfied = adultTesterOnly;
@@ -93,7 +99,51 @@ namespace Airlift.Welcome
         }
 
         // ---- consent ----
-        public void ConsentAllowVoice() { Flow.Consent(true); ShowPhase(); if (guide != null) { guide.language = Language; ApplyMicPolicy(); guide.Begin(); } StartCoroutine(GreetWhenLive()); }
+        public void ConsentAllowVoice()
+        {
+            Flow.Consent(true); ShowPhase();
+            if (guide != null) { guide.language = Language; ApplyMicPolicy(); if (!greeted) guide.Begin(); }
+            if (!greeted) StartCoroutine(GreetWhenLive());
+        }
+
+        /// Owner 2026-09-17: "Dee should kickstart as soon as i arrive to the lounge." The session connects while
+        /// the logo is still animating, so she can speak the moment the room is there. The mic stays off until the
+        /// learner allows voice (GuidePolicy.MicOn keeps it off outside the catalog and a lesson), so she greets
+        /// without ever listening.
+        void ConnectGuideSilently()
+        {
+            if (greeted || guide == null) return;
+            greeted = true;
+            guide.language = Language;
+            guide.SetMicEnabled(false);
+            guide.Begin();
+        }
+
+        public void GreetOnArrival() { ConnectGuideSilently(); StartCoroutine(GreetWhenLive()); }
+        bool greeted;
+
+        /// The logo arrival, then the board. Always ends, even with no guide and no network.
+        IEnumerator RunArrival()
+        {
+            if (arrival == null || lounge == null) { GreetOnArrival(); yield break; }
+            arriving = true; ShowPhase();
+            arrival.Finished += OnArrivalFinished;
+            arrival.Begin(() => lounge.StartupProgress, () => lounge.Startup.ShouldShowBar);
+            ConnectGuideSilently();
+            lounge.Startup.Complete(Airlift.Lounge.StartupStep.Microphone);   // not asked for until the learner allows voice
+            while (!placed) yield return null;
+            lounge.Startup.Complete(Airlift.Lounge.StartupStep.Assets);
+            while (guide != null && guide.Mode == GuideMode.Offline && arrival.isActiveAndEnabled) yield return null;
+            lounge.Startup.Complete(Airlift.Lounge.StartupStep.Guide);
+        }
+
+        void OnArrivalFinished()
+        {
+            if (arrival != null) arrival.Finished -= OnArrivalFinished;
+            arriving = false;
+            ShowPhase();
+            StartCoroutine(GreetWhenLive());
+        }
 
         /// Consent card: the voice language for the whole session (owner 2026-09-17). The server locks the minted session to it.
         public void ChooseLanguage(string code)
@@ -512,12 +562,19 @@ namespace Airlift.Welcome
         void ShowPhase()
         {
             bool lesson = Flow.Phase == WelcomePhase.Lesson;
-            if (consentRoot) consentRoot.SetActive(Flow.Phase == WelcomePhase.Consent);
+            // The lounge is the home: it stays through consent, welcome and the board, and goes only for a lesson,
+            // so the workbench sits in the learner's own space exactly as it does today.
+            if (lounge != null)
+            {
+                lounge.Show(Airlift.Lounge.LoungeVisibility.ShouldShow(lesson, onboardingDone: Flow.Phase != WelcomePhase.Consent));
+                lounge.ShowBoard(!lesson);
+            }
+            if (consentRoot) consentRoot.SetActive(Flow.Phase == WelcomePhase.Consent && !arriving);
             if (welcomeRoot) welcomeRoot.SetActive(Flow.Phase == WelcomePhase.Welcome);
             if (catalogRoot) catalogRoot.SetActive(Flow.Phase == WelcomePhase.Catalog);
             if (hudRoot)
             {
-                hudRoot.SetActive(Flow.Phase != WelcomePhase.Consent);
+                hudRoot.SetActive(GuidePolicy.AssistantBarVisible(Flow.Phase, arriving));
                 var target = lesson ? hudStationCanvas : hudWelcomeCanvas;
                 if (target != null && hudRoot.transform.parent != target)
                 {

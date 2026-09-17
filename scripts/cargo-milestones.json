@@ -328,6 +328,20 @@
       ],
       "requiredAssets": [],
       "requiredCueIds": []
+    },
+    "CC-FD-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "LoungeRoomTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "LoungeWiringTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
     }
   },
   "phaseEnds": {

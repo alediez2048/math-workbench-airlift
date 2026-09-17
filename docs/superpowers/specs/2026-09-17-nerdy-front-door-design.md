@@ -117,10 +117,28 @@ gates every stop on the learner actually pressing the thing.
 - Narrated by Dee through the existing exact-words path; captions only when voice is off.
 - **Skippable at any moment** by a real, always-visible control — the same button that later means "back to the
   wall" — not a Skip card on the first stop.
-- A **helper card** stands in front of the learner showing a controller diagram, highlighting the button being
-  named. It is the same diagram the "show button labels" setting governs.
+- A **controller helper** floats in front of the learner: the real controller model from the Meta SDK, not a flat
+  diagram, with the button being named lit and a soft arrow bouncing on it. It is the same helper the "show button
+  labels" setting governs, so a learner can bring it back inside a lesson.
 - The continue affordance **pulses until pressed**, so nobody sits waiting for permission.
 - Replayable from the gear.
+
+### What the helper teaches
+
+Four controls, and one honest omission. Nothing else on the controller does anything in Nerdy, and saying so stops
+learners hunting for a control that is not there.
+
+| Control | What it does here | Taught at |
+|---|---|---|
+| **Index trigger** | Point at a tile or a button and press | Stop 1, at the wall |
+| **Grip** | Hold a piece; let go to place it | Stop 3, at the workbench |
+| **B / back** | Back to the wall from anywhere — and the skip for this whole rundown | Stop 6, and visible from stop 1 |
+| **Voice** | Just talk; Dee does what a button would | Stop 4, with the assistant bar |
+| ~~Thumbsticks~~ | **Nothing.** There is no walking or flying in Nerdy; you stay where you are | Said once, at stop 1 |
+
+The helper must light **the button the app actually accepts**, verified on the headset before this ticket closes.
+Cargo's practice grab has carried a grip-or-trigger override since the September grab defect, so "which button
+grabs" is a question the code has to answer, not the design.
 
 **At the wall (browsing):**
 1. **Point and pick** — aim at a tile, press the trigger.

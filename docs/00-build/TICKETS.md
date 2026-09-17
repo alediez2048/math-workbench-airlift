@@ -153,7 +153,7 @@ scope cuts and review decisions. HITL means owner/device review is needed to clo
 | [CC-P4-03](tickets/CC-P4-03.md) | Constrain spoken questions to current lesson help | L | CC-P4-02 | draft |
 | [CC-P4-04](tickets/CC-P4-04.md) | Evaluate conversation failures and child-release readiness | M | CC-P4-03 | draft |
 
-## Phase 5 — Nerdy lounge and onboarding (11 tickets, after the Friday 2026-09-18 submission)
+## Phase 5 — Nerdy lounge and onboarding (12 tickets, after the Friday 2026-09-18 submission)
 
 Design: [lounge spec](../superpowers/specs/2026-09-17-nerdy-front-door-design.md). Signatures, file ownership and
 team rules: [FRONT-DOOR-CONTRACTS.md](FRONT-DOOR-CONTRACTS.md). Structural reference:
@@ -170,7 +170,8 @@ agreed `LessonStation.Open(int)` addition. **Nothing here is authorized until th
 | CC-FD-02 | Dee's seat in the lounge: the existing guide HUD given a place and an accent glow — no body, no mascot | lounge-bench | CC-FD-01 | draft |
 | CC-FD-03 | Arrival: logo animation from the supplied vector, progress bar driven by real startup work | lounge-bench | CC-FD-01 | draft |
 | CC-FD-04 | WelcomeFlow gains Arrival/Scenery/Rundown/Dashboard; NerdyDirector drives the lounge | director | CC-FD-01 | draft |
-| CC-FD-05 | The rundown: six gated stops across wall and workbench, helper controller card, always-visible skip, replay | rundown | CC-FD-04 | draft |
+| CC-FD-05a | Controller helper: real controller model, lit button, bouncing arrow; teaches trigger, grip, B/back and "thumbsticks do nothing"; driven by the button-labels setting, reusable inside lessons | rundown | CC-FD-04 | draft |
+| CC-FD-05b | The rundown: six gated stops across wall and workbench, always-visible skip, replay from the gear | rundown | CC-FD-05a | draft |
 | CC-FD-06 | SettingsStore and LibraryStore: versioned JSON, defaults, clear data | stores | CC-FD-04 | draft |
 | CC-FD-07 | Discovery wall: 3 lesson + 15 chapter + 6 coming-soon tiles (Route 9, Ten & Trade, Corner Store, Platform Clock, Tailor's Bench, Mile Marker), Continue ribbon, tile art | dashboard | CC-FD-06 | draft |
 | CC-FD-07b | Toolbar under the wall: Featured / Newest / Most viewed, scenery selector and gear in the corner | dashboard | CC-FD-07 | draft |
