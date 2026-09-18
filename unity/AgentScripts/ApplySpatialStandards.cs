@@ -81,6 +81,10 @@ public static class ApplySpatialStandards
         int retyped = 0, resized = 0;
         foreach (var t in scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<TMP_Text>(true)))
         {
+            // Wall tiles and the bar under them keep their own compact ramp (CC-FD-07): a 34-unit title on a
+            // 292 x 190 tile is not a standard, it is a collision.
+            if (t.GetComponentInParent<Airlift.Presentation.Dashboard.DashboardTileView>(true) != null) continue;
+            if (t.transform.parent != null && (t.transform.parent.name == "Toolbar" || (t.transform.parent.parent != null && t.transform.parent.parent.name == "Toolbar"))) continue;
             var font = FontFor(t, style);
             if (font != null && t.font != font) { t.font = font; retyped++; EditorUtility.SetDirty(t); }
             float size = IsHeading(t) ? NerdySpace.Heading

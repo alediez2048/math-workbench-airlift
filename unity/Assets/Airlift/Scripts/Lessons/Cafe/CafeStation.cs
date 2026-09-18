@@ -180,6 +180,14 @@ namespace Airlift.Lessons.Cafe
             ShowStage();
         }
 
+        /// A chapter tile on the wall: open, then straight into that chapter. Chapter 0 is Open() as today.
+        public override void Open(int chapterIndex)
+        {
+            Open();
+            if (chapterIndex <= 0) return;
+            JumpToChapter(Mathf.Clamp(chapterIndex - 1, 0, CafeChapter.All.Count - 1));
+        }
+
         /// Hides the café, stops the payoff and puts every pastry of an unfinished order back on the tray.
         public override void Close()
         {

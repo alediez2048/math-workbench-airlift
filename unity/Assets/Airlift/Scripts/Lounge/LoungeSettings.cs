@@ -19,6 +19,9 @@ namespace Airlift.Lounge
         readonly List<GameObject> wasShowing = new List<GameObject>();
 
         public bool IsOpen => panel != null && panel.activeSelf;
+        /// The rundown's second stop listens for this: "press the gear".
+        public event System.Action Opened;
+        public event System.Action Closed;
 
         void Awake() { if (panel != null) panel.SetActive(false); }
 
@@ -36,12 +39,14 @@ namespace Airlift.Lounge
                     foreach (var go in hideWhileOpen)
                         if (go != null && go != panel && go.activeSelf) { wasShowing.Add(go); go.SetActive(false); }
                 panel.SetActive(true);
+                Opened?.Invoke();
             }
             else
             {
                 panel.SetActive(false);
                 foreach (var go in wasShowing) if (go != null) go.SetActive(true);
                 wasShowing.Clear();
+                Closed?.Invoke();
             }
         }
     }

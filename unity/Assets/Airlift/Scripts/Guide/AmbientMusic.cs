@@ -18,6 +18,8 @@ namespace Airlift.Guide
         public GuideSession guide;
         public AudioPlayback playback;
         public bool Enabled { get; private set; }
+        /// CC-FD-09: the settings card's music volume, 1 = the 40 % default.
+        [System.NonSerialized] public float volumeScale = 1f;
         AudioSource source;
 
         public static float TargetVolume(bool enabled, bool guideSpeaking, bool micOpen) =>
@@ -43,7 +45,7 @@ namespace Airlift.Guide
             if (source == null) return;
             bool speaking = playback != null && playback.IsSpeaking;
             bool micOpen = guide != null && guide.MicStreaming;
-            source.volume = Mathf.MoveTowards(source.volume, TargetVolume(Enabled, speaking, micOpen), Time.deltaTime * FadeSpeed);
+            source.volume = Mathf.MoveTowards(source.volume, TargetVolume(Enabled, speaking, micOpen) * Mathf.Clamp(volumeScale, 0f, 2.5f), Time.deltaTime * FadeSpeed);
         }
 
         /// Deterministic mono loop. Chords: Cmaj7 · Am7 · Fmaj7 · G6, four seconds each, raised-cosine

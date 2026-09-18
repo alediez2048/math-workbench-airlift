@@ -1,5 +1,85 @@
 # Cargo Crew development log
 
+## 2026-09-18 morning–afternoon — owner iteration: canvas mockups, compact bar, arrows, orb gone, the host tour
+
+Owner on the headset from 10:00. Process changed at his request: mockups on a canvas first
+(https://claude.ai/artifact/JPTeoWGosWPJqyP2JNACgf), approve there, then build.
+
+- **Gear "did nothing"** during the rundown: the rundown and settings cards were instantiated after Dee's bar and
+  covered it. Bar is now always the last sibling; the settings card hides the bar while open. Test pins it.
+- **Compact bar** (`NerdySpace.BarWidth/BarHeight/BarGap`, `CompactAssistantBar.cs`): 900 x 84, controls packed at 12,
+  Music in the control row. Then the **orb deleted** outright ("no floating sphere anywhere", `RemoveOrb.cs`);
+  controller helper switched off.
+- **Welcome copy**: "Meet Dee, your Nerdy AI assistant", pills "Turn on the mic" / "Continue without voice", no
+  OpenAI mention (`PatchConsentCopy.cs`).
+- **‹ › arrows** bottom-right of every screen (`BuildNavArrows.cs`, `GuideTools.BackButton/NextButton`, riding on the
+  bar; station HUD canvas grown so they stay pointable above the workbench). ‹ closes settings too (owner).
+- **Onboarding rethought** (brainstormed with the owner, spec `2026-09-18-host-tour-design.md`): the text-card
+  rundown and the first pointing tour were both rejected ("the story telling is not there"). New: the **host tour**,
+  Dee as host, six gated stops from the welcome card to the wall, an overlay on the normal screens, lessons untouched.
+  `RundownScript`/`LoungeRundown` rewritten; the tour is no longer a `WelcomePhase`.
+- **Bug found on device:** the questions' own Skip pill was not guarded, so the tour stayed pointing at › while the
+  wall was up. Fixed: Skip dims during the tour; any road from the questions to the wall completes stop 2.
+- **Two stale builds shipped** before I noticed the build tool packages the last *imported* compile: a
+  `[Nerdy] onboarding …` line at Start now proves on device what a build contains. Also lost time to a second Unity
+  project the owner had open (CLI ambiguous → `UNITY_PROJECT_PATH`) and to the editor being in Play mode.
+- **Not done:** the front-door suites were not re-run after the host-tour rewrite (owner chose headset testing over
+  waiting); perf run; docs/qa/lounge.md section B describes the old pointing tour.
+
+## 2026-09-18 early — Front door finished: rundown, discovery wall, settings, chapter deep-links (CC-FD-04..10)
+
+Owner: "please go ahead and finish all remaining items from our onboarding." Everything below is on
+`lounge-onboarding`, rendered with `PreviewWelcomeBoard.cs` before any build (`artifacts/lounge/welcome-wall.png`,
+`welcome-wall-newest-p2.png`, `welcome-rundown.png`, `welcome-helper.png`, `welcome-settings.png`).
+
+- **Flow (CC-FD-04):** `WelcomePhase` gains `Rundown` between Welcome and Catalog. First run: consent → questions →
+  rundown → wall. Returning (profile complete + rundown seen): consent → wall with "welcome back" and the Continue
+  ribbon. The rundown is replayable from the gear or by voice. `RundownSeen` lives in `LibraryState` so *Clear saved
+  data* brings it back. The golden Cargo recording is unchanged: its driver marks the rundown as seen (a tester who
+  has done it) and the catalog context sent to Dee is byte-identical.
+- **Rundown (CC-FD-05a/b):** `RundownScript` — six stops, each gated on the real thing: Continue with the trigger,
+  the gear opened, a block grabbed and released, "hello" heard (or Help pressed when voice is off), the board handle
+  grabbed, B pressed. Skip is a visible pill on every stop and B is the same skip. `LoungeRundown` owns the card
+  (a copy of the consent card, stripped), the practice block (rounded block on a lit pad, `QuickActionsAPI` grab, drifts
+  back to its pad), and the gates. `ControllerHelper` is the Meta SDK's Touch Plus right model with its own bones as
+  anchors (`right_b_trigger_front`, `right_b_trigger_grip`, `b_button_b`): the named button glows and a lavender
+  arrow bounces on it; a URP matte material replaces the FBX's phong; size normalised from bounds after the first
+  render filled the view with a giant cone. Inside a lesson the helper shows a grip hint the first time a step allows a
+  grab (the "Show button labels" switch). `BackButtonWatcher` reads the right controller's secondary button through
+  Unity XR (`GuideTools.BackButton` decides: skip the rundown / leave a lesson unless something is held / nothing).
+- **Wall (CC-FD-07/07b):** `DashboardCatalog` builds 24 tiles — 3 heroes, 15 chapters read from the stations'
+  chapter lists, 6 coming-soon worlds (spec names, `Playable = false`, no date). Featured = lessons, the suggested
+  next chapter, chapters, coming soon; Newest = release date; Most viewed = open count then recency. Eight tiles a
+  page, three pages. `BuildDashboard.cs` **moves** the three `Card <id>` objects into the grid (every card test still
+  finds them) and clones them for the other 21; chapter art is cropped from the seated-head chapter renders into
+  `Assets/Airlift/Art/Tiles` (artifacts/ is gitignored). Toolbar under the wall: Featured · Newest · Most viewed,
+  ‹ 1/3 ›, Scenery: Your room / Nerdy lounge. The gear stays on the assistant bar directly under that row rather than
+  being duplicated. `ApplySpatialStandards` now leaves tile and toolbar texts at their compact ramp.
+- **Chapter deep-links (CC-FD-08):** `LessonStation.Open(int)`; 0 = today's `Open()`. Café/Garden reuse their
+  `JumpToChapter`; Cargo does `JumpToChapter` + `Begin()` over the untouched onboarding director (its briefing stage
+  stays underneath, `hideWhileActive` hides its buttons as chapter 1 always did). `StationOpenTests` opens chapter 3
+  in each and closes clean; out-of-range clamps.
+- **Settings (CC-FD-09):** `SettingsPanel` on the card: Voice guide (mic off + no prompts, captions stay), Captions,
+  Haptic feedback (`NerdyHaptics` is the one switch), Show button labels, Voice/Music/Effects volume pills (100 → 75 →
+  50 → 25 → 0), Replay the rundown, Clear saved data (two presses; wipes library, profile, rundown flag), Reset
+  settings (keeps the consent-card language), version line. Settings and library are JSON files in
+  `persistentDataPath` (`LoungeStoreFiles`); the director loads them at Start and applies them in one place.
+- **Voice tools:** `dashboard_open_tile {lesson_id|continue, chapter}`, `dashboard_filter`, `open_settings`,
+  `replay_rundown` in `sessionConfig.js` and `LessonToolRouter.WelcomeTools`; `ToolNameSyncTests` green; proxy
+  redeployed to production (validated live: client-marker 403, then nonce 400 — the new code is serving).
+- **Tests:** `WelcomeFlowTests` (+3), `RundownTests` 5, `DashboardTests` 8, `FrontDoorToolTests` 4,
+  `StationOpenTests` 3, `SettingsPanelTests` 5, `RundownWiringTests` 8, `DashboardWiringTests` 7,
+  `FrontDoorStyleTests` 5, `LoungeStoreTests` (+1), `GuidePolicyTests` (+2); registered under CC-FD-04..10 in
+  `scripts/cargo-milestones.json`. Watched fail first: the flow, rundown and dashboard suites failed at compile
+  (types missing), the golden test failed twice on the way (phase `Rundown`, then an extra wall context) and both
+  were resolved by keeping the recorded flow, not by editing the golden JSON.
+- **Rules learned:** a Meta FBX prop needs its size normalised and a URP material; `run_script` builders that
+  clone cards must clone the shadow sibling and relink `CardShadowLink`; the test-status file
+  (`unity/Temp/pipeline_test_status.json`) is the reliable place to read a run, and must be deleted before the run so a
+  stale result can never be mistaken for a fresh one (`runsuite.sh`).
+- **Open:** headset acceptance of every stop (`docs/qa/lounge.md`), the lit button verified on-device, the perf run,
+  the six coming-soon names (owner), the launcher icons.
+
 ## 2026-09-17 evening — Nerdy lounge, spatial standard, settings behind a gear, new logo
 
 The app opens in a room now. CC-FD-01/03/06 plus the owner's live corrections through the evening, each checked on

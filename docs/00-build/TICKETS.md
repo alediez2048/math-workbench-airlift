@@ -166,19 +166,18 @@ agreed `LessonStation.Open(int)` addition. **Nothing here is authorized until th
 
 | Ticket | Outcome | Owner | Dependency | Status |
 |---|---|---|---|---|
-| CC-FD-01 | Lounge root (the home: arrival, onboarding and browsing) from the style tokens; AR/VR choice; existing onboarding cards reparented into it | lounge-bench | Friday submission | draft |
-| CC-FD-02 | Dee's seat in the lounge: the existing guide HUD given a place and an accent glow — no body, no mascot | lounge-bench | CC-FD-01 | draft |
-| CC-FD-03 | Arrival: logo animation from the supplied vector, progress bar driven by real startup work | lounge-bench | CC-FD-01 | draft |
-| CC-FD-04 | WelcomeFlow gains Arrival/Scenery/Rundown/Dashboard; NerdyDirector drives the lounge | director | CC-FD-01 | draft |
-| CC-FD-05a | Controller helper: real controller model, lit button, bouncing arrow; teaches trigger, grip, B/back and "thumbsticks do nothing"; driven by the button-labels setting, reusable inside lessons | rundown | CC-FD-04 | draft |
-| CC-FD-05b | The rundown: six gated stops across wall and workbench, always-visible skip, replay from the gear | rundown | CC-FD-05a | draft |
-| CC-FD-06 | SettingsStore and LibraryStore: versioned JSON, defaults, clear data | stores | CC-FD-04 | draft |
-| CC-FD-07 | Discovery wall: 3 lesson + 15 chapter + 6 coming-soon tiles (Route 9, Ten & Trade, Corner Store, Platform Clock, Tailor's Bench, Mile Marker), Continue ribbon, tile art | dashboard | CC-FD-06 | draft |
-| CC-FD-07b | Toolbar under the wall: Featured / Newest / Most viewed, scenery selector and gear in the corner | dashboard | CC-FD-07 | draft |
-| CC-FD-08 | `LessonStation.Open(int chapterIndex)` in all three stations; golden unchanged | director | CC-FD-07 | draft |
-| CC-FD-09 | Settings panel and the dashboard voice tools; proxy redeploy | stores + director | CC-FD-06, CC-FD-07 | draft |
-| CC-FD-10 | LoungeStyleTests, performance run (room budget is a release gate), QA script, headset acceptance | integrator + owner | CC-FD-01..09 | draft |
-
+| CC-FD-01 | Lounge root (the home: arrival, onboarding and browsing) from the style tokens; AR/VR choice; existing onboarding cards reparented into it | lounge-bench | Friday submission | done 2026-09-17 (round room, AR/VR choice, cards reparented; LoungeRoomTests/LoungeWiringTests) |
+| CC-FD-02 | Dee's seat in the lounge: the existing guide HUD given a place and an accent glow — no body, no mascot | lounge-bench | CC-FD-01 | done 2026-09-17 (Dee's bar sits inside the board's lower band; no body, owner) |
+| CC-FD-03 | Arrival: logo animation from the supplied vector, progress bar driven by real startup work | lounge-bench | CC-FD-01 | done 2026-09-17 (LoungeArrival, bar only while StartupWork is pending) |
+| CC-FD-04 | WelcomeFlow gains Arrival/Scenery/Rundown/Dashboard; NerdyDirector drives the lounge | director | CC-FD-01 | done 2026-09-18 (WelcomePhase.Rundown; returning learners skip to the wall; WelcomeFlowTests) |
+| CC-FD-05a | Controller helper: real controller model, lit button, bouncing arrow; teaches trigger, grip, B/back and "thumbsticks do nothing"; driven by the button-labels setting, reusable inside lessons | rundown | CC-FD-04 | code complete 2026-09-18 (ControllerHelper on the Touch Plus model, BackButtonWatcher; RundownWiringTests) — headset check of the lit button pending |
+| CC-FD-05b | The rundown: six gated stops across wall and workbench, always-visible skip, replay from the gear | rundown | CC-FD-05a | code complete 2026-09-18 (RundownScript six gated stops, skip/replay; RundownTests) — headset acceptance pending |
+| CC-FD-06 | SettingsStore and LibraryStore: versioned JSON, defaults, clear data | stores | CC-FD-04 | done 2026-09-17 (SettingsState/LibraryState; on disk via LoungeStoreFiles 2026-09-18) |
+| CC-FD-07 | Discovery wall: 3 lesson + 15 chapter + 6 coming-soon tiles (Route 9, Ten & Trade, Corner Store, Platform Clock, Tailor's Bench, Mile Marker), Continue ribbon, tile art | dashboard | CC-FD-06 | code complete 2026-09-18 (24 tiles, Continue ribbon, chapter art under Assets/Airlift/Art/Tiles; DashboardTests/DashboardWiringTests) |
+| CC-FD-07b | Toolbar under the wall: Featured / Newest / Most viewed, scenery selector and gear in the corner | dashboard | CC-FD-07 | code complete 2026-09-18 (Featured/Newest/Most viewed, pager, scenery selector; the gear is on the bar right under the row) |
+| CC-FD-08 | `LessonStation.Open(int chapterIndex)` in all three stations; golden unchanged | director | CC-FD-07 | done 2026-09-18 (Open(int) in all three stations; StationOpenTests; golden unchanged) |
+| CC-FD-09 | Settings panel and the dashboard voice tools; proxy redeploy | stores + director | CC-FD-06, CC-FD-07 | code complete 2026-09-18 (SettingsPanel switches/volumes/replay/clear/reset/version; four wall tools; proxy redeployed) |
+| CC-FD-10 | LoungeStyleTests, performance run (room budget is a release gate), QA script, headset acceptance | integrator + owner | CC-FD-01..09 | in progress 2026-09-18 (FrontDoorStyleTests; renders reviewed; docs/qa/lounge.md; perf run and headset acceptance pending) |
 ## Closing a ticket
 
 Keep the status and completion checklist consistent with the ticket evidence. Record

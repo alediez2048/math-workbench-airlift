@@ -57,6 +57,50 @@ public static class PreviewWelcomeBoard
             Shot(n.head, Path.Combine(dir, "welcome-settings.png"));
             if (settings != null) settings.Show(false);
 
+            // The wall (catalog phase), page 1 of Featured with a Continue ribbon, then the Newest filter.
+            n.consentRoot.SetActive(false); n.catalogRoot.SetActive(true);
+            var wall = n.catalogRoot.GetComponent<Airlift.Presentation.Dashboard.DashboardWall>();
+            if (wall != null)
+            {
+                var lib = new LibraryState(); lib.RecordOpened("neighborhood_cafe_division", 2);
+                wall.Refresh(lib);
+                Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-wall.png"));
+                wall.SetFilter(DashboardFilter.Newest); wall.NextPage(); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-wall-newest-p2.png"));
+                wall.SetFilter(DashboardFilter.Featured);
+                sb.AppendLine("WALL page 1: " + string.Join(" | ", wall.Visible.Select(v => v.id + (v.ribbon != null && v.ribbon.activeSelf ? " [CONTINUE]" : ""))));
+                Dump(sb, "wall", (RectTransform)n.catalogRoot.transform);
+            }
+            else sb.AppendLine("WALL: no DashboardWall on the catalog root (run BuildDashboard)");
+            n.catalogRoot.SetActive(false);
+
+            // The tour: stop 3 (filters) and stop 6 (back), pointer on the wall.
+            var rundown = n.GetComponent<LoungeRundown>();
+            if (rundown != null && rundown.pointerRoot != null)
+            {
+                n.catalogRoot.SetActive(true);
+                if (wall != null) wall.Refresh(new LibraryState());
+                rundown.PreviewStep(2); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-tour-3.png"));
+                rundown.PreviewStep(4); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-tour-5.png"));
+                rundown.PreviewStep(5); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-tour-6.png"));
+                n.catalogRoot.SetActive(false); n.consentRoot.SetActive(true);
+                rundown.PreviewStep(0); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-tour-1.png"));
+                sb.AppendLine("tour ring stop 1 " + rundown.ring.anchoredPosition + " " + rundown.ring.sizeDelta);
+                n.consentRoot.SetActive(false); n.welcomeRoot.SetActive(true);
+                rundown.PreviewStep(1); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-tour-2.png"));
+                n.welcomeRoot.SetActive(false);
+                rundown.pointerRoot.gameObject.SetActive(false); rundown.header.SetActive(false);
+                n.catalogRoot.SetActive(false);
+            }
+            else sb.AppendLine("TOUR: not built (run BuildTour)");
+            n.consentRoot.SetActive(true);
+
             // World rects of everything the learner can see or press.
             sb.AppendLine("PANEL " + n.welcomeDistance + "m, " + n.welcomeBelowEyes + "m below eyes");
             Dump(sb, "consent", (RectTransform)n.consentRoot.transform);
@@ -70,7 +114,9 @@ public static class PreviewWelcomeBoard
             }
             sb.AppendLine();
             sb.AppendLine("WIRING");
-            foreach (var btn in n.GetComponentsInChildren<Button>(true).Where(x => x.transform.IsChildOf(hud) || x.transform.IsChildOf(n.consentRoot.transform) || (settings != null && x.transform.IsChildOf(settings.panel.transform))))
+            var rundownCard = n.GetComponent<LoungeRundown>() != null ? n.GetComponent<LoungeRundown>().header : null;
+            foreach (var btn in n.GetComponentsInChildren<Button>(true).Where(x => x.transform.IsChildOf(hud) || x.transform.IsChildOf(n.consentRoot.transform) || (settings != null && x.transform.IsChildOf(settings.panel.transform))
+                                                                              || (rundownCard != null && x.transform.IsChildOf(rundownCard.transform)) || (x.transform.parent != null && x.transform.parent.name == "Toolbar")))
             {
                 var calls = Enumerable.Range(0, btn.onClick.GetPersistentEventCount())
                     .Select(i => (btn.onClick.GetPersistentTarget(i) != null ? btn.onClick.GetPersistentTarget(i).GetType().Name : "null") + "." + btn.onClick.GetPersistentMethodName(i));
@@ -97,6 +143,13 @@ public static class PreviewWelcomeBoard
     }
 
     static string Trim(string s) => s.Length > 24 ? s.Substring(0, 24) + "…" : s;
+
+    static void ShotFrom(Vector3 from, Vector3 at, string path)
+    {
+        var go = new GameObject("Preview head") { hideFlags = HideFlags.HideAndDontSave };
+        go.transform.SetPositionAndRotation(from, Quaternion.LookRotation((at - from).normalized));
+        try { Shot(go.transform, path); } finally { Object.DestroyImmediate(go); }
+    }
 
     static void Shot(Transform head, string path)
     {

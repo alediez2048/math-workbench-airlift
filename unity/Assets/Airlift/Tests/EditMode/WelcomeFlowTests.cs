@@ -15,10 +15,49 @@ namespace Airlift.Tests
             Assert.That(f.RecordProfile("{\"ageBand\":\"adult\"}"), Is.False, "no profile before consent");
             f.Consent(true); Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Welcome)); Assert.That(f.VoiceConsented, Is.True);
             Assert.That(f.OpenLesson("cargo_crew_fractions"), Is.False, "cannot open a lesson from the welcome");
-            Assert.That(f.EndWelcome(), Is.True); Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog));
+            Assert.That(f.EndWelcome(), Is.True); Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog), "the host tour is an overlay, not a phase");
+            f.MarkRundownSeen(); Assert.That(f.RundownSeen, Is.True);
             Assert.That(f.OpenLesson("made_up_lesson"), Is.False, "unknown cards never launch");
             Assert.That(f.OpenLesson("cargo_crew_fractions"), Is.True); Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Lesson));
             Assert.That(f.BackToCatalog(), Is.True); Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog));
+        }
+
+        [Test] public void TheTourCanBeReplayedOnlyWhileBrowsing()
+        {
+            var f = new WelcomeFlow { RundownSeen = true };
+            f.Consent(true); f.EndWelcome();
+            Assert.That(f.CanReplayRundown, Is.True);
+            f.OpenLesson("cargo_crew_fractions");
+            Assert.That(f.CanReplayRundown, Is.False, "never over a lesson");
+        }
+
+        [Test] public void AReturningLearnerGoesFromConsentStraightToTheWall()
+        {
+            var f = new WelcomeFlow { RundownSeen = true };
+            f.Profile.Merge("{\"ageBand\":\"adult\",\"interests\":[\"space\"],\"goal\":\"curious\"}");
+            Assert.That(f.Profile.IsComplete, Is.True);
+            f.Consent(true);
+            Assert.That(f.Returning, Is.True);
+            Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog), "two presses and they are back where they were");
+        }
+
+        [Test] public void AHalfAnsweredProfileStillGetsTheQuestions()
+        {
+            var f = new WelcomeFlow { RundownSeen = true };
+            f.Profile.Merge("{\"ageBand\":\"adult\"}");
+            f.Consent(false);
+            Assert.That(f.Returning, Is.False);
+            Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Welcome));
+        }
+
+        // Owner 2026-09-18: onboarding off for now — the welcome card leads straight to the wall.
+        [Test] public void WithOnboardingOffTheWelcomeCardLeadsStraightToTheWall()
+        {
+            var f = new WelcomeFlow { SkipOnboarding = true };
+            f.Consent(true);
+            Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog)); Assert.That(f.Returning, Is.False);
+            Assert.That(f.OpenLesson("cargo_crew_fractions"), Is.True);
+            Assert.That(NerdyDirector.OnboardingEnabled, Is.False, "the shipped switch");
         }
 
         [Test] public void DeclinedVoiceStillReachesTheCatalog()

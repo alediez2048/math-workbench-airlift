@@ -28,6 +28,17 @@ namespace Airlift.Welcome
         [Tooltip("The logo arrival that plays before anything else. CC-FD-03.")]
         public Airlift.Lounge.LoungeArrival arrival;
         bool arriving;
+        [Header("Front door (CC-FD-05..09)")]
+        public Airlift.Lounge.LoungeRundown rundown;
+        public Airlift.Presentation.Dashboard.DashboardWall wall;
+        public Airlift.Lounge.SettingsPanel settingsPanel;
+        public Airlift.Lounge.ControllerHelper helper;
+        public Airlift.Lounge.BackButtonWatcher backButton;
+        public Airlift.Lounge.LoungeSettings loungeSettings;
+        [Tooltip("‹ and › in the board's bottom-right corner (BuildNavArrows). Dimmed, never hidden.")]
+        public Button navBack, navNext;
+        public Airlift.Lounge.SettingsState Settings { get; private set; } = new Airlift.Lounge.SettingsState();
+        public Airlift.Lounge.LibraryState Library { get; private set; } = new Airlift.Lounge.LibraryState();
         public Transform welcomeAnchor;          // world-locked root placed in front of the head once
         public Transform hudWelcomeCanvas, hudStationCanvas;   // the assistant card lives on the welcome panel, then above the workbench
         public Vector2 hudWelcomePosition = new Vector2(0, -262);
@@ -49,7 +60,11 @@ namespace Airlift.Welcome
         public float welcomeDistance = 1.15f, welcomeBelowEyes = 0.15f;
         public bool adultTesterOnly = true;
 
-        public WelcomeFlow Flow { get; } = new WelcomeFlow();
+        /// Owner 2026-09-18: onboarding (questions + rundown) is off for now; the welcome card leads to the wall.
+        public const bool OnboardingEnabled = true;
+        /// Owner 2026-09-18: "leave the lessons alone" — no helper hints inside a lesson.
+        public const bool LessonHintsEnabled = false;
+        public WelcomeFlow Flow { get; } = new WelcomeFlow { SkipOnboarding = !OnboardingEnabled };
         public bool Muted { get; private set; }
         /// Pause = Hush + mic off + no prompts until Play.
         public bool Paused { get; private set; }
@@ -62,9 +77,13 @@ namespace Airlift.Welcome
         {
             if (cargoLesson == null) cargoLesson = FindAnyObjectByType<CargoLessonDirector>(FindObjectsInactive.Include);
             stations = Stations;
-            string savedLanguage = GuideLanguage.Default;
-            try { savedLanguage = PlayerPrefs.GetString(GuideLanguage.PrefsKey, GuideLanguage.Default); } catch (System.Exception) { }
+            LoadStores();
+            Debug.Log("[Nerdy] onboarding " + (OnboardingEnabled ? "on" : "off") + " skip=" + Flow.SkipOnboarding + " rundownSeen=" + Flow.RundownSeen + " profileComplete=" + Flow.Profile.IsComplete + " tour=" + (rundown != null));
+            string savedLanguage = Settings.Language;
+            try { savedLanguage = PlayerPrefs.GetString(GuideLanguage.PrefsKey, Settings.Language); } catch (System.Exception) { }
             ChooseLanguage(savedLanguage);
+            WireFrontDoor();
+            ApplySettings("all");
             ShowPhase();
             StartCoroutine(PlaceWhenTracked());
             StartCoroutine(RunArrival());
@@ -104,6 +123,25 @@ namespace Airlift.Welcome
             Flow.Consent(true); ShowPhase();
             if (guide != null) { guide.language = Language; ApplyMicPolicy(); if (!greeted) guide.Begin(); }
             if (!greeted) StartCoroutine(GreetWhenLive());
+            AfterConsent();
+            rundown?.ReportConsent();
+        }
+
+        /// Straight to the wall when the questions are off (or the learner is returning).
+        void AfterConsent()
+        {
+            if (Flow.Phase != WelcomePhase.Catalog) return;
+            if (Flow.Returning) WelcomeBack(); else ShowCatalog(narrate: true);
+        }
+
+        /// A returning learner lands on the wall in two presses, with a short welcome back and Continue first.
+        void WelcomeBack()
+        {
+            ShowWall();
+            var cont = Library.Continue;
+            string where = cont != null && LessonCatalog.Find(cont.Value.lessonId) != null ? " They were last in " + LessonCatalog.Find(cont.Value.lessonId).Title + "." : "";
+            Say("Say in one short sentence: welcome back, the wall is in front of them and they can continue where they left off." + where + " Then stop.");
+            Caption("Welcome back. Pick up where you left off.");
         }
 
         /// Owner 2026-09-17: "Dee should kickstart as soon as i arrive to the lounge." The session connects while
@@ -142,7 +180,17 @@ namespace Airlift.Welcome
             if (arrival != null) arrival.Finished -= OnArrivalFinished;
             arriving = false;
             ShowPhase();
-            StartCoroutine(GreetWhenLive());
+            if (TourDue) StartCoroutine(StartTourWhenLive()); else StartCoroutine(GreetWhenLive());
+        }
+
+        /// First run with the onboarding on: the host tour is Dee's greeting. Returning learners get the short one.
+        bool TourDue => OnboardingEnabled && rundown != null && !Flow.RundownSeen;
+
+        IEnumerator StartTourWhenLive()
+        {
+            float until = Time.time + 8f;   // a short wait for her voice; the tour reads fine in captions if it never comes
+            while (guide != null && guide.Mode != GuideMode.Live && Time.time < until && guide.State != "offline") yield return null;
+            StartTour(0);
         }
 
         /// Consent card: the voice language for the whole session (owner 2026-09-17). The server locks the minted session to it.
@@ -150,6 +198,7 @@ namespace Airlift.Welcome
         {
             Language = GuideLanguage.Normalize(code);
             try { PlayerPrefs.SetString(GuideLanguage.PrefsKey, Language); } catch (System.Exception) { }
+            settingsPanel?.SetLanguage(Language);
             if (guide != null) guide.language = Language;
             if (languageButtons != null)
                 for (int i = 0; i < languageButtons.Length && i < GuideLanguage.Codes.Length; i++)
@@ -165,7 +214,7 @@ namespace Airlift.Welcome
                     image.pixelsPerUnitMultiplier = sprite.border.x / half * (100f / sprite.pixelsPerUnit);   // capsule ends
                 }
         }
-        public void ConsentNoVoice() { Flow.Consent(false); ShowPhase(); SetState("offline guide"); Caption(GuideIntro.OfflineCaption); }
+        public void ConsentNoVoice() { Flow.Consent(false); ShowPhase(); SetState("offline guide"); if (rundown == null || !rundown.Running) Caption(GuideIntro.OfflineCaption); AfterConsent(); rundown?.ReportConsent(); }
 
         IEnumerator GreetWhenLive()
         {
@@ -189,7 +238,7 @@ namespace Airlift.Welcome
                 Say("Acknowledge the tapped answer in at most five words, then stop.");
             }
             var p = Flow.Profile;
-            if (!string.IsNullOrEmpty(p.ageBand) && p.interests.Count > 0 && !string.IsNullOrEmpty(p.goal)) StartCoroutine(CatalogAfter(1.2f));
+            if (p.IsComplete) { if (rundown != null && rundown.Running) RefreshNavArrows(); else StartCoroutine(CatalogAfter(1.2f)); }
         }
 
         /// "spoken|json" packed for a single-string persistent listener.
@@ -208,6 +257,7 @@ namespace Airlift.Welcome
 
         void OnToolCall(string name, string callId, string args)
         {
+            Debug.Log("[Guide] tool " + name + " phase=" + Flow.Phase);
             // Paused means paused: a tool call still in flight from before Pause runs nothing and asks for no speech.
             if (Paused) { guide.SubmitToolResult(callId, GuideTools.PausedResult, GuidePolicy.SpeakAfterToolResult(Paused)); return; }
             var routing = LessonToolRouter.Route(name, Flow.ActiveLessonId, Stations);
@@ -240,6 +290,45 @@ namespace Airlift.Welcome
                 case "describe_card":
                     string id = ""; try { id = (string)Newtonsoft.Json.Linq.JObject.Parse(args)["cardId"]; } catch { }
                     guide.SubmitToolResult(callId, LessonCatalog.DescribeJson(id)); break;
+                case "dashboard_open_tile":
+                {
+                    var (lessonId, chapter) = GuideTools.TileArgs(args);
+                    if (lessonId == "continue") { var parts = DashboardCatalog.ContinueTileId(Library).Split('#'); lessonId = parts[0]; chapter = int.Parse(parts[1]); }
+                    var decision = GuideTools.OpenTile(Flow.Phase, lessonId, chapter);
+                    if (decision == OpenLessonDecision.Open && StationFor(lessonId) == null) decision = OpenLessonDecision.ComingSoon;
+                    switch (decision)
+                    {
+                        case OpenLessonDecision.Open:
+                            OpenTile(lessonId, chapter, narrate: false);
+                            guide.SubmitToolResult(callId, ResultNow(true, "", new JObject { ["lesson"] = ActiveStation.Title, ["chapter"] = chapter,
+                                ["say"] = "Welcome the learner to " + ActiveStation.StoryName + " in one sentence using only on_table_now, then ask: would you like to get started? Then stop." }));
+                            break;
+                        case OpenLessonDecision.ComingSoon:
+                            Caption(GuideTools.ComingSoonRefusal);
+                            guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = GuideTools.ComingSoonRefusal }.ToString(Newtonsoft.Json.Formatting.None)); break;
+                        case OpenLessonDecision.NotShowing:
+                            guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = GuideTools.WallNotShowing }.ToString(Newtonsoft.Json.Formatting.None)); break;
+                        default:
+                            guide.SubmitToolResult(callId, "{\"ok\":false,\"reason\":\"unknown lesson or chapter\"}"); break;
+                    }
+                    break;
+                }
+                case "dashboard_filter":
+                {
+                    var filter = GuideTools.ParseFilter(args);
+                    if (Flow.Phase != WelcomePhase.Catalog || wall == null) guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = GuideTools.WallNotShowing }.ToString(Newtonsoft.Json.Formatting.None));
+                    else if (filter == null) guide.SubmitToolResult(callId, "{\"ok\":false,\"reason\":\"The wall sorts by featured, newest or most viewed.\"}");
+                    else { wall.SetFilter(filter.Value); guide.SubmitToolResult(callId, new JObject { ["ok"] = true, ["filter"] = filter.Value.ToString(), ["say"] = "Say in a few words that the wall now shows " + FilterName(filter.Value) + ". Then stop." }.ToString(Newtonsoft.Json.Formatting.None)); }
+                    break;
+                }
+                case "open_settings":
+                    if (loungeSettings == null || Flow.Phase == WelcomePhase.Lesson) guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = GuideTools.SettingsInLessonOnly }.ToString(Newtonsoft.Json.Formatting.None));
+                    else { loungeSettings.Show(true); guide.SubmitToolResult(callId, "{\"ok\":true,\"say\":\"Say in a few words that settings are open. Then stop.\"}"); }
+                    break;
+                case "replay_rundown":
+                    if (!Flow.CanReplayRundown) guide.SubmitToolResult(callId, new JObject { ["ok"] = false, ["reason"] = GuideTools.RundownOnlyFromTheWall }.ToString(Newtonsoft.Json.Formatting.None));
+                    else { guide.SubmitToolResult(callId, "{\"ok\":true}", GuidePolicy.SpeakAfterToolResult(true)); ReplayRundown(); }
+                    break;
                 case "open_lesson":
                 {
                     // A spoken "open Cargo Crew" does exactly what pointing at the card does.
@@ -368,15 +457,182 @@ namespace Airlift.Welcome
 
         void ShowCatalog(bool narrate)
         {
+            bool fromQuestions = Flow.Phase == WelcomePhase.Welcome;
             if (Flow.Phase == WelcomePhase.Welcome) Flow.EndWelcome();
             else if (Flow.Phase == WelcomePhase.Lesson) Flow.BackToCatalog();
+            ShowWall();
+            if (fromQuestions) rundown?.ReportNext();   // however the learner left the questions, stop 2 is done
+            if (guide != null && narrate && !(rundown != null && rundown.Running)) Say("Say one short sentence: the lessons are in front of them and " + LessonCatalog.ReadyPhrase() + ". Then stop.");
+        }
+
+        /// The wall, refreshed from the library, with Dee told what is on it.
+        void ShowWall()
+        {
             ShowPhase();
+            if (wall != null) wall.Refresh(Library);
+            rundown?.Repoint();
+            // The catalog context is unchanged on purpose: the Cargo golden recording pins it byte for byte. What the
+            // wall holds (tiles, filters, the six coming-soon worlds) is in the proxy's persona and tool descriptions.
             if (guide != null)
             {
                 ApplyMicPolicy();
                 guide.PushContext(GuideContextBuilder.Catalog());
-                if (narrate) Say("Say one short sentence: the lessons are in front of them and " + LessonCatalog.ReadyPhrase() + ". Then stop.");
             }
+        }
+
+        static string FilterName(DashboardFilter f) => f == DashboardFilter.MostViewed ? "most viewed" : f.ToString().ToLowerInvariant();
+
+        // ---- the host tour (spec 2026-09-18-host-tour-design.md) ----
+        void StartTour(int at)
+        {
+            if (rundown == null) return;
+            if (wall != null && Flow.Phase == WelcomePhase.Catalog) { wall.SetFilter(DashboardFilter.Featured); wall.Refresh(Library); }
+            rundown.Begin(voice: guide != null && guide.Mode == GuideMode.Live && Settings.VoiceGuide, at);
+            RefreshNavArrows();
+        }
+
+        void OnRundownStep(Airlift.Lounge.RundownStep step, string say)
+        {
+            if (CanSay) { guide.Hush(); Say("Say this word for word, then stop: " + say); }
+            Caption(say);
+            RefreshNavArrows();
+        }
+
+        void OnRundownEnded(bool skipped)
+        {
+            Flow.MarkRundownSeen(); Library.RundownSeen = true; SaveLibrary();
+            if (skipped) { Caption("You can replay the tour from the gear any time."); Say("Say in a few words that they can replay the tour from the gear any time. Then stop."); }
+            RefreshNavArrows();
+        }
+
+        /// The gear's "Replay the tour" and the replay_rundown tool: the wall stops, while browsing.
+        public void ReplayRundown()
+        {
+            if (!Flow.CanReplayRundown || rundown == null) return;
+            loungeSettings?.Close();
+            StartTour(Airlift.Lounge.RundownScript.WallStart);
+        }
+
+        bool SettingsOpen => loungeSettings != null && loungeSettings.IsOpen;
+        BackAction BackNow() { var s = ActiveStation; return GuideTools.BackButton(Flow.Phase, s != null && s.AnyHeld, rundown != null && rundown.Running, SettingsOpen); }
+        NextAction NextNow()
+        {
+            var s = ActiveStation; var chapter = s != null && s.ChapterActive ? s.Chapter : default;
+            return GuideTools.NextButton(Flow.Phase, SettingsOpen, rundown != null && rundown.Running, rundown != null && rundown.ContinueLit,
+                chapter.Number > 0, chapter.Complete, chapter.IsLast, s != null && s.AnyHeld, Flow.Profile.IsComplete);
+        }
+
+        /// The ‹ arrow and the physical B button: toward the main screen, one step.
+        public void PressBack()
+        {
+            var station = ActiveStation;
+            switch (BackNow())
+            {
+                case BackAction.CloseSettings: loungeSettings.Close(); break;
+                case BackAction.SkipRundown: rundown.ReportBack(); break;
+                case BackAction.BackToLessons: station?.Close(); OnLessonBack(); break;
+                case BackAction.BackToWelcomeCard: guide?.Hush(); if (Flow.BackToConsent()) { ShowPhase(); ApplyMicPolicy(); } break;
+            }
+            RefreshNavArrows();
+        }
+
+        /// The › arrow: forward, never destructive.
+        public void PressNext()
+        {
+            switch (NextNow())
+            {
+                case NextAction.SkipQuestions: SkipQuestions(); break;
+                case NextAction.RundownContinue: rundown.PressContinue(); break;
+                case NextAction.NextPage: wall?.NextPage(); break;
+                case NextAction.NextChapter: { var r = ActiveStation.NextChapter(); if (!r.Ok) Caption(r.Reason); break; }
+            }
+            RefreshNavArrows();
+        }
+
+        /// Dimmed when there is nothing to do; the corner never changes shape.
+        void RefreshNavArrows()
+        {
+            Dim(navBack, BackNow() != BackAction.Nothing);
+            Dim(navNext, NextNow() != NextAction.Nothing);
+        }
+        static void Dim(Button b, bool on)
+        {
+            if (b == null) return;
+            var g = b.GetComponent<CanvasGroup>(); if (g == null) g = b.gameObject.AddComponent<CanvasGroup>();
+            float alpha = on ? 1f : 0.35f;
+            if (Mathf.Abs(g.alpha - alpha) > 0.01f) g.alpha = alpha;
+            if (b.interactable != on) b.interactable = on;
+        }
+
+        // ---- the wall (CC-FD-07) ----
+        /// A tile press (or dashboard_open_tile): chapter 0 = the hero card, as today; 1..5 straight into the chapter.
+        public void OpenTile(string lessonId, int chapter) => OpenTile(lessonId, chapter, narrate: true);
+
+        void OpenTile(string lessonId, int chapter, bool narrate)
+        {
+            var card = LessonCatalog.Find(lessonId);
+            if (rundown != null && rundown.Running && card != null && card.Playable) rundown.Skip();   // pressing a tile is the tour's point
+            if (card == null || !card.Playable || StationFor(lessonId) == null)
+            {
+                Caption(GuideTools.ComingSoonRefusal);
+                Say("Say in one short sentence that that one is coming soon and " + LessonCatalog.ReadyPhrase() + " now. Then stop.");
+                return;
+            }
+            if (!Flow.OpenLesson(card.Id)) return;
+            Library.RecordOpened(card.Id, chapter); SaveLibrary();
+            if (narrate) guide?.Hush();
+            ShowPhase();
+            var station = ActiveStation;
+            station.Open(chapter);
+            if (guide != null)
+            {
+                guide.PushContext(GuideContextBuilder.Entered(card.Title, card.Facts));
+                PushLessonState();
+                ApplyMicPolicy();
+                if (narrate) Say(chapter > 0
+                    ? "Welcome the learner to the " + station.Title + " workbench in one sentence, tell them chapter " + chapter + " is on the table using only on_table_now from the latest lesson_state, then stop and wait."
+                    : "Welcome the learner to the " + station.Title + " workbench in one sentence using only on_table_now from the latest lesson_state (nothing can be grabbed yet), then ask: would you like to get started? Then stop and wait.");
+            }
+        }
+
+        // ---- stores and settings (CC-FD-06/09) ----
+        void LoadStores()
+        {
+            Settings = Airlift.Lounge.LoungeStoreFiles.LoadSettings();
+            Library = Airlift.Lounge.LoungeStoreFiles.LoadLibrary();
+            Flow.RundownSeen = Library.RundownSeen;
+            try { Flow.Profile.Merge(LearnerProfile.Load().ToJson()); } catch (System.Exception) { }
+            Airlift.Lounge.NerdyHaptics.Enabled = Settings.Haptics;
+        }
+
+        void SaveLibrary() => Airlift.Lounge.LoungeStoreFiles.Save(Library);
+
+        void WireFrontDoor()
+        {
+            if (settingsPanel != null)
+            {
+                settingsPanel.Bind(Settings, Library);
+                settingsPanel.Changed += ApplySettings;
+                settingsPanel.ReplayRundownRequested += ReplayRundown;
+                settingsPanel.SavedDataCleared += () => { Flow.RundownSeen = false; if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); };
+            }
+            if (rundown != null) { rundown.StepShown += OnRundownStep; rundown.Ended += OnRundownEnded; }
+            if (wall != null) wall.TileOpened += (lesson, chapter) => OpenTile(lesson, chapter);
+            if (backButton != null) backButton.Pressed += PressBack;
+        }
+
+        /// One place turns a setting into an effect; "all" at start.
+        void ApplySettings(string key)
+        {
+            Settings = settingsPanel != null ? settingsPanel.State : Settings;
+            if (lounge != null && lounge.Mode != Settings.Scenery && (key == "all" || key == "Reset")) lounge.Apply(Settings.Scenery);
+            if (captionText != null) captionText.gameObject.SetActive(Settings.Captions);
+            Airlift.Lounge.NerdyHaptics.Enabled = Settings.Haptics;
+            if (playback != null) { var src = playback.GetComponent<AudioSource>(); if (src != null) src.volume = Settings.VoiceVolume; }
+            if (music != null) music.volumeScale = Settings.MusicVolume / 0.4f;
+            if (!Settings.VoiceGuide) guide?.Hush();
+            if (!Settings.ButtonLabels || !LessonHintsEnabled) helper?.Hide();
+            ApplyMicPolicy();
         }
 
         // ---- catalog ----
@@ -389,6 +645,7 @@ namespace Airlift.Welcome
                 Say("Say one short sentence: " + card.Title + " is coming soon, " + LessonCatalog.ReadyPhrase() + " now. Then stop.");
                 return;
             }
+            Library.RecordOpened(card.Id, 0); SaveLibrary();
             OpenCard(card, narrate: true);
         }
 
@@ -473,21 +730,25 @@ namespace Airlift.Welcome
         }
 
         string StateKey() => CurrentStep().Id + "|" + CurrentInstruction();
+        bool lastCanGrab;
         void PushLessonState()
         {
             lastInstruction = StateKey();
             var station = ActiveStation; if (station == null) return;
             var step = CurrentStep();
+            // CC-FD-05a: the helper comes back inside a lesson the first time a step lets the learner grab.
+            if (LessonHintsEnabled && step.CanGrabNow && !lastCanGrab && Settings.ButtonLabels && helper != null) helper.Show(Airlift.Lounge.ControllerButton.Grip, "Grip", 6f);
+            lastCanGrab = step.CanGrabNow;
             guide?.PushContext(GuideContextBuilder.LessonStep(station.Title, step.Id, step.OnTableNow, step.CanGrabNow, CurrentInstruction(), station.ToolsNow));
         }
         void AskHelp() { if (CanSay) { guide.Hush(); Say("Explain this instruction in at most two friendly sentences, then stop: " + CurrentInstruction()); } else Caption(CurrentInstruction()); }
 
-        bool CanSay => guide != null && GuidePolicy.CanPrompt(Paused, guide.Mode == GuideMode.Live);
+        bool CanSay => guide != null && GuidePolicy.CanPrompt(Paused, guide.Mode == GuideMode.Live, Settings.VoiceGuide);
         /// Every spoken request goes through here: nothing is prompted while paused or offline.
         void Say(string instructions) { if (CanSay) guide.Prompt(instructions); }
         void ApplyMicPolicy()
         {
-            bool on = GuidePolicy.MicOn(Flow.Phase, Muted, Paused);
+            bool on = GuidePolicy.MicOn(Flow.Phase, Muted, Paused, Settings.VoiceGuide);
             if (guide != null && guide.MicEnabled != on) Debug.Log("[Guide] mic " + (on ? "on" : "off") + " phase=" + Flow.Phase + " muted=" + Muted + " paused=" + Paused);
             guide?.SetMicEnabled(on); ApplyFallbackButtons();
         }
@@ -498,7 +759,7 @@ namespace Airlift.Welcome
             var groups = FallbackGroups();
             if (groups.Count == 0) return;
             bool live = guide != null && guide.Mode == GuideMode.Live && Permission.HasUserAuthorizedPermission(Permission.Microphone);
-            bool show = GuidePolicy.ShowFallbackButtons(live, GuidePolicy.MicOn(Flow.Phase, Muted, Paused));
+            bool show = GuidePolicy.ShowFallbackButtons(live, GuidePolicy.MicOn(Flow.Phase, Muted, Paused, Settings.VoiceGuide));
             foreach (var group in groups)
             {
                 if (group == null) continue;
@@ -571,7 +832,9 @@ namespace Airlift.Welcome
             }
             if (consentRoot) consentRoot.SetActive(Flow.Phase == WelcomePhase.Consent && !arriving);
             if (welcomeRoot) welcomeRoot.SetActive(Flow.Phase == WelcomePhase.Welcome);
+            // The tour happens ON the wall, so the wall is up during the rundown phase too.
             if (catalogRoot) catalogRoot.SetActive(Flow.Phase == WelcomePhase.Catalog);
+            if (Flow.Phase == WelcomePhase.Lesson) lastCanGrab = false;
             if (hudRoot)
             {
                 hudRoot.SetActive(GuidePolicy.AssistantBarVisible(Flow.Phase, arriving));
@@ -581,6 +844,10 @@ namespace Airlift.Welcome
                     hudRoot.transform.SetParent(target, false);
                     var r = hudRoot.GetComponent<RectTransform>(); if (r != null) { r.anchoredPosition = lesson ? Vector2.zero : hudWelcomePosition; r.localRotation = Quaternion.identity; r.localScale = Vector3.one; }
                 }
+                // Always drawn last on its canvas: no card may cover Mute, Pause, Help or the gear (owner 2026-09-18).
+                hudRoot.transform.SetAsLastSibling();
+                if (rundown != null && rundown.header != null && rundown.header.transform.parent == hudRoot.transform.parent) rundown.header.transform.SetAsLastSibling();
+                if (rundown != null && rundown.pointerRoot != null && rundown.pointerRoot.parent == hudRoot.transform.parent) rundown.pointerRoot.SetAsLastSibling();   // ring over the gear, never a raycast target
                 if (lesson) { LogHudPlacement("at lesson entry"); if (Application.isPlaying) StartCoroutine(LogHudLater()); }
             }
             // Each station's own roots show only while it is the open lesson; the rest of stationVisuals (the table
@@ -602,6 +869,7 @@ namespace Airlift.Welcome
 
         void LateUpdate()
         {
+            RefreshNavArrows();
             if (orb == null || playback == null) return;
             float pulse = playback.IsSpeaking ? 1f + 0.12f * Mathf.Sin(Time.time * 9f) : 1f;
             orb.transform.localScale = Vector3.one * pulse;

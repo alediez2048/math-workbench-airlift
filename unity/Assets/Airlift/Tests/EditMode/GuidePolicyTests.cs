@@ -44,6 +44,21 @@ namespace Airlift.Tests
             Assert.That(GuidePolicy.MicOn(WelcomePhase.Lesson, muted: false, paused: true), Is.False);
         }
 
+        [Test] public void MicListensDuringTheRundownSoStopFourCanHearHello()
+        {
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Rundown, false, false), Is.True);
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Rundown, muted: true, paused: false), Is.False);
+        }
+
+        // CC-FD-09: Voice guide off in settings means Dee neither listens nor speaks; captions stay on the bar.
+        [Test] public void VoiceGuideOffSilencesDeeCompletely()
+        {
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Lesson, false, false, voiceGuide: false), Is.False);
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Lesson, false, false, voiceGuide: true), Is.True);
+            Assert.That(GuidePolicy.CanPrompt(paused: false, live: true, voiceGuide: false), Is.False);
+            Assert.That(GuidePolicy.CanPrompt(paused: false, live: true, voiceGuide: true), Is.True);
+        }
+
         [Test] public void PromptsAreBlockedWhilePausedOrOffline()
         {
             Assert.That(GuidePolicy.CanPrompt(paused: false, live: true), Is.True);

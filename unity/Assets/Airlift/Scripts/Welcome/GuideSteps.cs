@@ -134,6 +134,9 @@ namespace Airlift.Welcome
     }
 
     public enum OpenLessonDecision { Open, NotShowing, ComingSoon, Unknown }
+    public enum BackAction { Nothing, BackToLessons, SkipRundown, CloseSettings, BackToWelcomeCard }
+    /// The › arrow: forward, never destructive. Nothing = dimmed.
+    public enum NextAction { Nothing, SkipQuestions, RundownContinue, NextPage, NextChapter }
 
     /// Where a spoken "yes / next" goes.
     public enum AdvanceRoute { Refuse, OnboardingStep, NextChapter }
@@ -166,6 +169,45 @@ namespace Airlift.Welcome
 
         /// Tools that act on the Cargo Crew workbench (open_lesson, request_help and the welcome tools are separate).
         public static readonly string[] LessonToolNames = { "advance_step", "replay_demo", "split_cargo", "check_load", "reset_cargo", "next_chapter", "restart_chapter", "back_to_lessons" };
+
+        /// CC-FD-09: the wall's voice tools. Routed like the welcome tools; refused in one line anywhere else.
+        public static readonly string[] DashboardToolNames = { "dashboard_open_tile", "dashboard_filter", "open_settings", "replay_rundown" };
+        public const string WallNotShowing = "The wall is not showing right now.";
+        public const string ComingSoonRefusal = "That world is coming soon. It cannot be opened yet.";
+        public const string SettingsInLessonOnly = "Settings open from the gear on my bar.";
+        public const string RundownOnlyFromTheWall = "The rundown runs from the wall. Say back to the lessons first.";
+
+        /// dashboard_open_tile: a lesson hero (chapter 0) or a chapter tile, only while the wall is showing.
+        public static OpenLessonDecision OpenTile(WelcomePhase phase, string lessonId, int chapter)
+        {
+            if (phase != WelcomePhase.Catalog) return OpenLessonDecision.NotShowing;
+            if (!string.IsNullOrEmpty(lessonId) && lessonId.StartsWith("soon_")) return OpenLessonDecision.ComingSoon;
+            var card = LessonCatalog.Find(lessonId);
+            if (card == null) return OpenLessonDecision.Unknown;
+            if (!card.Playable) return OpenLessonDecision.ComingSoon;
+            int chapters = Airlift.Welcome.DashboardCatalog.Chapters(lessonId).Count;
+            return chapter >= 0 && chapter <= chapters ? OpenLessonDecision.Open : OpenLessonDecision.Unknown;
+        }
+
+        /// dashboard_filter argument → the filter, or null when the word is not one of the three.
+        public static DashboardFilter? ParseFilter(string argumentsJson)
+        {
+            string f = "";
+            try { f = ((string)JObject.Parse(argumentsJson)["filter"] ?? "").Trim().ToLowerInvariant(); } catch { }
+            switch (f)
+            {
+                case "featured": return DashboardFilter.Featured;
+                case "newest": return DashboardFilter.Newest;
+                case "most_viewed": case "most viewed": return DashboardFilter.MostViewed;
+                default: return null;
+            }
+        }
+
+        public static (string lessonId, int chapter) TileArgs(string argumentsJson)
+        {
+            try { var o = JObject.Parse(argumentsJson); return ((string)o["lesson_id"] ?? (string)o["lessonId"] ?? "", (int?)o["chapter"] ?? 0); }
+            catch { return ("", 0); }
+        }
 
         public static OpenLessonDecision OpenLesson(WelcomePhase phase, string cardId)
         {
@@ -224,6 +266,42 @@ namespace Airlift.Welcome
             if (phase != WelcomePhase.Lesson) return VoiceGate.Refuse(NoLesson);
             if (chapterActive) return VoiceGate.Allow;
             return VoiceGate.Refuse(stage == OnboardingStage.Ready ? SayStartLoading : ChaptersNotStarted);
+        }
+
+        /// What the physical B button does right now: the rundown's skip, a lesson's Back (never while something is
+        /// held), and nothing anywhere else. CC-FD-05a: "B / back — back to the wall from anywhere".
+        public static BackAction BackButton(WelcomePhase phase, bool holding, bool rundownRunning) => BackButton(phase, holding, rundownRunning, settingsOpen: false);
+
+        /// Owner 2026-09-18 (approved on the canvas): ‹ always heads toward the main screen — closes settings first,
+        /// skips the tour, leaves a lesson (never with a piece in hand), backs the questions up to the welcome card,
+        /// and is dimmed on the wall, which is home.
+        public static BackAction BackButton(WelcomePhase phase, bool holding, bool rundownRunning, bool settingsOpen)
+        {
+            if (settingsOpen) return BackAction.CloseSettings;
+            if (rundownRunning) return BackAction.SkipRundown;   // the tour's last stop, or its skip, on any screen
+            if (phase == WelcomePhase.Lesson) return holding ? BackAction.Nothing : BackAction.BackToLessons;
+            if (phase == WelcomePhase.Welcome) return BackAction.BackToWelcomeCard;
+            return BackAction.Nothing;
+        }
+
+        /// › : skip the questions, the next tour stop once it is done, the next page of tiles, the next chapter once
+        /// the current one is accepted. Anything else (settings open, holding a piece, the last chapter) is dimmed.
+        public static NextAction NextButton(WelcomePhase phase, bool settingsOpen, bool rundownRunning, bool continueLit, bool chapterActive, bool chapterComplete, bool isLastChapter, bool holding)
+            => NextButton(phase, settingsOpen, rundownRunning, continueLit, chapterActive, chapterComplete, isLastChapter, holding, questionsAnswered: true);
+
+        /// During the tour › is the tour's Next (lit only when the stop allows it); on the questions it waits for
+        /// every row to be answered while the tour runs, and skips them otherwise.
+        public static NextAction NextButton(WelcomePhase phase, bool settingsOpen, bool rundownRunning, bool continueLit, bool chapterActive, bool chapterComplete, bool isLastChapter, bool holding, bool questionsAnswered)
+        {
+            if (settingsOpen) return NextAction.Nothing;
+            switch (phase)
+            {
+                case WelcomePhase.Welcome: return rundownRunning ? (questionsAnswered && continueLit ? NextAction.SkipQuestions : NextAction.Nothing) : NextAction.SkipQuestions;
+                case WelcomePhase.Rundown: return NextAction.Nothing;
+                case WelcomePhase.Catalog: return rundownRunning ? (continueLit ? NextAction.RundownContinue : NextAction.Nothing) : NextAction.NextPage;
+                case WelcomePhase.Lesson: return chapterActive && chapterComplete && !isLastChapter && !holding ? NextAction.NextChapter : NextAction.Nothing;
+                default: return NextAction.Nothing;
+            }
         }
 
         /// back_to_lessons does what the Back button does, except while anything is held.

@@ -105,5 +105,19 @@ namespace Airlift.Tests
             Assert.That(back.Continue.Value.chapter, Is.EqualTo(2));
             Assert.That(back.OpenCount("cargo_crew_fractions#2"), Is.EqualTo(1));
         }
+
+        [Test] public void TheRundownSeenFlagRoundTripsAndClearsWithEverythingElse()
+        {
+            var lib = new LibraryState(); lib.RecordOpened("cargo_crew_fractions", 2);
+            Assert.That(lib.RundownSeen, Is.False, "first run");
+            lib.RundownSeen = true;
+            var back = LibraryState.FromJson(lib.ToJson());
+            Assert.That(back.RundownSeen, Is.True);
+            Assert.That(back.Recency(LibraryState.TileId("cargo_crew_fractions", 2)), Is.GreaterThanOrEqualTo(0));
+            Assert.That(back.Recency("never#1"), Is.EqualTo(-1));
+            back.ClearAll();
+            Assert.That(back.RundownSeen, Is.False, "clear saved data means the rundown plays again");
+            Assert.That(LibraryState.FromJson("{\"version\":1}").RundownSeen, Is.False, "an older file without the flag");
+        }
     }
 }

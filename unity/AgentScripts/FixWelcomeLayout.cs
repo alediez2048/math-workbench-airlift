@@ -139,8 +139,8 @@ public static class FixWelcomeLayout
 
         // The bar was 920 wide on a 1440 card, and its buttons had been spread across the caption zone. Widen it
         // to the card's content width; the caption keeps the left half and the buttons take the right.
-        float barWidth = NerdySpace.PanelWidth - NerdySpace.EdgePadding * 4f;
-        hud.sizeDelta = new Vector2(barWidth, hud.sizeDelta.y);
+        float barWidth = NerdySpace.BarWidth;   // compact: CompactAssistantBar lays out the inside
+        hud.sizeDelta = new Vector2(barWidth, NerdySpace.BarHeight);
         foreach (RectTransform child in hud)
             if ((child.name == "Glass" || child.name == "Stroke") && child.anchorMin == child.anchorMax)
                 child.sizeDelta = hud.sizeDelta;

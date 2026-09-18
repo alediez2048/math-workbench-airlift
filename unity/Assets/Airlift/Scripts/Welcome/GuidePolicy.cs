@@ -5,7 +5,11 @@ namespace Airlift.Welcome
     public static class GuidePolicy
     {
         public static bool MicOn(WelcomePhase phase, bool muted, bool paused) =>
-            !muted && !paused && (phase == WelcomePhase.Catalog || phase == WelcomePhase.Lesson);
+            !muted && !paused && (phase == WelcomePhase.Catalog || phase == WelcomePhase.Lesson || phase == WelcomePhase.Rundown);
+
+        /// The settings card's Voice guide switch: off means Dee neither listens nor speaks, captions stay.
+        public static bool MicOn(WelcomePhase phase, bool muted, bool paused, bool voiceGuide) => voiceGuide && MicOn(phase, muted, paused);
+        public static bool CanPrompt(bool paused, bool live, bool voiceGuide) => voiceGuide && CanPrompt(paused, live);
 
         /// Dee speaks from the moment the learner arrives, so her bar is up from the first card: the controls that
         /// stop her — Mute, Pause — must never be further away than her voice. It waits only for the logo arrival.

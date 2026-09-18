@@ -1,66 +1,72 @@
 # Math Workbench: Airlift — instructions for Claude
 
-## CURRENT STATE — September 17, 8:30 PM (read this first; older dated sections below are history)
+## CURRENT STATE — September 18, 2:15 PM (read this first; older dated sections below are history)
 
 **Branch `lounge-onboarding`** (off `unity-airlift` at d5ff895; `unity-airlift` still holds the submission state and
-the release app `com.nerdy.vr` on the Quest is build 124258, untouched). Everything below is on the branch.
+the release app `com.nerdy.vr` on the Quest is build 124258, untouched). Deadline today 18:00 CDT.
 
-**What exists:** the app opens in the **Nerdy lounge** — a round room with sky, cove light and a carpet — and the
-welcome board is the onboarding surface: the Nerdy AI + VR logo arrival (dots, logo, a progress bar only while the
-guide is really connecting), then a **two-button question** (*I'm an adult tester · turn on the mic* / *Continue
-without voice*). Dee connects during the arrival and greets on sight; the mic stays off until consent
-(`GuidePolicy.MicOn`). Everything else lives behind the **gear** on the assistant bar: a settings card with Voice
-language, Where you learn (Your room = passthrough, Nerdy lounge = the room), and Dee's Pause / Again / Mute. The bar
-keeps the orb, captions, Music and Help. Lessons run exactly as before; the lounge hides while one runs.
-- **Spatial standard** `Scripts/Presentation/NerdySpace.cs`: every panel 1440x840 units at scale 0.001 (1.44 x
-  0.84 m), 1.2 m from the head, 0.25 m below eyes; one type ramp (heading 34 mm); Poppins everywhere (the lesson
-  cards were still Nunito). `SpatialStandardTests` pins it; `AirliftStyle.asset` now points at the Nerdy fonts.
-- **Owner-approved Cargo lock exception (2026-09-17):** the lesson card moved with the standard (0.65 → 1.2 m,
-  920x470 → 1440x840). Golden voice test unchanged and green.
-- Design: `docs/superpowers/specs/2026-09-17-nerdy-front-door-design.md`; contracts `docs/00-build/FRONT-DOOR-CONTRACTS.md`;
-  reference `docs/00-build/REFERENCE-THEATRE-ELSEWHERE.md`; tickets CC-FD-01..10 in TICKETS.md (01, 03, 06 done;
-  04 and 09 partly; the rundown 05a/05b and the discovery wall 07/07b are next). Tile mockups:
-  https://claude.ai/artifact/Sv1f3tnPP6BA84CzDmTbBA. Dee has no body (owner). Six coming-soon worlds named in the spec.
+**Owner process rule (2026-09-18):** every new surface is mocked up on the canvas first
+(https://claude.ai/artifact/JPTeoWGosWPJqyP2JNACgf) and approved there; nothing goes to the headset before that.
+Keep Unity turns short (builder → one render → report); the owner will interrupt long chains.
 
-**Preview app on the Quest:** `com.nerdy.vr.lounge` ("Nerdy Lounge (preview)"), installed beside the release app by
-`bash scripts/lounge-preview.sh` (build + install + launch; `--install` skips the build; always restores the package
-id). Voice mints from the deployed Vercel proxy.
+**What the app does now (all on the headset as `com.nerdy.vr.lounge`, owner testing):**
+1. Arrival in the lounge (logo + loading bar on the whiteboard).
+2. Welcome card: *Meet Dee, your Nerdy AI assistant*, two pills *Turn on the mic* / *Continue without voice*. No
+   OpenAI mention (owner). Dee's bar is compact (`NerdySpace.BarWidth` 900 x 84, Music · gear · Help packed at 12);
+   **the orb is deleted** (owner: "no floating sphere anywhere"; `RemoveOrb.cs`).
+3. **The host tour** (`docs/superpowers/specs/2026-09-18-host-tour-design.md`, approved): Dee shows the learner
+   around, six gated stops, an overlay on the normal screens — welcome pills → the questions' › arrow (lit once all
+   three rows are answered; the questions' own Skip pill is dimmed) → first tile → filters → gear (then Done) → ‹ or B.
+   Everything but the target dims and cannot be pressed; "N OF 6" + Skip top-right on every screen; Dee says each
+   line word for word. Runs once (`LibraryState.RundownSeen`); *Replay the tour* in settings starts at the wall stops.
+   **Lessons are untouched** (owner: "onboarding is strictly for how the app works").
+4. The wall (24 tiles, filters, pages, scenery), the compact bar with the gear, settings, chapter deep-links.
+5. **‹ Back / › Next** circle actions in the board's bottom-right corner on every screen (`BuildNavArrows.cs`,
+   `GuideTools.BackButton/NextButton`): ‹ closes settings, skips/finishes the tour, leaves a lesson (never with a
+   piece held), backs the questions up; › moves the tour on, turns pages, next chapter once accepted. Dimmed, never
+   hidden. B does what ‹ does.
+   Switches: `NerdyDirector.OnboardingEnabled` (true), `LessonHintsEnabled` (false: no helper inside lessons).
 
 **Builder order for the welcome side** (after the lesson builders and `PolishCards`): `AddLanguageChoice` →
-`BuildLounge` → `BuildSettingsPanel` → `ApplySpatialStandards` → `FixWelcomeLayout`. Then **look** at
-`AgentScripts/PreviewWelcomeBoard.cs` → `artifacts/lounge/welcome-board.png` + `welcome-settings.png` (it also dumps
-every element's world rect and every button's wiring) before any build. `PreviewLounge.cs` renders the room.
+`BuildLounge` → `BuildSettingsPanel` → `BuildSettingsExtras` → `BuildRundown` (helper only; its card/block are
+removed by BuildTour) → `BuildDashboard` → `BuildNavArrows` → `PatchConsentCopy` → `ApplySpatialStandards` →
+`FixWelcomeLayout` → `CompactAssistantBar` (last: bar order + orb off) → `BuildTour` → `RemoveOrb`. Then **look**
+at `PreviewWelcomeBoard.cs` renders (`artifacts/lounge/welcome-*.png`, incl. `welcome-tour-1/2/3/5/6.png`).
 
-**Hard-won rules (each cost an hour today):**
-- Every `AgentScripts/*.cs` compiles alone under `run_script`; one cannot call another.
-- Builders must **move** scene objects the director references (rows, Pause/Again/Mute), never copy-and-delete: a
-  rerun that rebuilds from a copy destroys the originals and leaves `NerdyDirector` pointing at nothing.
-- The ray-pointable area of the welcome board **is the `Welcome interface` canvas rect** (RayInteractable →
-  ClippedPlaneSurface). Grow the panel, grow the canvas, or edge buttons cannot be pressed.
-- A UI card must be parented under that canvas; anywhere else it draws nothing (a shadow with no card).
-- Pill sprite rule: `pixelsPerUnitMultiplier = border.x / (height / 2)` or `CardPolishTests` fails; the test
-  wrapper must print every FAIL line, not the first.
-- Owner layout intent, settled after several rounds: content is one evenly spaced block inside the board with ~11%
-  margins; the assistant bar sits inside the board's lower band; the gear is a drawn sprite (`NerdyGear.png`,
-  `scripts/make_gear_sprite.py`), not a word. 2.2 m / 1 m higher was tried and reverted (too far).
+**Three traps that each cost 20+ minutes today:**
+- **Stale player builds.** `unity command build` packages whatever the editor last imported. Wait until
+  `recompile_status` says `completed` AND the DLL mtime moved, then pause 5 s, then build. Proof on device:
+  `[Nerdy] onboarding on/off …` is logged at Start; if that line is missing from logcat the build is stale.
+- **A second Unity project open** ("Setup Guide In-Editor Tutorial") makes every CLI call ambiguous: always
+  `export UNITY_PROJECT_PATH=/Users/jad/Desktop/math-workbench-airlift/unity`.
+- **Play mode** in the editor breaks every builder ("cannot be used during play mode"): `unity command editor_stop`.
+  The pipeline also drops for ~30 s after a scene save; poll `recompile_status` until it answers.
+- Also: `GetComponent<T>() ?? AddComponent<T>()` never adds (Unity fake null) — use `if (g == null)`.
+  `Math.Max` inside `namespace Airlift.*` is `Airlift.Math` — write `System.Math`.
+  A card instantiated after Dee's bar covers it and eats the gear press: the bar is always the last sibling
+  (`CompactAssistantBar`, and re-asserted in `ShowPhase`).
+
+**Tests for the front door** (registered in `scripts/cargo-milestones.json`): WelcomeFlow, Rundown, RundownWiring,
+FrontDoorTool, Dashboard, DashboardWiring, StationOpen, SettingsPanel, ToolNameSync, FrontDoorStyle, LoungeRoom,
+LoungeWiring, LoungeStore, SpatialStandard. **Not re-run after the host-tour rewrite** (the owner chose to build and
+test on the headset instead): run RundownTests, RundownWiringTests, FrontDoorToolTests, WelcomeFlowTests,
+LoungeWiringTests and CargoVoiceCharacterizationTests first thing. Runner: `bash ~/.claude/jobs/<job>/tmp/runsuite.sh`
+pattern (delete `unity/Temp/pipeline_test_status.json`, run, poll that file). QA script: `docs/qa/lounge.md`.
+
+**Device workflow:** `bash scripts/lounge-preview.sh` (build + install + launch). Brand-new user:
+`adb shell pm clear com.nerdy.vr.lounge` then launch. adb is at `~/Library/Android/sdk/platform-tools/adb`.
+Presses and Dee's tool calls are logged (`[Nerdy] UI ray select`, `[Guide] tool <name> phase=…`).
 
 **Non-negotiables (unchanged):** Cargo Crew stays stable beyond the approved exception; never rerun
 `CreateNerdyWelcome.cs`, `CreateFractionChapter.cs`, `ApplyCargoStyle.cs`, `ApplyNerdyStyle.cs` or
 `PatchCatalogCards.cs`; math is deterministic C#; adult testers only; commit when the owner asks; push only when asked.
 
-**How to work (Unity):** only the main session runs Unity; `RefreshAndCompile.cs` then poll `recompile_status`;
-single suite `unity command run_tests editor <Filter> testName false true 300` then `test_status` (a rejected
-`run_tests` leaves the *previous* result in `test_status` — check the run actually started). Full release build via
-`bash scripts/verify-cargo.sh`. New suites must be registered in `scripts/cargo-milestones.json`.
+**Voice server:** Vercel `nerdy-guide-proxy` (`https://nerdy-guide-proxy.vercel.app/session`, `x-nerdy-client`
+header + nonce); key only in its production env; redeployed 2026-09-18 with the four wall tools.
 
-**Voice server:** deployed to Vercel as `nerdy-guide-proxy` (`https://nerdy-guide-proxy.vercel.app/session`);
-key only in its production env; scene mints from it (`SetMintUrl.cs`). Mac dev mint remains the offline fallback
-while `insecureHttpOption` is AlwaysAllowed.
-
-**Open owner items:** revert `insecureHttpOption` after Dee is heard over the proxy on the headset; six coming-soon
-names; the shadow-vs-style-guide question on lesson cards; the launcher icons still carry the old wordmark;
-consent heading wording; AI-requirement decision; Library tile; performance run (the lounge is a release gate);
-BLUETOOTH permission; demo footage. Deadline: Friday 2026-09-18, internal target 18:00 CDT.
+**Open owner items:** headset verdict on the host tour; the six coming-soon names; perf run (release gate); revert
+`insecureHttpOption`; launcher icons; shadow-vs-style-guide; BLUETOOTH permission; demo footage; commit is on
+`lounge-onboarding` only, nothing pushed.
 
 ## September 17, 12:00 AM: Café + Garden plan approved; six-agent team building
 

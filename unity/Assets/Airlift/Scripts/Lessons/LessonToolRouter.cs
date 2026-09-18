@@ -25,7 +25,7 @@ namespace Airlift.Welcome
     /// Phase and state gates (briefing, held pieces, pause) stay with the director and the station.
     public static class LessonToolRouter
     {
-        public static readonly string[] WelcomeTools = { "record_profile", "end_welcome", "describe_card", "open_lesson" };
+        public static readonly string[] WelcomeTools = { "record_profile", "end_welcome", "describe_card", "open_lesson", "dashboard_open_tile", "dashboard_filter", "open_settings", "replay_rundown" };
         public static readonly string[] SharedTools = { "request_help", "advance_step", "next_chapter", "restart_chapter", "back_to_lessons" };
         public static readonly string[] CargoTools = { "split_cargo", "check_load", "reset_cargo", "replay_demo" };
         public static readonly string[] CafeTools = { "cafe_deal_round", "cafe_check_order", "cafe_clear_table" };

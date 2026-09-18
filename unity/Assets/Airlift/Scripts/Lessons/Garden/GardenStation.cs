@@ -225,6 +225,14 @@ namespace Airlift.Lessons.Garden
             Refresh();
         }
 
+        /// A chapter tile on the wall: open, then straight into that chapter. Chapter 0 is Open() as today.
+        public override void Open(int chapterIndex)
+        {
+            Open();
+            if (chapterIndex <= 0) return;
+            JumpToChapter(Mathf.Clamp(chapterIndex - 1, 0, GardenChapter.All.Count - 1));
+        }
+
         public override void Close()
         {
             EnsureInit();

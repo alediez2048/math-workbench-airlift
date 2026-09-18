@@ -36,6 +36,9 @@ namespace Airlift.Presentation
 
         /// Controls a hand has to hit: 40 mm is a comfortable pill height at PanelScale.
         public const float PillHeight = 40f, PillGap = 26f;
+        /// Dee's bar: compact (owner 2026-09-18: "not having so much space between elements"). Orb, caption, then
+        /// the controls packed at BarGap, on a bar that is well under the panel's width.
+        public const float BarWidth = 900f, BarHeight = 84f, BarGap = 12f, BarPadding = 20f;
 
         /// A frame or board mounted behind a panel clears it by this much on each side, in metres.
         public const float BoardMargin = 0.06f;

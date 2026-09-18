@@ -68,6 +68,18 @@ namespace Airlift.Lessons
         }
 
         public override void Open() { SetVisualsActive(true); D?.ChooseCargo(); }
+        /// A chapter tile: the briefing card comes up as today, then the chapter starts on it straight away. The
+        /// onboarding director stays at its first stage underneath (Back still returns to the catalog from there);
+        /// the chapter hides its buttons the way chapter 1 always has (hideWhileActive).
+        public override void Open(int chapterIndex)
+        {
+            Open();
+            if (chapterIndex <= 0 || L == null || D == null) return;
+            int count = CargoChapter.All.Count;
+            L.JumpToChapter(Mathf.Clamp(chapterIndex - 1, 0, count - 1));
+            L.Begin();
+            SyncIntro();
+        }
         /// Same as the Back button: OnboardingDirector.Back then CargoLessonDirector.Exit.
         public override void Close() { D?.Back(); L?.Exit(); SyncIntro(); }
 

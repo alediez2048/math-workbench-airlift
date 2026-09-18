@@ -169,7 +169,7 @@ namespace Airlift.Tests
                 .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
             var bar = (RectTransform)n.hudRoot.transform;
             var controls = bar.Cast<Transform>().Select(t2 => t2 as RectTransform)
-                .Where(r => r != null && r.GetComponent<Button>() != null && r.name != "Music")   // Music is a tag under the orb
+                .Where(r => r != null && r.GetComponent<Button>() != null)   // Music sits in the control row now (compact bar)
                 .OrderBy(r => r.anchoredPosition.x).ToArray();
 
             for (int i = 1; i < controls.Length; i++)
@@ -183,6 +183,14 @@ namespace Airlift.Tests
             foreach (var r in controls)
                 Assert.That(Mathf.Abs(r.anchoredPosition.x) + r.sizeDelta.x / 2f, Is.LessThanOrEqualTo(half),
                     r.name + " hangs off the bar");
+            // Owner 2026-09-18: "very compact, not so much space between elements". Neighbouring controls sit one
+            // BarGap apart and the bar itself is the compact standard width.
+            Assert.That(bar.sizeDelta.x, Is.EqualTo(NerdySpace.BarWidth).Within(0.5f), "compact bar width");
+            for (int i = 1; i < controls.Length; i++)
+            {
+                float gap = (controls[i].anchoredPosition.x - controls[i].sizeDelta.x / 2f) - (controls[i - 1].anchoredPosition.x + controls[i - 1].sizeDelta.x / 2f);
+                Assert.That(gap, Is.EqualTo(NerdySpace.BarGap).Within(1f), controls[i].name + " gap from " + controls[i - 1].name);
+            }
 
             // The left half is text: orb, caption, transcript. No button may stand where those draw.
             foreach (var textName in new[] { "Caption", "You said", "State", "Orb" })
@@ -238,5 +246,35 @@ namespace Airlift.Tests
                 Assert.That(known, Is.True, l.name + " glows in a hue the guide does not list");
             }
         }
+
+        /// Owner 2026-09-18, approved on the canvas: ‹ › in the board's bottom-right corner on every screen. They ride
+        /// on Dee's bar, so the station canvas must still cover them above the workbench. Run BuildNavArrows.cs.
+        [Test] public void BackAndNextArrowsSitInTheBoardsBottomRightCornerAndFollowTheBar()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            Assert.That(n.navBack, Is.Not.Null, "run AgentScripts/BuildNavArrows.cs"); Assert.That(n.navNext, Is.Not.Null);
+            var bar = (RectTransform)n.hudRoot.transform;
+            foreach (var b in new[] { n.navBack, n.navNext })
+            {
+                Assert.That(b.transform.IsChildOf(bar), Is.True, b.name + " rides on the bar");
+                string wired = string.Join(",", Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Select(k => b.onClick.GetPersistentMethodName(k)));
+                Assert.That(wired, Is.EqualTo(b == n.navBack ? "PressBack" : "PressNext"), b.name);
+                Assert.That(b.GetComponent<CanvasGroup>(), Is.Not.Null, b.name + " can be dimmed");
+                // Board corner: the panel's bottom-right minus the edge padding, in welcome-canvas units.
+                var local = bar.anchoredPosition + ((RectTransform)b.transform.parent).anchoredPosition + ((RectTransform)b.transform).anchoredPosition;
+                Assert.That(local.x, Is.GreaterThan(NerdySpace.PanelWidth / 2f - 160f), b.name + " at the right edge");
+                Assert.That(local.x + BuildNavArrowsCircle / 2f, Is.LessThanOrEqualTo(NerdySpace.PanelWidth / 2f - NerdySpace.EdgePadding + 1f), b.name + " inside the panel");
+                Assert.That(local.y, Is.LessThan(-NerdySpace.PanelHeight / 2f + 120f), b.name + " at the bottom");
+                Assert.That(local.y - BuildNavArrowsCircle / 2f - 20f, Is.GreaterThanOrEqualTo(-NerdySpace.PanelHeight / 2f), b.name + " label inside the panel");
+            }
+            Assert.That(n.navBack.transform.position.x, Is.LessThan(n.navNext.transform.position.x), "‹ left of ›");
+            // Above the workbench the bar is the whole canvas: its rect (and ray clip) must reach the arrows.
+            var station = (RectTransform)n.hudStationCanvas;
+            var arrows = (RectTransform)n.navNext.transform.parent;
+            Assert.That(station.sizeDelta.x / 2f, Is.GreaterThanOrEqualTo(Mathf.Abs(arrows.anchoredPosition.x) + BuildNavArrowsCircle), "station canvas wide enough for the arrows");
+            Assert.That(station.sizeDelta.y / 2f, Is.GreaterThanOrEqualTo(Mathf.Abs(arrows.anchoredPosition.y) + BuildNavArrowsCircle / 2f + 20f), "station canvas tall enough for the arrows");
+        }
+        const float BuildNavArrowsCircle = 44f;
     }
 }

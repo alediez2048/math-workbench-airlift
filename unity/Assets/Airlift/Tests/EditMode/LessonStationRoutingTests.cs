@@ -145,7 +145,7 @@ namespace Airlift.Tests
 
         [Test] public void ActiveLessonIdIsSetOnOpenAndClearedOnBack()
         {
-            var flow = new WelcomeFlow();
+            var flow = new WelcomeFlow { RundownSeen = true };
             Assert.That(flow.ActiveLessonId, Is.Null);
             flow.Consent(false); flow.EndWelcome();
             Assert.That(flow.OpenLesson("made_up_card"), Is.False); Assert.That(flow.ActiveLessonId, Is.Null, "an unknown card sets nothing");

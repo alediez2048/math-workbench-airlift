@@ -68,6 +68,8 @@ namespace Airlift.Lounge
         string lastLesson;
         int lastChapter;
         bool hasLast;
+        /// CC-FD-05b: the rundown ran (or was skipped) once. Cleared with everything else.
+        public bool RundownSeen;
 
         public static string TileId(string lessonId, int chapter) => lessonId + "#" + chapter;
 
@@ -82,6 +84,8 @@ namespace Airlift.Lounge
         }
 
         public int OpenCount(string tileId) => counts.TryGetValue(tileId, out int n) ? n : 0;
+        /// Higher = opened more recently; -1 = never.
+        public int Recency(string tileId) => recency.IndexOf(tileId);
 
         public (string lessonId, int chapter)? Continue => hasLast ? (lastLesson, lastChapter) : ((string, int)?)null;
 
@@ -97,6 +101,7 @@ namespace Airlift.Lounge
         {
             counts.Clear(); recency.Clear();
             lastLesson = null; lastChapter = 0; hasLast = false;
+            RundownSeen = false;
         }
 
         public string ToJson()
@@ -105,6 +110,7 @@ namespace Airlift.Lounge
             foreach (var pair in counts) opens[pair.Key] = pair.Value;
             var o = new JObject { ["version"] = 1, ["opens"] = opens, ["order"] = new JArray(recency) };
             if (hasLast) o["last"] = new JObject { ["lesson"] = lastLesson, ["chapter"] = lastChapter };
+            o["rundownSeen"] = RundownSeen;
             return o.ToString(Newtonsoft.Json.Formatting.None);
         }
 
@@ -125,7 +131,32 @@ namespace Airlift.Lounge
                 lib.lastChapter = (int?)last["chapter"] ?? 0;
                 lib.hasLast = !string.IsNullOrEmpty(lib.lastLesson);
             }
+            lib.RundownSeen = (bool?)o["rundownSeen"] ?? false;
             return lib;
+        }
+    }
+
+    /// Both records live as small files in the app's own data folder. A read that fails gives the defaults; a write
+    /// that fails is logged and the app carries on with what it has in memory.
+    public static class LoungeStoreFiles
+    {
+        public const string SettingsFile = "nerdy-settings.json", LibraryFile = "nerdy-library.json";
+        static string PathFor(string file) => System.IO.Path.Combine(Application.persistentDataPath, file);
+
+        public static SettingsState LoadSettings() => SettingsState.FromJson(ReadOrNull(SettingsFile));
+        public static LibraryState LoadLibrary() => LibraryState.FromJson(ReadOrNull(LibraryFile));
+        public static void Save(SettingsState settings) { if (settings != null) Write(SettingsFile, settings.ToJson()); }
+        public static void Save(LibraryState library) { if (library != null) Write(LibraryFile, library.ToJson()); }
+
+        static string ReadOrNull(string file)
+        {
+            try { string p = PathFor(file); return System.IO.File.Exists(p) ? System.IO.File.ReadAllText(p) : null; }
+            catch (Exception e) { Debug.LogWarning("[Nerdy] could not read " + file + ": " + e.Message); return null; }
+        }
+        static void Write(string file, string json)
+        {
+            try { System.IO.File.WriteAllText(PathFor(file), json); }
+            catch (Exception e) { Debug.LogWarning("[Nerdy] could not save " + file + ": " + e.Message); }
         }
     }
 }

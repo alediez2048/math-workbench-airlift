@@ -23,7 +23,7 @@ test('session config is server-authored: English, no surroundings, tools present
   assert.match(cfg.instructions, /Never ask for the learner's name/);
   assert.match(cfg.instructions, /Do not ask the welcome questions yourself/);
   assert.match(cfg.instructions, /Only speak when the app prompts you/);
-  assert.deepEqual(cfg.tools.map(t => t.name), ['record_profile', 'end_welcome', 'describe_card', 'request_help', 'advance_step', 'open_lesson',
+  assert.deepEqual(cfg.tools.map(t => t.name), ['record_profile', 'end_welcome', 'describe_card', 'request_help', 'advance_step', 'open_lesson', 'dashboard_open_tile', 'dashboard_filter', 'open_settings', 'replay_rundown',
     'replay_demo', 'split_cargo', 'check_load', 'reset_cargo', 'next_chapter', 'restart_chapter', 'back_to_lessons',
     'cafe_deal_round', 'cafe_check_order', 'cafe_clear_table', 'garden_turn_bed', 'garden_split_bed', 'garden_check_bed', 'garden_clear_bed']);
   assert.match(cfg.instructions, /call advance_step/);

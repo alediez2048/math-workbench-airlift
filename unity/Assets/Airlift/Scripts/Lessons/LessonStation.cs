@@ -41,6 +41,9 @@ namespace Airlift.Lessons
         public abstract string[] ToolsNow { get; }    // shared + lesson tools that make sense right now
 
         public abstract void Open();                  // show roots, start at the briefing (Cargo: ChooseCargo)
+        /// CC-FD-08: 0 = Open() (briefing, concept intro, Cargo's practice); 1..N start that chapter directly. No
+        /// chapter is locked and nothing scores the order. Lesson maths is untouched.
+        public abstract void Open(int chapterIndex);
         public abstract void Close();                 // hide roots, stop animations, pieces back to trays
         public abstract LessonActionResult Advance(); // briefing -> chapter 1; inside a chapter: next chapter
         public abstract LessonActionResult Check();

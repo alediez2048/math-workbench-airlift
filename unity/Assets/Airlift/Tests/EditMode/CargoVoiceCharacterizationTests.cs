@@ -107,6 +107,7 @@ namespace Airlift.Tests
             // ---- the fixed script ----
             void Script()
             {
+                n.Flow.RundownSeen = true;   // the golden run was recorded before the rundown existed: a tester who has already seen it
                 Do("consent: no voice", () => n.ConsentNoVoice());
                 Do("cards: GoToCatalog", () => n.GoToCatalog());
                 Tool("split_cargo"); Tool("advance_step"); Tool("replay_demo"); Tool("back_to_lessons");

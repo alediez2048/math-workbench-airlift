@@ -20,6 +20,8 @@ namespace Airlift.Welcome
         public List<string> interests = new List<string>();
         public string goal = "";
 
+        /// Every question answered: what NerdyDirector waits for before showing the wall, and what makes a learner "returning".
+        public bool IsComplete => !string.IsNullOrEmpty(ageBand) && interests.Count > 0 && !string.IsNullOrEmpty(goal);
         public bool HasAnyAnswer => !string.IsNullOrEmpty(ageBand) || interests.Count > 0 || !string.IsNullOrEmpty(goal);
         public bool IsMinor => ageBand == "under_10" || ageBand == "10_to_13" || ageBand == "14_to_17";
 

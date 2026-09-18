@@ -27,6 +27,8 @@ namespace Airlift.Lessons.Testing
         public override string[] ToolsNow => LessonToolRouter.SharedTools;
 
         public override void Open() { open = true; calls.Add("Open"); }
+        public int openedChapter;
+        public override void Open(int chapterIndex) { Open(); openedChapter = chapterIndex; calls.Add("Open(" + chapterIndex + ")"); }
         public override void Close() { open = false; calls.Add("Close"); }
         LessonActionResult Record(string name) { calls.Add(name); return new LessonActionResult(true, name); }
         public override LessonActionResult Advance() => Record("Advance");

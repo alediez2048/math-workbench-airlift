@@ -1,0 +1,185 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Airlift.Presentation.Dashboard;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Airlift.Lounge
+{
+    /// The host tour in the scene: an overlay on whatever screen is up. Everything but the stop's target dims and
+    /// stops taking presses; a ring and a bouncing arrow sit on the target; Dee says one line. NerdyDirector starts
+    /// it, narrates each stop and reports the gates (a pill, the arrows, a filter, the gear).
+    public sealed class LoungeRundown : MonoBehaviour
+    {
+        [Header("Targets")]
+        public DashboardWall wall;
+        public Button[] consentPills = new Button[0];
+        public Button nextArrow, backArrow, gearButton;
+        [Tooltip("The questions' own Skip to lessons pill: dimmed during the tour so the arrow is the only way on.")]
+        public Button questionsSkip;
+        [Header("Overlay, on the welcome canvas, drawn last")]
+        public RectTransform pointerRoot, ring, arrow;
+        public GameObject header;
+        public TMP_Text stepLabel;
+        public Button skipButton;
+        [Header("Dimmed when not the target")]
+        public Button[] barControls = new Button[0];
+        public RectTransform[] pagerAndScenery = new RectTransform[0];
+        public LoungeSettings settings;
+        public float dimAlpha = 0.32f, ringPadding = 14f, arrowBounce = 12f;
+
+        public RundownScript Script { get; } = new RundownScript();
+        public bool Running => Script.Running;
+        public bool Voice { get; private set; }
+        public event Action<RundownStep, string> StepShown;
+        public event Action<bool> Ended;
+
+        bool subscribed, settingsWereOpened;
+        readonly List<CanvasGroup> dimmed = new List<CanvasGroup>();
+        Vector2 arrowBase;
+
+        void Awake()
+        {
+            if (header != null) header.SetActive(false);
+            if (pointerRoot != null) pointerRoot.gameObject.SetActive(false);
+            Script.StepShown += OnStep;
+            Script.Ended += OnEnded;
+        }
+
+        void Subscribe()
+        {
+            if (subscribed) return; subscribed = true;
+            if (settings != null) { settings.Opened += () => settingsWereOpened = true; settings.Closed += () => { if (settingsWereOpened) Report(RundownGate.SettingsOpened); settingsWereOpened = false; }; }
+            if (wall != null) wall.FilterChanged += _ => Report(RundownGate.FilterPressed);
+        }
+
+        public void Begin(bool voice, int at = 0)
+        {
+            Voice = voice;
+            Subscribe();
+            if (header != null) header.SetActive(true);
+            Script.Start(at);
+        }
+
+        void OnStep(RundownStep step)
+        {
+            if (stepLabel != null) stepLabel.text = step.Eyebrow;
+            string say = Voice ? step.Say : step.SayWithoutVoice;
+            Point(step);
+            StepShown?.Invoke(step, say);
+        }
+
+        void OnEnded(bool skipped)
+        {
+            Undim();
+            if (pointerRoot != null) pointerRoot.gameObject.SetActive(false);
+            if (header != null) header.SetActive(false);
+            Ended?.Invoke(skipped);
+        }
+
+        // ---- the gates, each reported by the thing itself ----
+        public void ReportConsent() => Report(RundownGate.ConsentPressed);
+        public void ReportNext() => Report(RundownGate.NextPressed);
+        public void PressContinue() { if (Running && Script.Current.Gate == RundownGate.NextPressed) Report(RundownGate.NextPressed); else Report(RundownGate.ContinuePressed); }
+        public void Skip() { Script.Skip(); }
+        /// B or ‹: the last stop's own gate; anywhere else in the tour it is the skip.
+        public void ReportBack()
+        {
+            if (!Running) return;
+            if (Script.Current.Gate == RundownGate.BackPressed) Report(RundownGate.BackPressed); else Skip();
+        }
+        void Report(RundownGate gate) { if (Running && Script.Report(gate)) NerdyHaptics.Tick(); }
+
+        /// The › arrow does something on this stop.
+        public bool ContinueLit => Running && (Script.Current.Gate == RundownGate.ContinuePressed || Script.Current.Gate == RundownGate.NextPressed);
+        /// Repoint after the screen under the overlay changed (the wall laid out, a card swapped).
+        public void Repoint() { if (Running) Point(Script.Current); }
+
+        // ---- pointing ----
+        /// Editor preview and tests: lay the pointer out for a stop without running the gates.
+        public void PreviewStep(int index) { OnStep(RundownScript.Steps[Mathf.Clamp(index, 0, RundownScript.StopCount - 1)]); if (header != null) header.SetActive(true); }
+
+        IEnumerable<RectTransform> TargetsOf(TourTarget target)
+        {
+            switch (target)
+            {
+                case TourTarget.ConsentPills: foreach (var b in consentPills) if (b != null) yield return (RectTransform)b.transform; break;
+                case TourTarget.NextArrow: if (nextArrow != null) yield return (RectTransform)nextArrow.transform; break;
+                case TourTarget.FirstTile: { var t = wall != null ? wall.Visible.FirstOrDefault() : null; if (t != null) yield return (RectTransform)t.transform; break; }
+                case TourTarget.Filters: foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform; break;
+                case TourTarget.Gear: if (gearButton != null) yield return (RectTransform)gearButton.transform; break;
+                case TourTarget.BackArrow: if (backArrow != null) yield return (RectTransform)backArrow.transform; break;
+            }
+        }
+
+        /// The control the stop's gate is pressed on: it stays live even when it is not what Dee points at.
+        IEnumerable<RectTransform> GateControls(RundownGate gate)
+        {
+            switch (gate)
+            {
+                case RundownGate.ConsentPressed: foreach (var b in consentPills) if (b != null) yield return (RectTransform)b.transform; break;
+                case RundownGate.NextPressed: case RundownGate.ContinuePressed: if (nextArrow != null) yield return (RectTransform)nextArrow.transform; break;
+                case RundownGate.FilterPressed: foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform; break;
+                case RundownGate.SettingsOpened: if (gearButton != null) yield return (RectTransform)gearButton.transform; break;
+                case RundownGate.BackPressed: if (backArrow != null) yield return (RectTransform)backArrow.transform; break;
+            }
+        }
+
+        /// Everything that dims and stops taking presses when it is not the target: tiles, toolbar, bar controls, arrows.
+        IEnumerable<RectTransform> Dimmables()
+        {
+            if (wall != null && wall.gameObject.activeInHierarchy) foreach (var t in wall.Visible) yield return (RectTransform)t.transform;
+            foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform;
+            foreach (var r in pagerAndScenery) if (r != null) yield return r;
+            foreach (var b in barControls) if (b != null) yield return (RectTransform)b.transform;
+            if (backArrow != null) yield return (RectTransform)backArrow.transform;
+            if (nextArrow != null) yield return (RectTransform)nextArrow.transform;
+            if (questionsSkip != null) yield return (RectTransform)questionsSkip.transform;
+        }
+
+        void Point(RundownStep step)
+        {
+            var targets = TargetsOf(step.Target).Where(t => t.gameObject.activeInHierarchy).ToList();
+            var live = new HashSet<RectTransform>(targets); foreach (var g in GateControls(step.Gate)) live.Add(g);
+            Undim();
+            foreach (var r in Dimmables())
+            {
+                if (live.Contains(r)) continue;
+                var g = r.GetComponent<CanvasGroup>(); if (g == null) g = r.gameObject.AddComponent<CanvasGroup>();   // Unity's fake null defeats ??
+                g.alpha = dimAlpha; g.interactable = false; g.blocksRaycasts = false;   // gated: dim and unpressable
+                dimmed.Add(g);
+            }
+            if (pointerRoot == null || targets.Count == 0) { if (pointerRoot != null) pointerRoot.gameObject.SetActive(false); return; }
+            pointerRoot.gameObject.SetActive(true);
+            var b = Bounds(targets);
+            if (ring != null) { ring.anchoredPosition = b.center; ring.sizeDelta = b.size + Vector2.one * ringPadding * 2f; }
+            arrowBase = new Vector2(b.center.x, b.yMax + ringPadding + 26f);
+            if (arrow != null) arrow.anchoredPosition = arrowBase;
+        }
+
+        Rect Bounds(List<RectTransform> targets)
+        {
+            var corners = new Vector3[4]; float xMin = float.MaxValue, yMin = float.MaxValue, xMax = float.MinValue, yMax = float.MinValue;
+            foreach (var t in targets)
+            {
+                t.GetWorldCorners(corners);
+                foreach (var c in corners)
+                {
+                    var l = pointerRoot.InverseTransformPoint(c);
+                    xMin = Mathf.Min(xMin, l.x); yMin = Mathf.Min(yMin, l.y); xMax = Mathf.Max(xMax, l.x); yMax = Mathf.Max(yMax, l.y);
+                }
+            }
+            return Rect.MinMaxRect(xMin, yMin, xMax, yMax);
+        }
+
+        void Undim() { foreach (var g in dimmed) if (g != null) { g.alpha = 1f; g.interactable = true; g.blocksRaycasts = true; } dimmed.Clear(); }
+
+        void Update()
+        {
+            if (arrow != null && pointerRoot != null && pointerRoot.gameObject.activeSelf)
+                arrow.anchoredPosition = arrowBase + Vector2.up * (arrowBounce * (0.5f + 0.5f * Mathf.Sin(Time.time * 7f)));
+        }
+    }
+}

@@ -350,6 +350,82 @@
       ],
       "requiredAssets": [],
       "requiredCueIds": []
+    },
+    "CC-FD-04": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "WelcomeFlowTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-FD-05": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "RundownTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "RundownWiringTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "FrontDoorToolTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-FD-07": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "DashboardTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "DashboardWiringTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-FD-08": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "StationOpenTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-FD-09": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "SettingsPanelTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "ToolNameSyncTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-FD-10": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "FrontDoorStyleTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
     }
   },
   "phaseEnds": {
