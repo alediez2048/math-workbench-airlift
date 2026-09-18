@@ -11,12 +11,11 @@ namespace Airlift.Tests
         [Test] public void SixStopsFromTheFirstCardToTheWall()
         {
             Assert.That(RundownScript.Steps.Count, Is.EqualTo(RundownScript.StopCount));
-            Assert.That(RundownScript.Steps.Select(s => s.Id), Is.EqualTo(new[] { "hello", "questions", "wall", "filters", "gear", "back" }));
-            Assert.That(RundownScript.Steps.Select(s => s.Target), Is.EqualTo(new[] { TourTarget.ConsentPills, TourTarget.NextArrow, TourTarget.FirstTile, TourTarget.Filters, TourTarget.Gear, TourTarget.BackArrow }));
-            Assert.That(RundownScript.Steps.Select(s => s.Gate), Is.EqualTo(new[] { RundownGate.ConsentPressed, RundownGate.NextPressed, RundownGate.ContinuePressed, RundownGate.FilterPressed, RundownGate.SettingsOpened, RundownGate.BackPressed }));
-            Assert.That(RundownScript.Steps[0].Say, Does.StartWith("Hi, I'm Dee. This is my lounge"), "the host frame");
-            Assert.That(RundownScript.Steps[5].Say, Does.Contain("pick a lesson"), "the tour hands over to the wall, never a lesson");
-            Assert.That(RundownScript.WallStart, Is.EqualTo(2), "a replay from the gear starts on the wall");
+            Assert.That(RundownScript.Steps.Select(s => s.Id), Is.EqualTo(new[] { "wall", "page-next", "page-back", "scenery", "gear", "lesson" }));
+            Assert.That(RundownScript.Steps.Select(s => s.Target), Is.EqualTo(new[] { TourTarget.Filters, TourTarget.NextPage, TourTarget.PreviousPage, TourTarget.Scenery, TourTarget.Gear, TourTarget.FirstTile }));
+            Assert.That(RundownScript.Steps.Select(s => s.Gate), Is.EqualTo(new[] { RundownGate.FilterPressed, RundownGate.PageNext, RundownGate.PageBack, RundownGate.SceneryChanged, RundownGate.SettingsOpened, RundownGate.LessonOpened }));
+            Assert.That(RundownScript.Steps[5].Say, Does.Contain("Choose a playable lesson"));
+            Assert.That(RundownScript.WallStart, Is.Zero);
             for (int i = 0; i < RundownScript.Steps.Count; i++)
             {
                 var s = RundownScript.Steps[i];
@@ -29,16 +28,19 @@ namespace Airlift.Tests
         [Test] public void EachStopWaitsForItsOwnGateAndNothingElse()
         {
             var r = new RundownScript(); r.Start();
-            Assert.That(r.Current.Id, Is.EqualTo("hello"));
+            Assert.That(r.Current.Id, Is.EqualTo("wall"));
             Assert.That(r.Report(RundownGate.NextPressed), Is.False, "the arrow during stop 1 does not skip ahead");
-            Assert.That(r.Report(RundownGate.ConsentPressed), Is.True); Assert.That(r.Current.Id, Is.EqualTo("questions"));
-            Assert.That(r.Report(RundownGate.FilterPressed), Is.False);
-            Assert.That(r.Report(RundownGate.NextPressed), Is.True); Assert.That(r.Current.Id, Is.EqualTo("wall"));
-            Assert.That(r.Report(RundownGate.ContinuePressed), Is.True); Assert.That(r.Current.Id, Is.EqualTo("filters"));
-            Assert.That(r.Report(RundownGate.FilterPressed), Is.True); Assert.That(r.Current.Id, Is.EqualTo("gear"));
-            Assert.That(r.Report(RundownGate.SettingsOpened), Is.True); Assert.That(r.Current.Id, Is.EqualTo("back"));
+            Assert.That(r.Report(RundownGate.ConsentPressed), Is.False);
+            Assert.That(r.Report(RundownGate.ContinuePressed), Is.False);
+            Assert.That(r.Report(RundownGate.FilterPressed), Is.True); Assert.That(r.Current.Id, Is.EqualTo("page-next"));
+            Assert.That(r.Report(RundownGate.PageNext), Is.True); Assert.That(r.Current.Id, Is.EqualTo("page-back"));
+            Assert.That(r.Report(RundownGate.PageNext), Is.False, "duplicate next cannot skip back practice");
+            Assert.That(r.Report(RundownGate.PageBack), Is.True); Assert.That(r.Current.Id, Is.EqualTo("scenery"));
+            Assert.That(r.Report(RundownGate.SceneryChanged), Is.True); Assert.That(r.Current.Id, Is.EqualTo("gear"));
+            Assert.That(r.Report(RundownGate.SettingsOpened), Is.True); Assert.That(r.Current.Id, Is.EqualTo("lesson"));
             Assert.That(r.Finished, Is.False);
-            Assert.That(r.Report(RundownGate.BackPressed), Is.True);
+            Assert.That(r.Report(RundownGate.LessonOpened), Is.True);
+            Assert.That(r.Report(RundownGate.LessonOpened), Is.False);
             Assert.That(r.Finished, Is.True); Assert.That(r.Skipped, Is.False); Assert.That(r.Running, Is.False);
         }
 
@@ -56,14 +58,14 @@ namespace Airlift.Tests
             var r = new RundownScript(); int shown = 0; r.StepShown += _ => shown++;
             r.Start(RundownScript.WallStart);
             Assert.That(r.Current.Id, Is.EqualTo("wall")); Assert.That(shown, Is.EqualTo(1));
-            r.Start(99); Assert.That(r.Current.Id, Is.EqualTo("back"), "clamped");
+            r.Start(99); Assert.That(r.Current.Id, Is.EqualTo("lesson"), "clamped");
         }
 
         [Test] public void TheVoiceOffWordingNeverAsksTheLearnerToTalk()
         {
-            var hello = RundownScript.Steps.First(s => s.Id == "hello");
-            Assert.That(hello.Say, Does.Contain("mic"));
-            Assert.That(hello.SayWithoutVoice, Does.Not.Contain("mic").And.Not.Contain("talk"));
+            Assert.That(RundownScript.Steps[4].Say, Does.Contain("Dee, open settings"));
+            Assert.That(RundownScript.Steps[5].Say, Does.Contain("Dee, open Cargo Crew"));
+            foreach (var step in RundownScript.Steps) Assert.That(step.SayWithoutVoice, Does.Not.Contain("say,").And.Not.Contain("talk"));
         }
     }
 }

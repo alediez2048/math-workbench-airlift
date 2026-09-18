@@ -8,6 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEditor.Events;
 
 // Owner 2026-09-18: "all the bar items are not compact, we need to make this bar very compact, not having so much
 // space between elements." One bar of NerdySpace.BarWidth x BarHeight: orb and state on the left, the caption beside
@@ -31,12 +32,28 @@ public static class CompactAssistantBar
 
         // Owner 2026-09-18: "get rid of any instances of a blue orb floating". The orb is off everywhere; the state
         // line keeps its corner and the caption starts at the bar's left padding.
-        var orb = Place(bar, "Orb", new Vector2(-half + pad + 18f, 8f), new Vector2(36f, 36f));
-        if (orb != null && orb.gameObject.activeSelf) orb.gameObject.SetActive(false);
-        Place(bar, "State", new Vector2(-half + pad + 45f, -26f), new Vector2(90f, 20f));
+        var style = AssetDatabase.LoadAssetAtPath<NerdyStyle>("Assets/Airlift/Fonts/NerdyStyle.asset");
+        if (bar.Find("Orb") == null)
+        {
+            var image = new GameObject("Orb", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+            image.transform.SetParent(bar, false); image.sprite = style.pill; image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = style.pill.border.x / 18f;
+        }
+        var orb = Place(bar, "Orb", new Vector2(-half + pad + 32f, 8f), new Vector2(36f, 36f));
+        orb.gameObject.SetActive(true); n.orb = orb.GetComponent<Image>(); n.orb.raycastTarget = false; n.orb.color = new Color(0.2f, 0.65f, 1f);
+        Place(bar, "State", new Vector2(-half + pad + 32f, -26f), new Vector2(76f, 20f));
+        if (bar.Find("Mic") == null)
+        {
+            var mic = UnityEngine.Object.Instantiate(n.helpButton.gameObject, bar); mic.name = "Mic";
+            n.micButton = mic.GetComponent<Button>();
+            for (int i = n.micButton.onClick.GetPersistentEventCount() - 1; i >= 0; i--) UnityEventTools.RemovePersistentListener(n.micButton.onClick, i);
+            UnityEventTools.AddPersistentListener(n.micButton.onClick, n.ToggleMicrophone);
+        }
+        n.micButton = bar.Find("Mic").GetComponent<Button>(); n.micLabel = n.micButton.GetComponentInChildren<TMP_Text>(true); n.micLabel.text = "Mic off";
+        ((RectTransform)n.micButton.transform).sizeDelta = new Vector2(92f, NerdySpace.PillHeight);
 
         // Right: Music · gear · Help, packed from the right edge.
-        var controls = new[] { n.helpButton, n.muteButton != null && n.muteButton.transform.parent == bar ? n.muteButton : null, bar.Find("Settings gear")?.GetComponent<Button>(), n.musicButton }
+        var controls = new[] { n.helpButton, n.muteButton != null && n.muteButton.transform.parent == bar ? n.muteButton : null, bar.Find("Settings gear")?.GetComponent<Button>(), n.musicButton, n.micButton }
             .Where(b => b != null && b.transform.parent == bar).Select(b => (RectTransform)b.transform).ToArray();
         float x = half - pad;
         foreach (var r in controls)
@@ -50,7 +67,7 @@ public static class CompactAssistantBar
         float controlsLeft = x + gap;
 
         // Middle: caption from the orb to the controls, transcript line under it.
-        float capLeft = -half + pad, capRight = controlsLeft - 14f;
+        float capLeft = -half + pad + 82f, capRight = controlsLeft - 14f;
         var caption = Place(bar, "Caption", new Vector2((capLeft + capRight) / 2f, 8f), new Vector2(capRight - capLeft, 56f));
         var you = Place(bar, "You said", new Vector2((capLeft + capRight) / 2f, -29f), new Vector2(capRight - capLeft, 20f));
         if (caption != null) { var t = caption.GetComponent<TMP_Text>(); if (t != null) { t.alignment = TextAlignmentOptions.MidlineLeft; t.enableAutoSizing = true; t.fontSizeMin = 12f; t.fontSizeMax = Mathf.Max(t.fontSizeMax, NerdySpace.Body); } }

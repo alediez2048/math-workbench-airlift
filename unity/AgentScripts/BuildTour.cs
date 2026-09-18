@@ -34,7 +34,7 @@ public static class BuildTour
         if (n.navBack == null) throw new InvalidOperationException("Run BuildNavArrows first.");
         var canvas = (RectTransform)n.hudWelcomeCanvas;
         var catalog = (RectTransform)n.catalogRoot.transform;
-        var rundown = n.GetComponent<LoungeRundown>() ?? n.gameObject.AddComponent<LoungeRundown>();
+        var rundown = n.GetComponent<LoungeRundown>(); if (rundown == null) rundown = n.gameObject.AddComponent<LoungeRundown>();
 
         // The card era goes: the card, the block and the handle gate. The settings card no longer needs to hide it.
         foreach (var name in new[] { "Rundown card" }) { var old = canvas.Find(name); if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject); }
@@ -81,7 +81,7 @@ public static class BuildTour
         rundown.backArrow = n.navBack; rundown.nextArrow = n.navNext;
         rundown.gearButton = bar.Find("Settings gear")?.GetComponent<Button>();
         var consent = n.consentRoot.transform;
-        rundown.consentPills = new[] { consent.Find("Allow voice")?.GetComponent<Button>(), consent.Find("No voice")?.GetComponent<Button>() }.Where(b => b != null).ToArray();
+        rundown.consentPills = new Button[0]; // welcome/questions are ordinary screens, never tour stops
         rundown.settings = settings;
         rundown.questionsSkip = n.welcomeRoot.transform.Find("Skip")?.GetComponent<Button>();
         header.SetAsLastSibling(); pointer.SetAsLastSibling();

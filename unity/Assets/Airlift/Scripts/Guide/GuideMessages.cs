@@ -15,6 +15,8 @@ namespace Airlift.Guide
         public string ArgumentsJson;
         public string ErrorMessage;
         public string ResponseStatus;
+        public string ResponseId;
+        public string NarrationToken;
     }
 
     /// Pure parser and builders for the OpenAI Realtime GA wire format. No Unity state.
@@ -33,6 +35,8 @@ namespace Airlift.Guide
             JObject o;
             try { o = JObject.Parse(json); } catch (Exception) { e.Type = "malformed"; return e; }
             e.Type = (string)o["type"] ?? "";
+            e.ResponseId = (string)o["response_id"] ?? (string)o.SelectToken("response.id");
+            e.NarrationToken = (string)o.SelectToken("response.metadata.narration");
             switch (e.Type)
             {
                 case "response.output_audio.delta":
@@ -75,6 +79,15 @@ namespace Airlift.Guide
             if (!string.IsNullOrEmpty(instructions)) o["response"] = new JObject { ["instructions"] = instructions };
             return o.ToString(Newtonsoft.Json.Formatting.None);
         }
+
+        /// Isolated audio rendering of trusted app copy; no prior conversation or tool actions.
+        public static string ScriptedResponse(string line, string token)
+            => new JObject { ["type"] = "response.create", ["response"] = new JObject {
+                ["conversation"] = "none", ["input"] = new JArray(),
+                ["metadata"] = new JObject { ["narration"] = token },
+                ["output_modalities"] = new JArray("audio"), ["tools"] = new JArray(), ["tool_choice"] = "none",
+                ["instructions"] = "Read the following text exactly as written in a warm, clear voice. Do not add, omit, translate, or paraphrase any words: " + line
+            } }.ToString(Newtonsoft.Json.Formatting.None);
 
         public static byte[] ToPcm16(float[] samples, int count)
         {

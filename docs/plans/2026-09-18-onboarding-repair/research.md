@@ -1,0 +1,40 @@
+# Onboarding repair evidence — September 18
+
+## Consolidated headset-feedback revision — current source review
+
+Planning only; no app edits or new runtime tests. Findings below are source-backed, confidence H; behavioral acceptance remains to be run. GitNexus index predates recent GuideSession edits, so direct source wins. Research models named in the planning skill were not available; bounded reviewers used the available inherited model. No new provider/API/SDK choice requires external research.
+
+| Finding | Source | Gotcha / consequence |
+|---|---|---|
+| Corner Back/Next and catalog paging are distinct controls | `unity/AgentScripts/BuildNavArrows.cs:42`; `BuildDashboard.cs:289`; `Scripts/Welcome/NerdyDirector.cs:577` | Remove presentation, not all shared progression methods |
+| Intro requires the corner Next; tour bindings include both corner arrows | `unity/Assets/Airlift/Scripts/Lounge/RundownScript.cs:34`; `LoungeRundown.cs:128`; `unity/AgentScripts/BuildTour.cs:81` | Merge intro/filter gate; update serialization and speech together |
+| Settings already tracks open/Done as a substep | `unity/Assets/Airlift/Scripts/Lounge/LoungeRundown.cs:58`, `:169` | Preserve actual close acknowledgment rather than counting gear click as full completion |
+| Scenery pills exist but are dimmed throughout tour; Apply emits event even for unchanged mode | `unity/AgentScripts/BuildDashboard.cs:300`; `BuildTour.cs:80`; `unity/Assets/Airlift/Scripts/Lounge/LoungeRoom.cs:83` | Explicit new target/allowed-control bindings; compare previous/current mode |
+| Cafe/Garden refresh methods re-enable old return buttons | `unity/Assets/Airlift/Scripts/Lessons/Cafe/CafeStation.cs:613`, `:630`; `Lessons/Garden/GardenStation.cs:715`; `unity/AgentScripts/BuildCafeWorkbench.cs:421`; `BuildGardenWorkbench.cs:415` | Scene-only deactivation is insufficient; preserve callbacks and update ownership |
+| Cargo legacy builder/tests find Back to lessons by name | `unity/AgentScripts/CreateFractionChapter.cs:67`; `unity/Assets/Airlift/Tests/EditMode/DockWorkbenchWiringTests.cs:355` | Do not rerun locked builder or blindly delete required references |
+| Pause already retains lesson/tour, but resume clears catalog caption | `unity/Assets/Airlift/Scripts/Welcome/NerdyDirector.cs:868`, `:875` | Adapt existing pause; resume current scripted tour line |
+| End stops socket but does not fully cancel startup/playback/queues; reconnect can occur | `unity/Assets/Airlift/Scripts/Guide/GuideSession.cs:63`, `:219` | Do not equate End with reliable Stop |
+| Hush suppresses known response audio; delayed-created responses/tools and queued audio need additional protection | `unity/Assets/Airlift/Scripts/Guide/GuideSession.cs:79`, `:182`, `:195`, `:231`; `Welcome/NerdyDirector.cs:287` | Stop→Play race needs generation-aware rejection before dispatch |
+| Mic policy separately enforces consent/adult/nonminor/phase/VoiceGuide | `unity/Assets/Airlift/Scripts/Welcome/NerdyDirector.cs:136`, `:829` | Play must not bypass eligibility; permission alone is not capture consent |
+| Tour builder includes retired bar controls; helpButton serves as builder template; bar hidden during Settings | `unity/AgentScripts/BuildTour.cs:78`; `CompactAssistantBar.cs:82`; `BuildSettingsPanel.cs:112` | Migrate consumers before removing refs; retain accessible Stop while Settings speech plays |
+| Music persists independently and ducks during voice | `unity/Assets/Airlift/Scripts/Guide/AmbientMusic.cs:25`; `Welcome/NerdyDirector.cs:700` | Removing shortcut must not reset music preference |
+
+Existing supporting suites: `RecoveryTests`, `TourSpeechRegressionTests`, `PromptGateTests`, `GuidePolicyTests`, `AmbientMusicTests`. Newly proposed test names in the plan are requirements, not claims of existing passing tests. Unknowns: exact current headset no-response causes and subjective new control readability; baseline source/scene checks plus final headset acceptance cover them. Historical notes below describe the earlier iteration and may no longer describe current code.
+
+All findings are local and confidence H unless labeled otherwise. This is a Quick revision of the approved walkthrough, not new provider/platform research.
+
+- **Voice/manual addition:** `NerdyDirector.cs` already routes `record_profile`, `open_settings`, `open_lesson` and dashboard actions. `LearnerProfile.cs` already contains ageBand/interests/goal, persists those locally, and has no gender field. Profile completeness participates in returning-user routing, so removing required fields without migration would affect repeat sessions. Actual voice-command acceptance remains untested in this planning turn.
+- **Mic-policy risk:** inspected `ApplyMicPolicy` passes phase/mute/pause/voice-guide settings, but not `VoiceConsented` or profile age, into `GuidePolicy.MicOn`. This does not establish all downstream capture behavior; it means Phase 2 must trace the actual capture path and explicitly test that Begin/catalog entry cannot activate capture without opt-in. Do not assume the current implementation already enforces the proposed consent boundary. Profile-phase voice is currently excluded by the phase predicate.
+
+- **Owner addition — restore Dee's indicator:** `unity/AgentScripts/RemoveOrb.cs:16` destroys `NerdyDirector.orb`; `CompactAssistantBar.cs:34` positions the bar orb and then disables it. Both conflict with the new restoration request. The cleanup also affects the controller helper, so do not blindly reverse every operation. Restore the prior compact bar indicator only, with actual state-driven feedback and no implicit mic activation.
+
+- **Baseline:** Git verified branch `lounge-onboarding`, commit `111049a`; scene and onboarding source matched the commit. Package/settings changes remain. Runtime assembly was newer than inspected source and CargoCrew was active in Play mode.
+- **Old copy:** `unity/Assets/Airlift/Scripts/Welcome/GuideIntro.cs:6` asks for answers before questions appear. `unity/AgentScripts/PatchConsentCopy.cs:18` defines the two removed CTA labels. Owner confirmed the mismatch in Game view.
+- **Tour order:** `unity/Assets/Airlift/Scripts/Lounge/RundownScript.cs:32` defines hello, questions, wall, filters, gear, back; replay uses wall offset 2. Owner now wants only the catalog tour, plus page navigation and final lesson entry.
+- **Premature exit:** `unity/Assets/Airlift/Scripts/Welcome/NerdyDirector.cs:574` skips an active tour on a playable tile. `OnRundownEnded` marks seen for both skip and finish. Voice `open_lesson` uses a separate `OpenCard` path: both routes require review.
+- **Seen state:** direct read-only runtime observation found catalog phase, onboarding enabled, tour component present, seen=true, running=false, index=-1, pointer/header inactive. Owner selected Replay and confirmed the desired arrows appeared. This establishes state-based suppression, not a stale-build cause.
+- **Existing tests:** `RundownTests.SixStopsFromTheFirstCardToTheWall` enshrines the superseded flow; `RundownWiringTests` checks references, pointer bounds and nonblocking overlays. Current CLAUDE says these were not rerun after host-tour rewrite; this planning run does not claim results.
+- **Desktop loop:** native Unity File → Open Recent Scene → CargoCrew recovered the correct scene when Pipeline calls timed out. Play mode + session-only InputSystemUIInputModule/camera adjustment produced a visible clickable welcome screen; owner confirmed clicks. Repeated script reloads make long queued command chains unreliable.
+- **QA drift:** `docs/qa/lounge.md` still describes the older wall-only sequence and orb; current host-tour spec describes welcome/questions stages. Update it against the new owner decisions after implementation.
+- **Unknown:** the exact obsolete logo/text object on questions has not been isolated. Acceptance requires inspecting the real profile card and replacing only the incorrect branding with the existing Nerdy AI + VR asset.
+- **Unknown:** fresh/returning replay edge cases and full headset behavior have not been tested against the proposed revision. They are required phases, not assumed successes.

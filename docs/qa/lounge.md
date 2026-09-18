@@ -1,5 +1,8 @@
 # Headset QA — the Nerdy lounge front door (CC-FD-01..10)
 
+**September 18 repair:** the flow below is historical. Use [current repair QA](onboarding-repair-2026-09-18.md)
+for the single-button welcome and catalog-only tour. The repair is local/editor only until a new preview APK is built.
+
 Adult testers only. Preview app `com.nerdy.vr.lounge` ("Nerdy Lounge (preview)"), installed by
 `bash scripts/lounge-preview.sh`. The release app `com.nerdy.vr` is untouched. Voice needs Wi-Fi: the guide mints
 from `https://nerdy-guide-proxy.vercel.app/session`.

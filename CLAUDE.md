@@ -1,5 +1,37 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## CURRENT OVERRIDE — September 18 onboarding repair, local editor review
+
+Latest update: owner confirms the installed tour starts automatically. New consolidated repair scope
+is at the TOP of `docs/plans/2026-09-18-onboarding-repair/plan.md`: remove duplicate navigation/exits,
+replace companion shortcuts with Play/Stop, teach scenery and conversation controls. Owner authorized
+implementation after planning. Source and CargoCrew scene compile; 133 focused checks and the fresh-fixture
+runtime tour/three-exit walkthrough pass. Live resume verified the current tour narration. Final Play/Stop
+labels have a separate microphone notice. Integrated preview APK built, credential-scanned, installed and
+cold-launched; not yet device-accepted. Previous APK/release app and saved data preserved. No commit or push. Earlier acceptance below does not
+establish acceptance of this revision.
+
+Owner approved the repair in `docs/plans/2026-09-18-onboarding-repair/plan.md`.
+The earlier two-button welcome, removed orb and welcome/questions tour below are historical.
+Current local scene: one Let's begin CTA; questions without tour; six catalog-only stops
+(cards, filters, page forward, page back, settings + Done, final lesson selection).
+Dee's compact circle is restored inside the bar, with explicit Mic control. No automatic
+capture from the welcome. Shared lesson arrows are replaced by Exit lesson; native chapter controls remain.
+Do not rerun RemoveOrb or the old builder chain. Locked lesson mechanics remain untouched.
+Fresh/answered/returning/skipped editor presets are under Nerdy > Preview; desktop overrides
+are Play-only. QA evidence and remaining limitations: `docs/qa/onboarding-repair-2026-09-18.md`.
+55 focused checks passed; the strict Cargo voice golden remains failing on approved greeting,
+mic policy and manual-control visibility differences. Golden was not rewritten. Follow-up speech-sync repair
+passed 44 focused checks, with live provider verification of intro/gear/Done. Tour audio now uses isolated,
+response-correlated requests and validates the complete transcript before playing; Settings/Done is a
+separate substep. Owner-authorized `nerdy-lounge-tour-sync-20260918.apk` built, credential-scanned,
+installed over `com.nerdy.vr.lounge` and cold-launched successfully. Data/release app preserved; replay the
+tour from Settings if previously completed. Subsequent autostart repair now clears old tour completion
+when leaving questions, while preserving ordinary lesson returns. 26 focused checks and real editor
+question callbacks passed; `nerdy-lounge-tour-autostart-20260918.apk` built, scanned and installed.
+Launch awaits Quest's controllers-required dialog. Build identity and limits are in the repair QA record.
+No commit, push or headset acceptance. Preserve other uncommitted package/settings work.
+
 ## CURRENT STATE — September 18, 2:15 PM (read this first; older dated sections below are history)
 
 **Branch `lounge-onboarding`** (off `unity-airlift` at d5ff895; `unity-airlift` still holds the submission state and
@@ -352,7 +384,7 @@ assets, commit/push or skipping owner font comparison implied.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (5413 symbols, 11263 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (6732 symbols, 14273 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

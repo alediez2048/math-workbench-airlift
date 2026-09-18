@@ -33,11 +33,13 @@ namespace Airlift.Tests
             Assert.That(r.pointerRoot, Is.Not.Null); Assert.That(r.ring, Is.Not.Null); Assert.That(r.arrow, Is.Not.Null);
             Assert.That(r.header, Is.Not.Null); Assert.That(r.stepLabel, Is.Not.Null);
             Assert.That(Wired(r.skipButton), Is.EqualTo("LoungeRundown.Skip"), "Skip is a real pill, visible on every stop");
-            Assert.That(r.barControls.Select(b => b.name), Is.EquivalentTo(new[] { "Music", "Settings gear", "Help" }));
+            Assert.That(r.barControls.Select(b => b.name), Is.EquivalentTo(new[] { "Conversation", "Settings gear" }));
             Assert.That(r.pagerAndScenery.Length, Is.EqualTo(6), "‹ 1/3 › and the scenery selector");
-            Assert.That(r.backArrow, Is.EqualTo(n.navBack)); Assert.That(r.nextArrow, Is.EqualTo(n.navNext)); Assert.That(r.settings, Is.EqualTo(n.loungeSettings));
+            Assert.That(r.backArrow, Is.Null); Assert.That(r.nextArrow, Is.Null); Assert.That(r.settings, Is.EqualTo(n.loungeSettings));
+            Assert.That(r.conversationButton, Is.EqualTo(n.conversationButton));
+            Assert.That(r.yourRoomButton, Is.Not.Null); Assert.That(r.nerdyLoungeButton, Is.Not.Null);
             Assert.That(r.gearButton, Is.Not.Null); Assert.That(r.gearButton.name, Is.EqualTo("Settings gear"));
-            Assert.That(r.consentPills.Select(b => b.name), Is.EquivalentTo(new[] { "Allow voice", "No voice" }), "stop 1 points at the two pills");
+            Assert.That(r.consentPills, Is.Empty, "no tour on welcome or questions");
             Assert.That(r.header.transform.parent, Is.EqualTo(n.hudWelcomeCanvas), "the header shows on every screen, not only the wall");
         }
 
@@ -75,16 +77,27 @@ namespace Airlift.Tests
                 Assert.That(Mathf.Abs(ring.anchoredPosition.y) + ring.sizeDelta.y / 2f, Is.LessThanOrEqualTo(NerdySpace.PanelHeight / 2f + 1f), "stop " + (i + 1) + " ring inside the panel");
                 Assert.That(r.stepLabel.text, Is.EqualTo((i + 1) + " OF 6"));
             }
-            // Stop 3 circles the first tile; stop 1 the two pills; stop 6 the ‹ arrow.
+            // Assert the actual rendered ring follows the required action, not just an arbitrary visible target.
+            var expected = new[] {
+                new[] { (RectTransform)r.wall.featuredButton.transform, (RectTransform)r.wall.newestButton.transform, (RectTransform)r.wall.mostViewedButton.transform },
+                new[] { (RectTransform)r.wall.nextButton.transform },
+                new[] { (RectTransform)r.wall.previousButton.transform },
+                new[] { (RectTransform)(r.lounge.Mode == Scenery.YourRoom ? r.nerdyLoungeButton : r.yourRoomButton).transform },
+                new[] { (RectTransform)r.gearButton.transform },
+                new[] { (RectTransform)r.wall.Visible.First().transform }
+            };
+            for (int i = 0; i < expected.Length; i++)
+            {
+                r.PreviewStep(i);
+                var points = expected[i].SelectMany(target => { var corners = new Vector3[4]; target.GetWorldCorners(corners); return corners.Select(c => r.pointerRoot.InverseTransformPoint(c)); }).ToArray();
+                var center = new Vector2((points.Min(p => p.x) + points.Max(p => p.x)) / 2f, (points.Min(p => p.y) + points.Max(p => p.y)) / 2f);
+                Assert.That(Vector2.Distance(r.ring.anchoredPosition, center), Is.LessThan(2f), "step " + i + " ring must match its required control");
+                foreach (var target in expected[i]) Assert.That(target.GetComponent<CanvasGroup>()?.interactable ?? true, Is.True, "highlighted action must accept input");
+            }
+            r.PreviewStep(1);
+            Assert.That(r.wall.nextButton.GetComponent<CanvasGroup>()?.interactable ?? true, Is.True);
             r.PreviewStep(2);
-            var first = (RectTransform)r.wall.Visible.First().transform;
-            Assert.That(r.ring.anchoredPosition.x, Is.EqualTo(first.anchoredPosition.x).Within(2f)); Assert.That(r.ring.sizeDelta.x, Is.EqualTo(first.sizeDelta.x + 2f * r.ringPadding).Within(2f));
-            n.catalogRoot.SetActive(false); n.consentRoot.SetActive(true);
-            r.PreviewStep(0);
-            Assert.That(r.ring.sizeDelta.x, Is.GreaterThan(500f), "both pills inside one ring");
-            n.consentRoot.SetActive(false); n.catalogRoot.SetActive(true);
-            r.PreviewStep(5);
-            Assert.That(r.ring.anchoredPosition.x, Is.GreaterThan(NerdySpace.PanelWidth / 2f - 200f), "the ‹ arrow sits in the bottom-right corner");
+            Assert.That(r.wall.previousButton.GetComponent<CanvasGroup>()?.interactable ?? true, Is.True);
         }
 
         [Test] public void DeesBarDrawsAboveEveryCardSoTheGearCanAlwaysBePressed()

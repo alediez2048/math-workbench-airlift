@@ -7,10 +7,10 @@ namespace Airlift.Lounge
     public enum ControllerButton { None, Trigger, Grip, B, Thumbstick }
 
     /// What the learner has to actually do before a stop counts as done. Every stop is gated on the real thing.
-    public enum RundownGate { ConsentPressed, NextPressed, ContinuePressed, FilterPressed, SettingsOpened, BackPressed }
+    public enum RundownGate { ConsentPressed, NextPressed, ContinuePressed, FilterPressed, SettingsOpened, BackPressed, PageNext, PageBack, LessonOpened, SceneryChanged }
 
     /// What Dee points at for a stop.
-    public enum TourTarget { ConsentPills, NextArrow, FirstTile, Filters, Gear, BackArrow }
+    public enum TourTarget { ConsentPills, NextArrow, FirstTile, Filters, Gear, BackArrow, NextPage, PreviousPage, Scenery }
 
     public sealed class RundownStep
     {
@@ -28,28 +28,30 @@ namespace Airlift.Lounge
     {
         public const int StopCount = 6;
         /// Where a replay from the gear starts: the first stop on the wall.
-        public const int WallStart = 2;
+        public const int WallStart = 0;
         public static readonly IReadOnlyList<RundownStep> Steps = new[]
         {
-            new RundownStep("hello", "1 OF 6",
-                "Hi, I'm Dee. This is my lounge, and this board is where we start. Turn on the mic if you'd like to talk with me.",
-                RundownGate.ConsentPressed, TourTarget.ConsentPills,
-                sayWithoutVoice: "Hi, I'm Dee. This is my lounge, and this board is where we start. Pick one to go on."),
-            new RundownStep("questions", "2 OF 6",
-                "Tell me a little about you, then press the arrow down here. It is always in that corner.",
-                RundownGate.NextPressed, TourTarget.NextArrow),
-            new RundownStep("wall", "3 OF 6",
-                "This is my wall. Every tile is a place we can go. Point the beam and press the trigger to open one. Press Next to go on.",
-                RundownGate.ContinuePressed, TourTarget.FirstTile),
-            new RundownStep("filters", "4 OF 6",
-                "These sort the wall. Try one.",
-                RundownGate.FilterPressed, TourTarget.Filters),
+            new RundownStep("wall", "1 OF 6",
+                "Welcome to the Nerdy AI plus VR math lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter, or say, Dee, show newest lessons.",
+                RundownGate.FilterPressed, TourTarget.Filters,
+                "Welcome to the Nerdy AI plus VR math lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter."),
+            new RundownStep("page-next", "2 OF 6",
+                "There are more lessons on the next page. Press the highlighted right arrow.",
+                RundownGate.PageNext, TourTarget.NextPage),
+            new RundownStep("page-back", "3 OF 6",
+                "Now press the highlighted left arrow to return to the previous page.",
+                RundownGate.PageBack, TourTarget.PreviousPage),
+            new RundownStep("scenery", "4 OF 6",
+                "Your room shows your surroundings. Nerdy Lounge shows our virtual room. Try the highlighted environment. Your lessons stay in place.",
+                RundownGate.SceneryChanged, TourTarget.Scenery),
             new RundownStep("gear", "5 OF 6",
-                "The gear is where you set things the way you like. Pause, Again and Mute live there too. Press it, then Done.",
-                RundownGate.SettingsOpened, TourTarget.Gear),
-            new RundownStep("back", "6 OF 6",
-                "Press Back, or B on your controller, to come back here from anywhere. Try it, and then pick a lesson: I'll see you there.",
-                RundownGate.BackPressed, TourTarget.BackArrow),
+                "Stop silences me and stops listening. Play resumes; the nearby notice tells you whether the microphone will turn on. You can keep using buttons while I'm stopped. Open the highlighted gear, or say, Dee, open settings.",
+                RundownGate.SettingsOpened, TourTarget.Gear,
+                "Stop silences me and stops listening. Play resumes; the nearby notice tells you whether the microphone will turn on. You can keep using buttons while I'm stopped. Open the highlighted gear to explore settings."),
+            new RundownStep("lesson", "6 OF 6",
+                "You're ready. Choose a playable lesson, or say, Dee, open Cargo Crew. Inside, Exit lesson brings you back here.",
+                RundownGate.LessonOpened, TourTarget.FirstTile,
+                "You're ready. Click a playable lesson to begin. Inside, Exit lesson brings you back here."),
         };
 
         int index = -1;
@@ -59,6 +61,7 @@ namespace Airlift.Lounge
         public bool Satisfied { get; private set; }
         public bool Finished { get; private set; }
         public bool Skipped { get; private set; }
+        public bool CanOpenLesson => !Running || Current.Gate == RundownGate.LessonOpened;
         public event Action<RundownStep> StepShown;
         public event Action<bool> Ended;   // true = skipped
 

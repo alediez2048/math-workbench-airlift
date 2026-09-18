@@ -155,6 +155,9 @@ namespace Airlift.Lounge
         }
         static void Write(string file, string json)
         {
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(UnityEditor.SessionState.GetString("Nerdy.PreviewFixture", ""))) return;
+#endif
             try { System.IO.File.WriteAllText(PathFor(file), json); }
             catch (Exception e) { Debug.LogWarning("[Nerdy] could not save " + file + ": " + e.Message); }
         }

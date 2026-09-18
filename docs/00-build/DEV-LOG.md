@@ -1,5 +1,111 @@
 # Cargo Crew development log
 
+## 2026-09-18 — control cleanup implementation and editor verification
+
+Owner authorized the consolidated repair. Source and scene now replace companion shortcuts with
+conversation Play/Stop, retire duplicate corner navigation and all three legacy lesson exits, and teach
+scenery plus conversation controls in the synchronized catalog tour. Lesson mechanics remain untouched.
+Stop clears local capture/playback/queues and invalidates old transport events; explicit adult eligibility
+is required before Play can enable capture. Existing Settings Stop remains accessible while its panel
+hides the companion bar. Legacy templates/callbacks are retained under inactive presentation wrappers.
+
+131 focused checks passed, and a frame-aware fresh-fixture runtime walkthrough passed the whole tour,
+all three X exits, Replay/Skip, early-entry guard, and silent manual progression. Live resume then reached
+the configured service and returned a verified current tour line without opening the microphone for the
+unknown-age fixture. Initial harness visibility failures were caused by running before startup/LateUpdate;
+no production exit fix was required. The 4-unit bar spacing discrepancy was corrected and retested.
+
+Latest owner refinement: button must say only Play, not Play narration. Applied to companion and Settings;
+microphone activation disclosure moves to adjacent text. Final affected suites passed, bringing the focused
+total to 133. The control-cleanup preview APK built with zero errors, passed the bounded credential scan,
+installed successfully and cold-launched on the Quest at the owner's request. Package verified as preview;
+saved data and the separate release app retained, autostart rollback APK retained, build settings restored.
+Device acceptance remains pending. No commit/push or release replacement. See onboarding QA for hash.
+
+## 2026-09-18 — consolidated headset-feedback plan
+
+Revised the existing onboarding plan in place, preserving the earlier iteration as history. New scope:
+remove duplicate corner navigation and lesson returns; one Dee Play/Stop control; teach scenery and
+conversation controls before final lesson selection. Read-only source reviews found tour Next dependency,
+re-enabled lesson return buttons, and voice Stop/reconnect/late-tool races; plan includes explicit gates,
+state safety, named regressions, editor-first verification and one integrated Quest review. Autostart is
+owner-confirmed. Only planning/QA/instruction docs changed in this pass; no Unity/source edits or restart.
+
+## 2026-09-18 — owner headset feedback, notes only
+
+Owner also requests teaching the new Play / Stop conversation control in the catalog tour. Include
+matching highlight and written guidance that remains usable while Dee is stopped, without automatic
+speech/microphone restart or lost tour progress. Recorded only; no app changes.
+
+Latest assistant-bar request supersedes fixing Mic / Music / Help individually: remove all three and add
+one stateful Play / Stop conversation control. Record immediate speech cancellation and mic capture stop,
+no delayed audio after Stop, and resume without resetting lesson/tour progress. Retain permission and
+eligibility safeguards plus clear state feedback; leave background music separate. Planned only.
+
+Owner also requests removing Back to lessons from Cargo Crew, Community Garden, and Neighborhood Café,
+keeping the top-right X as the single visible lesson exit. Verify the retained exit across all three lessons
+and preserve cleanup/progress behavior and activity-specific controls. Recorded only; not implemented.
+
+Owner requests removing the bottom-right Back / Next pair and its tour instructions, retaining the
+left / right paging arrows beneath the dashboard. Recorded as a pending navigation simplification;
+check actual behavior before implementation and remove all tour dependencies on the deleted controls,
+including the opening Next instruction. No app change or restart during the walkthrough.
+
+Additional requested repair: the tour must introduce Your room / Nerdy Lounge environment controls before
+final lesson selection. Record matching explanation/highlights and verify switching preserves tour progress.
+Missing tour coverage reported; button functionality not yet assessed. No implementation in this walkthrough.
+
+Owner confirms the updated catalog tour starts automatically. Reports no apparent response from Mic off,
+Music on, and Help (label transcribed as “health”). Recorded as unverified controls in the repair QA record;
+no cause or fix established. Owner requested only notes, with no implementation or restart for these reports.
+
+## 2026-09-18 — autostart tour after questions
+
+Owner reported catalog tour missing after questions on Quest. Device log confirmed incomplete profile plus
+old seen-tour flag; pure state transition reproduced the skip. EndWelcome now clears tour completion and
+the director persists that reset when leaving questions. No reset on normal lesson return. Four regressions
+added; 26 focused checks passed and real question callbacks automatically started catalog step 0 despite
+stale completion flags. Microphone remained off. Updated autostart preview built in 66 seconds without errors,
+credential scan passed, and update installed successfully with data retained. Launch is waiting on Quest's
+controllers-required dialog. Headset acceptance pending; original build settings restored. No commit/push.
+
+## 2026-09-18 — synchronize tour speech with the highlighted action
+
+Owner reported a premature green-Done instruction while the gear was highlighted. Reproduced a concrete
+stale-response bug through GuideSession.Handle: Hush did not reject late transcripts. Regression failed
+before the fix and passed afterward. Added an isolated, response-correlated narration lane with bounded
+audio buffering and verbatim transcript validation before playback. Kept conversational tools and lesson
+mechanics; generic tour-time speech and obsolete output cannot replace the current instruction.
+Gear and Settings/Done now have separate copy and pointer targets. 44 focused checks passed;
+live provider transcripts for intro/gear/Done matched the current script before playback. The real Done
+callback reached final selection (its audio still pending when preview stopped). Owner then authorized
+building/installing the headset preview. Build succeeded (94 seconds, no errors), credential scan and new-code
+metadata checks passed, preview update installed successfully and cold launch returned OK. Saved data and
+release package preserved; preview build settings restored. Headset acceptance pending. No commit/push.
+Details and final verification updates: `docs/qa/onboarding-repair-2026-09-18.md`.
+
+## 2026-09-18 — owner catches conflicting first tour cue
+
+The integrated editor check verified transitions but missed that the first step pointed to a lesson while
+asking for Next. Owner reproduced it; live assertion confirmed FirstTile/ContinuePressed mismatch.
+Changed the first target to NextArrow and clarified the spoken line. Strengthened the six-step scene test
+to compare the rendered ring center against the actionable control and require that target to accept input.
+No lesson or board-layout change. Follow-up test evidence is in the repair QA record.
+
+## 2026-09-18 afternoon — approved onboarding repair, editor review checkpoint
+
+Implemented the single Let's begin welcome, phase-specific greeting, catalog-only six-step tour,
+early lesson-entry guard, paging direction gates, Settings-and-Done gate, explicit microphone opt-in,
+compact Dee status circle, and Exit lesson. Existing lesson mechanics and board dimensions preserved.
+Added editor-only in-memory fresh/answered/returning/skipped fixtures and temporary desktop input.
+Verified 55 checks across seven focused suites and exercised the actual running scene's welcome click,
+all six tour steps, lesson entry, Exit, Replay and Skip. The strict Cargo voice golden still fails:
+structured comparison limits differences to approved welcome caption, mic flag/buffer-clear messages,
+and visible manual controls; no other recorded differences. Golden retained unchanged.
+See `docs/qa/onboarding-repair-2026-09-18.md`. Owner walkthrough, actual voice-command and Quest
+acceptance remain pending. No APK replacement, commit or push.
+
+
 ## 2026-09-18 morning–afternoon — owner iteration: canvas mockups, compact bar, arrows, orb gone, the host tour
 
 Owner on the headset from 10:00. Process changed at his request: mockups on a canvas first

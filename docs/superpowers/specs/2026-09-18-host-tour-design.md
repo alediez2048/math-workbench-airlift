@@ -1,5 +1,7 @@
 # The host tour — onboarding, second design (2026-09-18)
 
+September 18 owner walkthrough revision: see [onboarding repair plan](../../plans/2026-09-18-onboarding-repair/plan.md) for the proposed catalog-only tour; the design below is retained as history, not evidence that the revision is implemented.
+
 Owner decisions, 2026-09-18 midday, after the first rundown (a text card with six stops) and the first pointing
 tour were rejected on the headset ("the story telling is not there, showing the user around controllers and menu
 options is not there"):

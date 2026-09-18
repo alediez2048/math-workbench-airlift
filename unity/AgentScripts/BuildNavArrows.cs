@@ -41,6 +41,8 @@ public static class BuildNavArrows
 
         n.navBack = Circle_(root, "Back arrow", "‹", "Back", new Vector2(-(Circle + Gap) / 2f, 0f), style, n, "PressBack");
         n.navNext = Circle_(root, "Next arrow", "›", "Next", new Vector2((Circle + Gap) / 2f, 0f), style, n, "PressNext");
+        n.exitLessonButton = Circle_(root, "Exit lesson", "×", "Exit lesson", Vector2.zero, style, n, "PressBack");
+        n.exitLessonButton.gameObject.SetActive(false);
 
         // The station HUD canvas was exactly the bar; the arrows sit below and right of it there, so the canvas and
         // its clipper grow to keep them pointable above the workbench.

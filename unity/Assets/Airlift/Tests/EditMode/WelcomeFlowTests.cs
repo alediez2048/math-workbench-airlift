@@ -57,7 +57,7 @@ namespace Airlift.Tests
             f.Consent(true);
             Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog)); Assert.That(f.Returning, Is.False);
             Assert.That(f.OpenLesson("cargo_crew_fractions"), Is.True);
-            Assert.That(NerdyDirector.OnboardingEnabled, Is.False, "the shipped switch");
+            Assert.That(NerdyDirector.OnboardingEnabled, Is.True, "the repaired catalog tour is enabled");
         }
 
         [Test] public void DeclinedVoiceStillReachesTheCatalog()

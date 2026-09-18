@@ -17,6 +17,8 @@ namespace Airlift.Lounge
         public DashboardWall wall;
         public Button[] consentPills = new Button[0];
         public Button nextArrow, backArrow, gearButton;
+        public Button conversationButton, yourRoomButton, nerdyLoungeButton;
+        public LoungeRoom lounge;
         [Tooltip("The questions' own Skip to lessons pill: dimmed during the tour so the arrow is the only way on.")]
         public Button questionsSkip;
         [Header("Overlay, on the welcome canvas, drawn last")]
@@ -37,6 +39,10 @@ namespace Airlift.Lounge
         public event Action<bool> Ended;
 
         bool subscribed, settingsWereOpened;
+        Scenery lastScenery;
+        RectTransform settingsDone;
+        public const string SettingsInstruction = "Here you can adjust sound and replay the tour. Press the highlighted Done button to return to the lessons.";
+        public string CurrentInstruction => !Running ? "" : settingsWereOpened ? SettingsInstruction : Voice ? Script.Current.Say : Script.Current.SayWithoutVoice;
         readonly List<CanvasGroup> dimmed = new List<CanvasGroup>();
         Vector2 arrowBase;
 
@@ -51,8 +57,22 @@ namespace Airlift.Lounge
         void Subscribe()
         {
             if (subscribed) return; subscribed = true;
-            if (settings != null) { settings.Opened += () => settingsWereOpened = true; settings.Closed += () => { if (settingsWereOpened) Report(RundownGate.SettingsOpened); settingsWereOpened = false; }; }
-            if (wall != null) wall.FilterChanged += _ => Report(RundownGate.FilterPressed);
+            if (settings != null)
+            {
+                settingsDone = settings.panel != null ? settings.panel.transform.Find("Done") as RectTransform : null;
+                settings.Opened += () => { settingsWereOpened = Running && Script.Current.Gate == RundownGate.SettingsOpened; if (settingsWereOpened) OnStep(Script.Current); else if (pointerRoot != null) pointerRoot.gameObject.SetActive(false); };
+                settings.Closed += () => { bool completed = settingsWereOpened; settingsWereOpened = false; if (completed) Report(RundownGate.SettingsOpened); Repoint(); };
+            }
+            if (wall != null)
+            {
+                wall.FilterChanged += _ => { Report(RundownGate.FilterPressed); Repoint(); };
+                wall.PageMoved += direction => { Report(direction > 0 ? RundownGate.PageNext : RundownGate.PageBack); Repoint(); };
+            }
+            if (lounge != null)
+            {
+                lastScenery = lounge.Mode;
+                lounge.SceneryChanged += mode => { bool changed = mode != lastScenery; lastScenery = mode; if (changed) Report(RundownGate.SceneryChanged); Repoint(); };
+            }
         }
 
         public void Begin(bool voice, int at = 0)
@@ -63,10 +83,19 @@ namespace Airlift.Lounge
             Script.Start(at);
         }
 
+        public void SetVoice(bool enabled)
+        {
+            if (Voice == enabled) return;
+            Voice = enabled;
+            if (Running) OnStep(Script.Current);
+        }
+
         void OnStep(RundownStep step)
         {
+            if (Running && wall != null && wall.PageCount <= 1 && (step.Gate == RundownGate.PageNext || step.Gate == RundownGate.PageBack)) { Report(step.Gate); return; }
+            if (Running && step.Gate == RundownGate.SceneryChanged && (lounge == null || yourRoomButton == null || nerdyLoungeButton == null)) { Report(step.Gate); return; }
             if (stepLabel != null) stepLabel.text = step.Eyebrow;
-            string say = Voice ? step.Say : step.SayWithoutVoice;
+            string say = settingsWereOpened ? SettingsInstruction : Voice ? step.Say : step.SayWithoutVoice;
             Point(step);
             StepShown?.Invoke(step, say);
         }
@@ -82,13 +111,14 @@ namespace Airlift.Lounge
         // ---- the gates, each reported by the thing itself ----
         public void ReportConsent() => Report(RundownGate.ConsentPressed);
         public void ReportNext() => Report(RundownGate.NextPressed);
-        public void PressContinue() { if (Running && Script.Current.Gate == RundownGate.NextPressed) Report(RundownGate.NextPressed); else Report(RundownGate.ContinuePressed); }
+        public void PressContinue() => Report(RundownGate.ContinuePressed);
+        public void ReportLessonOpened() => Report(RundownGate.LessonOpened);
         public void Skip() { Script.Skip(); }
         /// B or ‹: the last stop's own gate; anywhere else in the tour it is the skip.
         public void ReportBack()
         {
             if (!Running) return;
-            if (Script.Current.Gate == RundownGate.BackPressed) Report(RundownGate.BackPressed); else Skip();
+            if (Script.Current.Gate == RundownGate.PageBack) wall?.PreviousPage();
         }
         void Report(RundownGate gate) { if (Running && Script.Report(gate)) NerdyHaptics.Tick(); }
 
@@ -111,6 +141,12 @@ namespace Airlift.Lounge
                 case TourTarget.Filters: foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform; break;
                 case TourTarget.Gear: if (gearButton != null) yield return (RectTransform)gearButton.transform; break;
                 case TourTarget.BackArrow: if (backArrow != null) yield return (RectTransform)backArrow.transform; break;
+                case TourTarget.NextPage: if (wall?.nextButton != null) yield return (RectTransform)wall.nextButton.transform; break;
+                case TourTarget.PreviousPage: if (wall?.previousButton != null) yield return (RectTransform)wall.previousButton.transform; break;
+                case TourTarget.Scenery:
+                    var choice = lounge != null && lounge.Mode == Scenery.YourRoom ? nerdyLoungeButton : yourRoomButton;
+                    if (choice != null) yield return (RectTransform)choice.transform;
+                    break;
             }
         }
 
@@ -124,6 +160,13 @@ namespace Airlift.Lounge
                 case RundownGate.FilterPressed: foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform; break;
                 case RundownGate.SettingsOpened: if (gearButton != null) yield return (RectTransform)gearButton.transform; break;
                 case RundownGate.BackPressed: if (backArrow != null) yield return (RectTransform)backArrow.transform; break;
+                case RundownGate.PageNext: if (wall?.nextButton != null) yield return (RectTransform)wall.nextButton.transform; break;
+                case RundownGate.PageBack: if (wall?.previousButton != null) yield return (RectTransform)wall.previousButton.transform; break;
+                case RundownGate.LessonOpened: if (wall != null) foreach (var t in wall.Visible) if (t.openable) yield return (RectTransform)t.transform; break;
+                case RundownGate.SceneryChanged:
+                    if (yourRoomButton != null) yield return (RectTransform)yourRoomButton.transform;
+                    if (nerdyLoungeButton != null) yield return (RectTransform)nerdyLoungeButton.transform;
+                    break;
             }
         }
 
@@ -142,7 +185,14 @@ namespace Airlift.Lounge
         void Point(RundownStep step)
         {
             var targets = TargetsOf(step.Target).Where(t => t.gameObject.activeInHierarchy).ToList();
-            var live = new HashSet<RectTransform>(targets); foreach (var g in GateControls(step.Gate)) live.Add(g);
+            if (settingsWereOpened) { targets.Clear(); if (settingsDone != null) targets.Add(settingsDone); }
+            // Looking at a card is not permission to open it before the final stop.
+            var live = new HashSet<RectTransform>(); foreach (var g in GateControls(step.Gate)) live.Add(g);
+            if (conversationButton != null) live.Add((RectTransform)conversationButton.transform);
+            if (Script.Index > 3) {
+                if (yourRoomButton != null) live.Add((RectTransform)yourRoomButton.transform);
+                if (nerdyLoungeButton != null) live.Add((RectTransform)nerdyLoungeButton.transform);
+            }
             Undim();
             foreach (var r in Dimmables())
             {

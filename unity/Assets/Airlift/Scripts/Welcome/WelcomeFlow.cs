@@ -25,9 +25,12 @@ namespace Airlift.Welcome
         {
             if (Phase != WelcomePhase.Consent) return;
             VoiceConsented = allowVoice;
-            Returning = Profile.IsComplete && RundownSeen;
+            Returning = Profile.IsComplete;
             Phase = Returning || SkipOnboarding ? WelcomePhase.Catalog : WelcomePhase.Welcome;
         }
+
+        public void Begin() => Consent(false);
+        public void SetVoiceConsent(bool allowed) => VoiceConsented = allowed;
 
         /// The ‹ arrow during the questions: back to the welcome card, where the mic choice can be made again.
         public bool BackToConsent()
@@ -44,6 +47,9 @@ namespace Airlift.Welcome
         public bool EndWelcome()
         {
             if (Phase != WelcomePhase.Welcome) return false;
+            // Completing/skipping this question flow always introduces the catalog, even if
+            // an earlier preview or partial profile already marked its tour as seen.
+            RundownSeen = false;
             Phase = WelcomePhase.Catalog;
             return true;
         }

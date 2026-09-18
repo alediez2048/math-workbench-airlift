@@ -26,8 +26,10 @@ namespace Airlift.Presentation.Dashboard
 
         public DashboardFilter Filter { get; private set; } = DashboardFilter.Featured;
         public int Page { get; private set; }
+        public int PageCount => DashboardCatalog.PageCount(ordered.Count);
         public event Action<string, int> TileOpened;   // lessonId, chapter
         public event Action<DashboardFilter> FilterChanged;
+        public event Action<int> PageMoved;
         LibraryState library;
         IReadOnlyList<DashboardTile> ordered = new List<DashboardTile>();
 
@@ -86,8 +88,8 @@ namespace Airlift.Presentation.Dashboard
             Refresh(library);
             FilterChanged?.Invoke(filter);
         }
-        public void NextPage() { Page++; Refresh(library); NerdyHaptics.Tick(); }
-        public void PreviousPage() { Page--; Refresh(library); NerdyHaptics.Tick(); }
+        public void NextPage() { Page++; Refresh(library); NerdyHaptics.Tick(); PageMoved?.Invoke(1); }
+        public void PreviousPage() { Page--; Refresh(library); NerdyHaptics.Tick(); PageMoved?.Invoke(-1); }
 
         /// A tile press: "lessonId#chapter".
         public void PressTile(string tileId)

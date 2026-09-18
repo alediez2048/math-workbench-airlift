@@ -10,10 +10,12 @@ namespace Airlift.Tests
         {
             const string intro = "Welcome to Nerdy AI plus VR! My name is Dee, and I will be your AI assistant throughout your elementary math journey.";
             Assert.That(GuideIntro.Spoken, Does.StartWith(intro));
+            Assert.That(GuideIntro.Spoken, Does.Contain("Point at Let's begin and press the trigger.").And.Not.Contain("mouse"));
+            Assert.That(GuideIntro.SpokenSpanish, Does.Not.Contain("ratón").And.Not.Contain("mouse"));
             Assert.That(GuideIntro.GreetingPrompt, Does.Contain("word for word"));
             Assert.That(GuideIntro.GreetingPrompt, Does.Contain(GuideIntro.Spoken));
             Assert.That(GuideIntro.OfflineCaption, Does.StartWith("Welcome to Nerdy AI+VR! My name is Dee"));
-            Assert.That(GuideIntro.OfflineCaption, Does.Contain("Tap the answers below"));
+            Assert.That(GuideIntro.OfflineCaption, Does.Contain("Let's begin").And.Not.Contain("answers"));
         }
 
         // Owner 2026-09-17: Dee greets on arrival, so her bar has to be there from the first card — a voice with

@@ -247,34 +247,23 @@ namespace Airlift.Tests
             }
         }
 
-        /// Owner 2026-09-18, approved on the canvas: ‹ › in the board's bottom-right corner on every screen. They ride
-        /// on Dee's bar, so the station canvas must still cover them above the workbench. Run BuildNavArrows.cs.
-        [Test] public void BackAndNextArrowsSitInTheBoardsBottomRightCornerAndFollowTheBar()
+        /// Owner 2026-09-18 revision: retire corner arrows; preserve real catalog paging and lesson exit.
+        [Test] public void RetiredCornerArrowsCannotReappearButCatalogPagingAndExitRemainWired()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
                 .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
             Assert.That(n.navBack, Is.Not.Null, "run AgentScripts/BuildNavArrows.cs"); Assert.That(n.navNext, Is.Not.Null);
-            var bar = (RectTransform)n.hudRoot.transform;
             foreach (var b in new[] { n.navBack, n.navNext })
             {
-                Assert.That(b.transform.IsChildOf(bar), Is.True, b.name + " rides on the bar");
                 string wired = string.Join(",", Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Select(k => b.onClick.GetPersistentMethodName(k)));
                 Assert.That(wired, Is.EqualTo(b == n.navBack ? "PressBack" : "PressNext"), b.name);
-                Assert.That(b.GetComponent<CanvasGroup>(), Is.Not.Null, b.name + " can be dimmed");
-                // Board corner: the panel's bottom-right minus the edge padding, in welcome-canvas units.
-                var local = bar.anchoredPosition + ((RectTransform)b.transform.parent).anchoredPosition + ((RectTransform)b.transform).anchoredPosition;
-                Assert.That(local.x, Is.GreaterThan(NerdySpace.PanelWidth / 2f - 160f), b.name + " at the right edge");
-                Assert.That(local.x + BuildNavArrowsCircle / 2f, Is.LessThanOrEqualTo(NerdySpace.PanelWidth / 2f - NerdySpace.EdgePadding + 1f), b.name + " inside the panel");
-                Assert.That(local.y, Is.LessThan(-NerdySpace.PanelHeight / 2f + 120f), b.name + " at the bottom");
-                Assert.That(local.y - BuildNavArrowsCircle / 2f - 20f, Is.GreaterThanOrEqualTo(-NerdySpace.PanelHeight / 2f), b.name + " label inside the panel");
+                Assert.That(b.transform.parent.name, Does.StartWith("Retired control"));
+                Assert.That(b.transform.parent.gameObject.activeSelf, Is.False, "even old refresh code cannot expose a hit target");
             }
-            Assert.That(n.navBack.transform.position.x, Is.LessThan(n.navNext.transform.position.x), "‹ left of ›");
-            // Above the workbench the bar is the whole canvas: its rect (and ray clip) must reach the arrows.
-            var station = (RectTransform)n.hudStationCanvas;
-            var arrows = (RectTransform)n.navNext.transform.parent;
-            Assert.That(station.sizeDelta.x / 2f, Is.GreaterThanOrEqualTo(Mathf.Abs(arrows.anchoredPosition.x) + BuildNavArrowsCircle), "station canvas wide enough for the arrows");
-            Assert.That(station.sizeDelta.y / 2f, Is.GreaterThanOrEqualTo(Mathf.Abs(arrows.anchoredPosition.y) + BuildNavArrowsCircle / 2f + 20f), "station canvas tall enough for the arrows");
+            Assert.That(n.wall.previousButton, Is.Not.Null); Assert.That(n.wall.nextButton, Is.Not.Null);
+            Assert.That(n.wall.previousButton.transform.parent.name, Does.Not.StartWith("Retired control"));
+            Assert.That(n.wall.nextButton.transform.parent.name, Does.Not.StartWith("Retired control"));
+            Assert.That(n.exitLessonButton, Is.Not.Null);
         }
-        const float BuildNavArrowsCircle = 44f;
     }
 }

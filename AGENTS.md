@@ -1,5 +1,24 @@
 # Math Workbench: Airlift — instructions for Codex
 
+## September 18 onboarding repair override
+
+Latest owner headset walkthrough confirms tour autostart. The consolidated revision at the top of
+`docs/plans/2026-09-18-onboarding-repair/plan.md` covers navigation cleanup, one lesson exit,
+Dee Play/Stop, and environment/control tour coverage. Owner authorized implementation after planning.
+Source changes and CargoCrew scene are saved; compilation and 133 focused checks pass, as does the
+fresh-fixture runtime tour/three-exit walkthrough. Live narration resume verified the current tour line.
+Owner's final label refinement is Play/Stop only, with a separate microphone notice. Integrated preview
+APK built, credential-scanned, installed and cold-launched. Headset acceptance pending; previous APK,
+saved data and separate release app preserved. See QA record for artifact hash and remaining checks.
+
+Read CLAUDE.md's CURRENT OVERRIDE first. The approved repair is implemented locally for editor review;
+one welcome CTA, catalog-only tour, compact Dee indicator and Exit lesson supersede the old front door.
+Evidence/limits: `docs/qa/onboarding-repair-2026-09-18.md`. Follow-up speech sync passed 44 checks;
+owner-authorized headset preview built, passed the credential scan, installed and launched successfully.
+Latest follow-up automatically starts the catalog tour after questions (26 checks plus runtime verification).
+Autostart preview installed; launch awaits the headset controllers-required dialog. Headset acceptance
+is pending; saved data/release app preserved. No commit or push.
+
 ## September 17, 1:00 PM: intros, splitter, card polish, Dee + language lock; see CLAUDE.md "CURRENT STATE"
 
 Cargo Crew (locked, accepted), Neighborhood Café and Community Garden (built, headset check pending) share one
@@ -152,7 +171,7 @@ legibility and world payoff > submission evidence > Cargo Grid > hands > voice.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **math-workbench-airlift** (5413 symbols, 11263 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **math-workbench-airlift** (6732 symbols, 14273 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
