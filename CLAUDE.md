@@ -1,67 +1,66 @@
 # Math Workbench: Airlift — instructions for Claude
 
-## CURRENT STATE — September 17, 1:00 PM (read this first; older dated sections below are history)
+## CURRENT STATE — September 17, 8:30 PM (read this first; older dated sections below are history)
 
-**What exists (branch `unity-airlift`):** Nerdy AI+VR app (`com.nerdy.vr`): consent card (logo, **Voice language
-English/Español**) → chip welcome → three lesson cards → a dedicated workbench per lesson on one world-locked table
-(carry handle, assistant bar with Pause/Play, Mute, Music). Live OpenAI Realtime voice guide **Dee** performs every
-lesson action by voice, greets with the owner's line, and stays in the chosen language (server-locked).
-- **All three lessons open with a concept intro** before chapter 1 (once per app run): "What is a fraction?" (4 steps),
-  "What is dividing?" (3), "What is multiplying?" (3). Dee reads each step word for word (button: exact-words prompt;
-  voice: `say_exactly` in the tool result). Content: `Scripts/Lessons/ConceptIntro.cs`; contracts
-  `docs/00-build/INTRO-SPLITTER-CONTRACTS.md`.
-- **Cargo Crew / Dock 7 (fractions)** — owner-accepted lesson (53647f9, 2740d8a) with owner-requested changes since:
-  truck/pickup/van bodies, load in the middle, turn left out through a **DOCK EXIT** gate; chunky crates (28 x 11 x
-  12 cm) including the practice/demo crates; **splitter station** front-right (set a crate on the pad, choose
-  Halves 1/2 or Quarters 1/4; wrong size gets a hint; voice "split it" still works).
-- **Neighborhood Café (division)** — pastries 2x with the same chapter numbers; props in the back half; boxes 2 x 3.
-- **Community Garden (multiplication)** — strips/plants 2x for chapters 1-3 and the intro; the 7x6 and 8x7 beds use
-  smaller cells (1.59x / 1.39x of the first build) to fit in front of the card.
-- **Card polish everywhere:** MSAA 4x, render scale 1.0, hi-res card/pill/stroke/shadow sprites, no stencil masks.
-- Café and Garden chapters have still NOT been checked on the headset; neither have the intros or the splitter.
+**Branch `lounge-onboarding`** (off `unity-airlift` at d5ff895; `unity-airlift` still holds the submission state and
+the release app `com.nerdy.vr` on the Quest is build 124258, untouched). Everything below is on the branch.
 
-**Installed on the Quest (Sept 17, 12:58):** `artifacts/qa/cargo-20260917-124258` (397 checks, 44 suites, SHA-256
-c6ef7c5d…, md5 31cf0d02), owner headset check pending. Proxy `node --test` 14/14; dev mint restarted with the
-language lock and `say_exactly` rule. History and evidence: DEV-LOG Sept 17 entries; memory
-`card-polish-and-language-lock`.
+**What exists:** the app opens in the **Nerdy lounge** — a round room with sky, cove light and a carpet — and the
+welcome board is the onboarding surface: the Nerdy AI + VR logo arrival (dots, logo, a progress bar only while the
+guide is really connecting), then a **two-button question** (*I'm an adult tester · turn on the mic* / *Continue
+without voice*). Dee connects during the arrival and greets on sight; the mic stays off until consent
+(`GuidePolicy.MicOn`). Everything else lives behind the **gear** on the assistant bar: a settings card with Voice
+language, Where you learn (Your room = passthrough, Nerdy lounge = the room), and Dee's Pause / Again / Mute. The bar
+keeps the orb, captions, Music and Help. Lessons run exactly as before; the lounge hides while one runs.
+- **Spatial standard** `Scripts/Presentation/NerdySpace.cs`: every panel 1440x840 units at scale 0.001 (1.44 x
+  0.84 m), 1.2 m from the head, 0.25 m below eyes; one type ramp (heading 34 mm); Poppins everywhere (the lesson
+  cards were still Nunito). `SpatialStandardTests` pins it; `AirliftStyle.asset` now points at the Nerdy fonts.
+- **Owner-approved Cargo lock exception (2026-09-17):** the lesson card moved with the standard (0.65 → 1.2 m,
+  920x470 → 1440x840). Golden voice test unchanged and green.
+- Design: `docs/superpowers/specs/2026-09-17-nerdy-front-door-design.md`; contracts `docs/00-build/FRONT-DOOR-CONTRACTS.md`;
+  reference `docs/00-build/REFERENCE-THEATRE-ELSEWHERE.md`; tickets CC-FD-01..10 in TICKETS.md (01, 03, 06 done;
+  04 and 09 partly; the rundown 05a/05b and the discovery wall 07/07b are next). Tile mockups:
+  https://claude.ai/artifact/Sv1f3tnPP6BA84CzDmTbBA. Dee has no body (owner). Six coming-soon worlds named in the spec.
 
-**Non-negotiables:**
-- Cargo Crew stays stable: owner-approved changes only (see above). `CargoVoiceCharacterizationTests` (golden
-  `unity/Assets/Airlift/Tests/EditMode/Golden/cargo-voice.golden.json`) must pass; re-record only after proving the
-  diff is exactly the intended change (normalise step numbers and call ids; compare prefix/suffix).
-- Never rerun `CreateNerdyWelcome.cs`, `CreateFractionChapter.cs`, `ApplyCargoStyle.cs`, `ApplyNerdyStyle.cs` or
-  `PatchCatalogCards.cs` (it re-adds stencil masks). Builder order: `BuildDockWorkbench`, `BuildCafeWorkbench`,
-  `BuildGardenWorkbench`, then `WireLessonStations`, then `PolishCards` (after `python3 scripts/make_card_sprites.py
-  unity/Assets/Airlift/Sprites` if sprites change), then `AddLanguageChoice`. `AddSpanishGlyphs` only when fonts change.
-- Math is deterministic C#; the guide never grades. No timers/stars/scores. Adult testers only (PRIVACY-GATE.md).
-- Commit when the owner asks or after headset acceptance; push only when the owner asks.
+**Preview app on the Quest:** `com.nerdy.vr.lounge` ("Nerdy Lounge (preview)"), installed beside the release app by
+`bash scripts/lounge-preview.sh` (build + install + launch; `--install` skips the build; always restores the package
+id). Voice mints from the deployed Vercel proxy.
 
-**How to work (Unity + agents):**
-- Only the main session runs Unity (Pipeline CLI `unity command …`). Unfocused editor: run
-  `AgentScripts/RefreshAndCompile.cs`, then poll `recompile_status` until completed.
-- Single suite: `unity command run_tests editor <Filter> testName false true 300`, poll `test_status`.
-- Full build: `bash scripts/verify-cargo.sh --suite <all suites> --build --approved-dirty-build` (PlayMode runs
-  first automatically; OnboardingFlowTests is the baseline, never pass it to --suite). Install with adb
-  (`/Applications/Unity/Hub/Editor/6000.6.0f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb`), verify md5,
-  capture `adb logcat -v time -s Unity:I` on the Mac during owner runs.
-- Editor previews from the seated head: `AgentScripts/PreviewDockChapters.cs` (practice, intro, splitter, chapters),
-  `PreviewCafeChapters.cs`, `PreviewGardenChapters.cs` (intro + chapters) → `artifacts/dock7|cafe|garden/`;
-  `PreviewCardEdges.cs` → `artifacts/polish/` at Quest pixel density. Always look at renders before a build.
-- Parallel agents: disjoint file ownership, contract file first, agents never run Unity (they compile offline with
-  Unity's Roslyn). Editor-only test assemblies cannot host MonoBehaviours used with AddComponent.
+**Builder order for the welcome side** (after the lesson builders and `PolishCards`): `AddLanguageChoice` →
+`BuildLounge` → `BuildSettingsPanel` → `ApplySpatialStandards` → `FixWelcomeLayout`. Then **look** at
+`AgentScripts/PreviewWelcomeBoard.cs` → `artifacts/lounge/welcome-board.png` + `welcome-settings.png` (it also dumps
+every element's world rect and every button's wiring) before any build. `PreviewLounge.cs` renders the room.
 
-**Voice server:** **deployed 2026-09-17** to Vercel as `nerdy-guide-proxy`, aliased
-`https://nerdy-guide-proxy.vercel.app` (`/session` rewrites to `api/session`); `OPENAI_API_KEY` lives only in its
-production environment. The scene now mints from it (baked by `AgentScripts/SetMintUrl.cs`, pinned by
-NerdyWelcomeWiringTests). The Mac dev mint (`~/.config/nerdy/start-dev-mint.sh`, port 8787,
-`http://192.168.86.20:8787/session` via `sudo ifconfig en1 alias 192.168.86.20 255.255.255.0`, lost on reboot)
-stays as the offline fallback while `insecureHttpOption` is AlwaysAllowed; restart it after proxy changes. Deploy
-proxy changes with `vercel deploy --prod --yes` from `services/guide-proxy` after `node --test`.
+**Hard-won rules (each cost an hour today):**
+- Every `AgentScripts/*.cs` compiles alone under `run_script`; one cannot call another.
+- Builders must **move** scene objects the director references (rows, Pause/Again/Mute), never copy-and-delete: a
+  rerun that rebuilds from a copy destroys the originals and leaves `NerdyDirector` pointing at nothing.
+- The ray-pointable area of the welcome board **is the `Welcome interface` canvas rect** (RayInteractable →
+  ClippedPlaneSurface). Grow the panel, grow the canvas, or edge buttons cannot be pressed.
+- A UI card must be parented under that canvas; anywhere else it draws nothing (a shadow with no card).
+- Pill sprite rule: `pixelsPerUnitMultiplier = border.x / (height / 2)` or `CardPolishTests` fails; the test
+  wrapper must print every FAIL line, not the first.
+- Owner layout intent, settled after several rounds: content is one evenly spaced block inside the board with ~11%
+  margins; the assistant bar sits inside the board's lower band; the gear is a drawn sprite (`NerdyGear.png`,
+  `scripts/make_gear_sprite.py`), not a word. 2.2 m / 1 m higher was tried and reverted (too far).
 
-**Open owner items:** revert `insecureHttpOption` to NotAllowed once Dee is heard over the deployed proxy on the
-headset (the installed build 124258 still mints from the Mac); consent heading wording; AI-requirement decision (voice guide vs hint router CC-P3-01);
-Library tile (sideloaded apps show only under Unknown Sources; a normal tile needs a Meta release channel); performance run on the Quest; BLUETOOTH permission
-still in the APK; demo footage. Deadline: Friday 2026-09-18, internal target 18:00 CDT.
+**Non-negotiables (unchanged):** Cargo Crew stays stable beyond the approved exception; never rerun
+`CreateNerdyWelcome.cs`, `CreateFractionChapter.cs`, `ApplyCargoStyle.cs`, `ApplyNerdyStyle.cs` or
+`PatchCatalogCards.cs`; math is deterministic C#; adult testers only; commit when the owner asks; push only when asked.
+
+**How to work (Unity):** only the main session runs Unity; `RefreshAndCompile.cs` then poll `recompile_status`;
+single suite `unity command run_tests editor <Filter> testName false true 300` then `test_status` (a rejected
+`run_tests` leaves the *previous* result in `test_status` — check the run actually started). Full release build via
+`bash scripts/verify-cargo.sh`. New suites must be registered in `scripts/cargo-milestones.json`.
+
+**Voice server:** deployed to Vercel as `nerdy-guide-proxy` (`https://nerdy-guide-proxy.vercel.app/session`);
+key only in its production env; scene mints from it (`SetMintUrl.cs`). Mac dev mint remains the offline fallback
+while `insecureHttpOption` is AlwaysAllowed.
+
+**Open owner items:** revert `insecureHttpOption` after Dee is heard over the proxy on the headset; six coming-soon
+names; the shadow-vs-style-guide question on lesson cards; the launcher icons still carry the old wordmark;
+consent heading wording; AI-requirement decision; Library tile; performance run (the lounge is a release gate);
+BLUETOOTH permission; demo footage. Deadline: Friday 2026-09-18, internal target 18:00 CDT.
 
 ## September 17, 12:00 AM: Café + Garden plan approved; six-agent team building
 

@@ -61,3 +61,11 @@ once the owner accepts it on the headset.
 Enter plan mode for Neighborhood Café (division) and Community Garden (multiplication): story, representation,
 chapters, how much of the Dock 7 engine, voice tools and workbench they reuse, and a realistic cut line against
 the Friday 2026-09-18 deadline (internal 18:00 CDT).
+
+## Lock exception L-9 (owner, 2026-09-17 evening): the lesson card follows the spatial standard
+
+The owner chose reading distance as the anchor for `NerdySpace`, so the lesson card above the workbench moved
+from 0.65 m / 920x470 to 1.2 m / 1440x840 with every other panel, and its text is Poppins like the rest of the app.
+`CargoLessonDirector`, `CargoLessonModel`, `CargoChapter`, `OnboardingDirector` and `BuildDockWorkbench` are
+untouched; `CargoVoiceCharacterizationTests` still reproduces the golden script byte for byte. Applied by
+`AgentScripts/ApplySpatialStandards.cs`; pinned by `SpatialStandardTests`.

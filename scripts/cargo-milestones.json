@@ -338,6 +338,14 @@
         {
           "mode": "editor",
           "filter": "LoungeWiringTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "LoungeStoreTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "SpatialStandardTests"
         }
       ],
       "requiredAssets": [],

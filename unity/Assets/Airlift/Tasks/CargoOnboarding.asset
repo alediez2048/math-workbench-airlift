@@ -40,5 +40,5 @@ MonoBehaviour:
   targetPosition: {x: 0, y: 0.08999998, z: 0.02}
   demonstrationSeconds: 4
   placementRadius: 0.16
-  boardDistance: 0.65
-  boardBelowEyes: 0.5
+  boardDistance: 1.2
+  boardBelowEyes: 0.25

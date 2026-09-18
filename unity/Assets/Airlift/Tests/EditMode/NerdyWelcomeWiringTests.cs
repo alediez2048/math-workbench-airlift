@@ -37,20 +37,24 @@ namespace Airlift.Tests
             Assert.That(n.hudStationCanvas.IsChildOf(n.onboarding.transform), Is.True, "assistant card rides with the workbench in the lesson");
             var panelHandle = n.GetComponent<TableHandle>(); Assert.That(panelHandle, Is.Not.Null, "welcome panel has a carry handle");
             Assert.That(panelHandle.grabbable.Transform, Is.EqualTo(n.transform));
-            Assert.That(n.consentRoot.transform.localScale.x, Is.GreaterThan(1.3f), "consent card enlarged");
+            // The consent card used to be scaled up on its own (owner, Sept 16: "bigger consent card"). Since the
+            // spatial standard every panel is one size at one canvas scale, so its size is asserted by
+            // SpatialStandardTests instead and a local scale of 1 is now the correct answer here.
+            Assert.That(n.consentRoot.transform.localScale.x, Is.EqualTo(1f).Within(0.05f), "consent card is standard-sized, not specially scaled");
         }
 
         // Owner 2026-09-17: the logo vanished from the consent card after the launcher-icon attempt re-imported the
         // logo as a plain texture, which removes the sprite the Image points at.
         [Test] public void ConsentCardShowsTheNerdyLogo()
         {
-            var importer = (TextureImporter)AssetImporter.GetAtPath("Assets/Airlift/Branding/nerdy-logo-green.png");
+            var importer = (TextureImporter)AssetImporter.GetAtPath("Assets/Airlift/Branding/nerdy-ai-vr-logo.png");
             Assert.That(importer.textureType, Is.EqualTo(TextureImporterType.Sprite), "logo imports as a sprite");
             var logo = Director().consentRoot.GetComponentsInChildren<Image>(true).FirstOrDefault(i => i.name == "Logo");
             Assert.That(logo, Is.Not.Null, "consent card has a Logo image");
             Assert.That(logo.gameObject.activeSelf && logo.enabled, Is.True);
             Assert.That(logo.sprite, Is.Not.Null, "Logo image has its sprite");
-            Assert.That(logo.sprite.texture.name, Is.EqualTo("nerdy-logo-green"));
+            Assert.That(logo.sprite.texture.name, Is.EqualTo("nerdy-ai-vr-logo"), "owner 2026-09-17: the AI + VR mark everywhere");
+            Assert.That(importer.alphaIsTransparency, Is.True, "the navy plate behind the mark is keyed out");
         }
 
         [Test] public void ConsentCardChoosesTheVoiceLanguage()
@@ -61,12 +65,16 @@ namespace Airlift.Tests
             for (int i = 0; i < 2; i++)
             {
                 var b = n.languageButtons[i];
-                Assert.That(b.transform.IsChildOf(n.consentRoot.transform), Is.True, "chosen on the first screen, before the voice starts");
+                // Owner 2026-09-17: the board asks voice or no voice; language moved behind the gear on the bar.
+                var settings = n.GetComponent<Airlift.Lounge.LoungeSettings>();
+                Assert.That(settings, Is.Not.Null, "run AgentScripts/BuildSettingsPanel.cs");
+                Assert.That(b.transform.IsChildOf(settings.panel.transform), Is.True, "language lives in the settings card");
                 Assert.That(b.GetComponentInChildren<TMP_Text>(true).text, Is.EqualTo(labels[i]));
                 bool wired = Enumerable.Range(0, b.onClick.GetPersistentEventCount()).Any(k => b.onClick.GetPersistentTarget(k) == n && b.onClick.GetPersistentMethodName(k) == "ChooseLanguage");
                 Assert.That(wired, Is.True, labels[i] + " calls ChooseLanguage");
             }
-            Assert.That(n.consentRoot.GetComponentsInChildren<TMP_Text>(true).Any(t => t.text == "Voice language"), Is.True);
+            Assert.That(n.GetComponent<Airlift.Lounge.LoungeSettings>().panel
+                .GetComponentsInChildren<TMP_Text>(true).Any(t => t.text == "Voice language"), Is.True);
             string saved = PlayerPrefs.GetString(GuideLanguage.PrefsKey, "");
             try
             {
@@ -84,12 +92,16 @@ namespace Airlift.Tests
         [Test] public void HudHasPauseAndMusicControlsAndSitsAboveTheLessonPanel()
         {
             var n = Director();
-            Assert.That(n.pauseButton, Is.Not.Null); Assert.That(n.pauseButton.transform.IsChildOf(n.hudRoot.transform), Is.True, "Pause/Play lives on the assistant bar");
+            // Owner 2026-09-17: Pause, Again and Mute live behind the gear now; Music and Help stay on the bar.
+            var settings = n.GetComponent<Airlift.Lounge.LoungeSettings>();
+            Assert.That(n.pauseButton, Is.Not.Null); Assert.That(n.pauseButton.transform.IsChildOf(settings.panel.transform), Is.True, "Pause/Play lives in the settings card");
+            Assert.That(n.repeatButton.transform.IsChildOf(settings.panel.transform), Is.True, "Again lives in the settings card");
+            Assert.That(n.muteButton.transform.IsChildOf(settings.panel.transform), Is.True, "Mute lives in the settings card");
             Assert.That(n.musicButton, Is.Not.Null); Assert.That(n.musicButton.transform.IsChildOf(n.hudRoot.transform), Is.True, "music toggle lives on the assistant bar");
             Assert.That(n.music, Is.Not.Null); Assert.That(n.music.GetComponent<AudioSource>(), Is.Not.Null);
             Assert.That(n.music.guide, Is.EqualTo(n.guide)); Assert.That(n.music.playback, Is.EqualTo(n.playback));
             Assert.That(n.hudStationCanvas.localPosition.y, Is.GreaterThan(0.6f), "assistant card sits above the lesson panel");
-            foreach (var b in new[] { n.pauseButton, n.musicButton, n.muteButton, n.helpButton, n.repeatButton })
+            foreach (var b in new[] { n.musicButton, n.helpButton })
             {
                 var r = b.GetComponent<RectTransform>(); float half = n.hudRoot.GetComponent<RectTransform>().sizeDelta.x / 2f;
                 Assert.That(Mathf.Abs(r.anchoredPosition.x) + r.sizeDelta.x / 2f, Is.LessThanOrEqualTo(half), b.name + " stays inside the bar");

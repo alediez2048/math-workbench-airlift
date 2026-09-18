@@ -42,6 +42,83 @@ namespace Airlift.Tests
         // Dee's pedestal was removed with the rest of the props (owner, 2026-09-17: carpet and whiteboard only).
         // She speaks from the assistant bar on the board; if she is given a place in the room again, test it here.
 
+        [Test] public void TheBoardFramesThePanelAndTheHandleSitsUnderIt()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var board = n.transform.Find("Board");
+            Assert.That(board, Is.Not.Null, "run AgentScripts/BuildLounge.cs");
+
+            var face = board.Find("Board face");
+            float expected = Airlift.Presentation.NerdySpace.PanelWidthMetres + Airlift.Presentation.NerdySpace.BoardMargin * 2f;
+            Assert.That(face.GetComponent<Renderer>().bounds.size.x, Is.EqualTo(expected).Within(0.03f),
+                "the board frames the standard panel rather than dwarfing it");
+
+            var handle = n.transform.Find("Panel handle");
+            float boardBottom = board.Find("Board frame bottom").localPosition.y;
+            Assert.That(handle.localPosition.y, Is.LessThan(boardBottom),
+                "the handle hangs below the board, not across the middle of it");
+        }
+
+        // Owner 2026-09-17, revised: the assistant belongs "at the bottom of the whiteboard, but inside the
+        // whiteboard" — under the content, above the bottom edge, not hanging off the board.
+        [Test] public void TheAssistantBarSitsInsideTheBoardBelowTheContent()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var hud = (RectTransform)n.hudRoot.transform;
+            hud.SetParent(n.hudWelcomeCanvas, false);
+            hud.anchoredPosition = n.hudWelcomePosition;
+            Canvas.ForceUpdateCanvases();
+
+            var bar = new Vector3[4]; hud.GetWorldCorners(bar);
+            float barTop = bar.Max(c => c.y), barBottom = bar.Min(c => c.y);
+
+            var consent = (RectTransform)n.consentRoot.transform;
+            var card = new Vector3[4]; consent.GetWorldCorners(card);
+            float cardBottom = card.Min(c => c.y);
+
+            float contentBottom = float.MaxValue;
+            var corners = new Vector3[4];
+            foreach (RectTransform child in consent)
+            {
+                if (child.sizeDelta.y <= 0f) continue;
+                child.GetWorldCorners(corners);
+                contentBottom = Mathf.Min(contentBottom, corners.Min(c => c.y));
+            }
+
+            Assert.That(barTop, Is.LessThanOrEqualTo(contentBottom + 0.005f), "the bar overlaps the card's content");
+            Assert.That(barBottom, Is.GreaterThanOrEqualTo(cardBottom - 0.005f), "the bar hangs off the bottom of the board");
+        }
+
+        // The board's content is spaced through the board with even margins, and nothing touches anything.
+        // Owner 2026-09-17, after several rounds of too-tight and too-spread: "properly spaced out inside of the
+        // whiteboard". Judged against the rendered board, then pinned here.
+        [Test] public void TheCardContentIsSpacedThroughTheBoardWithoutOverlap()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var consent = (RectTransform)n.consentRoot.transform;
+            var items = consent.Cast<Transform>().Select(c => c as RectTransform)
+                .Where(r => r != null && r.gameObject.activeSelf && r.sizeDelta.y > 0f && r.name != "Stroke")
+                .OrderByDescending(r => r.anchoredPosition.y).ToList();
+
+            for (int i = 1; i < items.Count; i++)
+            {
+                float upperBottom = items[i - 1].anchoredPosition.y - items[i - 1].sizeDelta.y / 2f;
+                float lowerTop = items[i].anchoredPosition.y + items[i].sizeDelta.y / 2f;
+                bool sideBySide = Mathf.Abs(items[i].anchoredPosition.y - items[i - 1].anchoredPosition.y) < 1f;
+                if (!sideBySide)
+                    Assert.That(lowerTop, Is.LessThanOrEqualTo(upperBottom + 0.5f), items[i].name + " overlaps " + items[i - 1].name);
+            }
+
+            float half = consent.sizeDelta.y / 2f;
+            float top = items.Max(r => r.anchoredPosition.y + r.sizeDelta.y / 2f);
+            float bottom = items.Min(r => r.anchoredPosition.y - r.sizeDelta.y / 2f);
+            Assert.That(half - top, Is.GreaterThanOrEqualTo(half * 0.12f), "content runs into the top edge");
+            Assert.That(half - top, Is.LessThanOrEqualTo(half * 0.5f), "content is a small block lost in the board");
+        }
+
         // The room must not stand where the lesson happens: the table, its pieces and the cards own that volume.
         [Test] public void NothingInTheLoungeStandsInTheWorkbenchVolume()
         {
@@ -55,18 +132,78 @@ namespace Airlift.Tests
             }
         }
 
-        [Test] public void TheSceneryChoiceIsOnTheCardAndWired()
+        // Owner 2026-09-17: the welcome board asks one question. Language and scenery moved behind the gear.
+        [Test] public void TheWelcomeBoardKeepsOnlyTheTwoAnswers()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
                 .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
-            var buttons = n.consentRoot.GetComponentsInChildren<Button>(true).Where(b => b.name.StartsWith("Scenery ")).ToArray();
-            Assert.That(buttons.Length, Is.EqualTo(2), "Your room and Nerdy lounge");
-            string[] methods = { "ChooseYourRoom", "ChooseNerdyLounge" };
-            foreach (var m in methods)
-                Assert.That(buttons.Any(b => Enumerable.Range(0, b.onClick.GetPersistentEventCount())
-                    .Any(i => b.onClick.GetPersistentTarget(i) is LoungeRoom && b.onClick.GetPersistentMethodName(i) == m)),
-                    Is.True, m + " is wired to a pill");
-            Assert.That(n.consentRoot.GetComponentsInChildren<TMP_Text>(true).Any(t => t.text == "Where you learn"), Is.True);
+            var buttons = n.consentRoot.GetComponentsInChildren<Button>(true).Select(b => b.name).ToArray();
+            Assert.That(buttons, Is.EquivalentTo(new[] { "Allow voice", "No voice" }),
+                "the board should offer voice or no voice and nothing else");
+        }
+
+        [Test] public void TheOptionsLiveBehindTheGearOnTheAssistantBar()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var settings = n.GetComponent<LoungeSettings>();
+            Assert.That(settings, Is.Not.Null, "run AgentScripts/BuildSettingsPanel.cs");
+            Assert.That(settings.panel, Is.Not.Null);
+            Assert.That(settings.panel.activeSelf, Is.False, "settings start closed");
+
+            var pills = settings.panel.GetComponentsInChildren<Button>(true).Select(b => b.name).ToArray();
+            foreach (var expected in new[] { "Language en", "Language es", "Scenery your room", "Scenery nerdy lounge" })
+                Assert.That(pills, Does.Contain(expected), expected + " belongs in the settings card");
+
+            var gear = n.hudRoot.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name == "Settings gear");
+            Assert.That(gear, Is.Not.Null, "the gear sits on the assistant bar");
+            bool wired = Enumerable.Range(0, gear.onClick.GetPersistentEventCount())
+                .Any(i => gear.onClick.GetPersistentTarget(i) is LoungeSettings && gear.onClick.GetPersistentMethodName(i) == "Toggle");
+            Assert.That(wired, Is.True, "the gear opens the settings card");
+        }
+
+        // Owner 2026-09-17: the settings control overlapped its neighbour, and a word is not a gear.
+        [Test] public void TheBarControlsNeverOverlapAndTheGearIsAnIcon()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
+                .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var bar = (RectTransform)n.hudRoot.transform;
+            var controls = bar.Cast<Transform>().Select(t2 => t2 as RectTransform)
+                .Where(r => r != null && r.GetComponent<Button>() != null && r.name != "Music")   // Music is a tag under the orb
+                .OrderBy(r => r.anchoredPosition.x).ToArray();
+
+            for (int i = 1; i < controls.Length; i++)
+            {
+                float leftEdge = controls[i].anchoredPosition.x - controls[i].sizeDelta.x / 2f;
+                float priorRight = controls[i - 1].anchoredPosition.x + controls[i - 1].sizeDelta.x / 2f;
+                Assert.That(leftEdge, Is.GreaterThanOrEqualTo(priorRight - 0.5f),
+                    controls[i].name + " overlaps " + controls[i - 1].name);
+            }
+            float half = bar.sizeDelta.x / 2f;
+            foreach (var r in controls)
+                Assert.That(Mathf.Abs(r.anchoredPosition.x) + r.sizeDelta.x / 2f, Is.LessThanOrEqualTo(half),
+                    r.name + " hangs off the bar");
+
+            // The left half is text: orb, caption, transcript. No button may stand where those draw.
+            foreach (var textName in new[] { "Caption", "You said", "State", "Orb" })
+            {
+                var text = bar.Find(textName) as RectTransform;
+                if (text == null) continue;
+                float textRight = text.anchoredPosition.x + text.sizeDelta.x / 2f;
+                foreach (var r in controls)
+                {
+                    float left = r.anchoredPosition.x - r.sizeDelta.x / 2f;
+                    Assert.That(left, Is.GreaterThanOrEqualTo(textRight - 0.5f), r.name + " stands on the " + textName + " text");
+                }
+            }
+
+            var gear = controls.FirstOrDefault(r => r.name == "Settings gear");
+            Assert.That(gear, Is.Not.Null);
+            var icon = gear.GetComponentsInChildren<Image>(true).FirstOrDefault(i => i.name == "Gear icon");
+            Assert.That(icon, Is.Not.Null, "the gear is drawn, not spelled");
+            Assert.That(icon.sprite, Is.Not.Null);
+            Assert.That(icon.sprite.name, Does.StartWith("NerdyGear"), "Unity may suffix the sprite name on import");
+            Assert.That(gear.GetComponentsInChildren<TMP_Text>(true), Is.Empty, "no leftover text label on the gear");
         }
 
         [Test] public void TheRoomIsBuiltFromTheStyleTokens()

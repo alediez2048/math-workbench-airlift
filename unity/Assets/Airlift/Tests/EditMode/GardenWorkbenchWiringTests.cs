@@ -471,7 +471,9 @@ namespace Airlift.Tests
             var frame = d.transform.Find("Lesson interface"); var card = s.transform.Find("Garden card");
             Assert.That(card, Is.Not.Null);
             Assert.That(card.localPosition, Is.EqualTo(frame.localPosition)); Assert.That(card.localScale, Is.EqualTo(frame.localScale));
-            Assert.That(card.GetComponent<RectTransform>().sizeDelta, Is.EqualTo(new Vector2(920, 470)));
+            // One panel size across the app (owner, 2026-09-17); the number lives in NerdySpace, not in each test.
+            Assert.That(card.GetComponent<RectTransform>().sizeDelta,
+                Is.EqualTo(new Vector2(Airlift.Presentation.NerdySpace.PanelWidth, Airlift.Presentation.NerdySpace.PanelHeight)));
             Assert.That(card.GetComponent<Canvas>().renderMode, Is.EqualTo(RenderMode.WorldSpace));
             Assert.That(card.GetComponentsInChildren<MonoBehaviour>(true).Any(b => b != null && b.GetType().Name == "PointableCanvas"), Is.True, "controller rays reach the card");
             foreach (var t in new[] { s.heading, s.body, s.expressionLine, s.sayHints }) { Assert.That(t, Is.Not.Null); Assert.That(t.transform.IsChildOf(card), Is.True, t.name); }

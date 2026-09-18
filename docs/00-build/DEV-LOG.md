@@ -1,5 +1,31 @@
 # Cargo Crew development log
 
+## 2026-09-17 evening — Nerdy lounge, spatial standard, settings behind a gear, new logo
+
+The app opens in a room now. CC-FD-01/03/06 plus the owner's live corrections through the evening, each checked on
+the headset via the side-by-side preview app (`scripts/lounge-preview.sh`, package `com.nerdy.vr.lounge`).
+
+- **Lounge:** twelve-segment round shell, four glazed bays onto a generated gradient sky, lit cove, carpet. Owner
+  stripped the couches, plants, lamp, shelf and Dee's pedestal ("carpet and whiteboard only"). Your room = the same
+  furniture over passthrough; sky and fog never draw over passthrough. `LoungeRoomTests`, `LoungeWiringTests`.
+- **Arrival** (`LoungeArrival`): dots, the Nerdy AI + VR logo (owner-supplied SVG = a PNG on a navy plate; keyed to
+  transparent and trimmed), a bar that shows real `StartupWork` only. Dee connects during it and greets on sight;
+  the mic stays off until consent. Her bar is up from the first card (`GuidePolicy.AssistantBarVisible`).
+- **One surface:** the board is a child of the welcome panel; the handle moves both.
+- **Spatial standard** (`NerdySpace`, `SpatialStandardTests`, `ApplySpatialStandards.cs`): measured first — panels at
+  1.85 m and 0.65 m, six sizes, headings at 24/36/40/49 mm, lesson cards still in Nunito. Now one size (1440x840
+  after the owner grew it twice), one distance (1.2 m; 2.2 m tried and reverted), one type ramp, Poppins everywhere.
+  Owner-approved Cargo lock exception: the lesson card moved with it. Golden test still green.
+- **Welcome board:** two buttons only. Language, scenery and Dee's Pause/Again/Mute moved into a settings card behind a
+  drawn gear (`NerdyGear.png`). Bar controls sit in the right half, captions in the left.
+- **Bugs found by rendering, not on the headset** (`PreviewWelcomeBoard.cs`): heading/body overlap; buttons over the
+  caption zone; settings card invisible (parented outside the canvas); gear dead (pointable canvas still 960x640);
+  Done reopened the lesson cards (restored every root instead of the ones that had been showing).
+- **Stores** (`LoungeStores.cs`, `LoungeStoreTests` 10/10): settings and library JSON with defaults that survive a
+  missing/older file; no identifiers.
+- Tooling: `scripts/lounge-preview.sh`; `scripts/make_gear_sprite.py`; every AgentScript compiles alone.
+
+
 ## 2026-09-17 evening — Guide proxy deployed to Vercel; the scene mints over https
 
 Owner ran `vercel login` (account alediez2048), which unblocked the last piece of the AI/privacy contract that was

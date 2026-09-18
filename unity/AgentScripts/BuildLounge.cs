@@ -209,26 +209,31 @@ public static class BuildLounge
     {
         var n = UnityEngine.Object.FindAnyObjectByType<NerdyDirector>(FindObjectsInactive.Include)
                 ?? throw new InvalidOperationException("NerdyDirector missing.");
-        var consent = n.consentRoot.transform;
-        var template = consent.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name.StartsWith("Language "))
+        // The language row started on the consent card and now lives in the settings card (BuildSettingsPanel).
+        // Look for it anywhere under the welcome canvas and build the scenery row beside it, wherever that is.
+        var canvas = n.consentRoot.transform.parent;
+        var template = canvas.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name.StartsWith("Language "))
                        ?? throw new InvalidOperationException("Language pills missing (run AddLanguageChoice first).");
-        var label = consent.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t => t.name == "Language label")
+        var languageRow = (RectTransform)template.transform.parent;
+        var home = languageRow.parent;
+        var label = languageRow.GetComponentsInChildren<TMP_Text>(true).FirstOrDefault(t => t.name == "Language label")
                     ?? throw new InvalidOperationException("Language label missing.");
 
-        var old = consent.Find("Scenery row"); if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+        var old = home.Find("Scenery row"); if (old != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
         var row = new GameObject("Scenery row", typeof(RectTransform)).GetComponent<RectTransform>();
-        row.SetParent(consent, false);
-        row.anchoredPosition = new Vector2(0, -158);
+        row.SetParent(home, false);
+        row.anchoredPosition = new Vector2(0, languageRow.anchoredPosition.y - 60f);
         row.sizeDelta = new Vector2(640, 40);
 
         var rowLabel = UnityEngine.Object.Instantiate(label.gameObject, row).GetComponent<TMP_Text>();
         rowLabel.name = "Scenery label"; rowLabel.text = "Where you learn";
-        rowLabel.rectTransform.anchoredPosition = new Vector2(-170, 0);
+        rowLabel.rectTransform.anchoredPosition = label.rectTransform.anchoredPosition;
+        rowLabel.rectTransform.sizeDelta = label.rectTransform.sizeDelta;
 
         string[] names = { "Scenery your room", "Scenery nerdy lounge" };
         string[] copy = { "Your room", "Nerdy lounge" };
         string[] methods = { "ChooseYourRoom", "ChooseNerdyLounge" };
-        float[] xs = { 20f, 185f };
+        var languagePills = languageRow.GetComponentsInChildren<Button>(true).Where(b => b.name.StartsWith("Language ")).OrderBy(b => b.name).ToArray();
         for (int i = 0; i < 2; i++)
         {
             var go = UnityEngine.Object.Instantiate(template.gameObject, row); go.name = names[i];
@@ -236,11 +241,14 @@ public static class BuildLounge
             for (int k = b.onClick.GetPersistentEventCount() - 1; k >= 0; k--) UnityEventTools.RemovePersistentListener(b.onClick, k);
             var call = (UnityEngine.Events.UnityAction)Delegate.CreateDelegate(typeof(UnityEngine.Events.UnityAction), room, methods[i]);
             UnityEventTools.AddPersistentListener(b.onClick, call);
-            var r = go.GetComponent<RectTransform>(); r.anchoredPosition = new Vector2(xs[i], 0); r.sizeDelta = new Vector2(150, 40);
+            var r = go.GetComponent<RectTransform>();
+            var match = i < languagePills.Length ? (RectTransform)languagePills[i].transform : null;
+            r.anchoredPosition = match != null ? match.anchoredPosition : new Vector2(20f + i * 165f, 0f);
+            r.sizeDelta = match != null ? match.sizeDelta : new Vector2(150f, 40f);
             go.GetComponentInChildren<TMP_Text>(true).text = copy[i];
         }
         EditorUtility.SetDirty(n);
-        return "\"Where you learn\" row on the consent card";
+        return "\"Where you learn\" row beside the language row (" + home.name + ")";
     }
 
     // ---- sky -----------------------------------------------------------------------------------------------------
@@ -319,8 +327,11 @@ public static class BuildLounge
         board.transform.localPosition = Vector3.zero;
         board.transform.localRotation = Quaternion.identity;
 
-        // Panel space is the card's own: +Z points away from the learner, so the backing sits at positive z.
-        const float w = 1.62f, h = 1.12f, back = 0.035f;
+        // The board frames the panel: one standard panel plus an even margin, so it never dwarfs the card it
+        // carries. Owner 2026-09-17 had a 1.62 m board around a 0.96 m card.
+        float w = NerdySpace.PanelWidthMetres + NerdySpace.BoardMargin * 2f;
+        float h = NerdySpace.PanelHeightMetres + NerdySpace.BoardMargin * 2f;
+        const float back = 0.035f;
         LocalOn(board.transform, "Board face", new Vector3(0f, 0f, back), new Vector3(w, h, 0.05f), matWall);
         LocalOn(board.transform, "Board frame top", new Vector3(0f, h / 2f, back - 0.012f), new Vector3(w + 0.06f, 0.05f, 0.08f), matFrame);
         LocalOn(board.transform, "Board frame bottom", new Vector3(0f, -h / 2f, back - 0.012f), new Vector3(w + 0.06f, 0.05f, 0.08f), matFrame);
@@ -328,6 +339,10 @@ public static class BuildLounge
         LocalOn(board.transform, "Board frame right", new Vector3(w / 2f, 0f, back - 0.012f), new Vector3(0.05f, h + 0.06f, 0.08f), matFrame);
         LocalOn(board.transform, "Board ledge", new Vector3(0f, -h / 2f - 0.06f, back - 0.05f), new Vector3(w + 0.06f, 0.04f, 0.16f), matWood);
         LocalOn(board.transform, "Board cove", new Vector3(0f, h / 2f + 0.05f, back - 0.06f), new Vector3(w - 0.1f, 0.02f, 0.03f), matGlow);
+
+        // The handle belongs under the board, where a hand reaches for it — not floating across the middle of it.
+        var handle = panel.Find("Panel handle");
+        if (handle != null) handle.localPosition = new Vector3(0f, -(h / 2f) - 0.12f, 0f);
         return board;
     }
 
@@ -352,11 +367,20 @@ public static class BuildLounge
         var arrival = go.AddComponent<LoungeArrival>();
         arrival.group = go.GetComponent<CanvasGroup>();
 
-        var logoSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Airlift/Branding/nerdy-logo-green.png");
+        // The Nerdy AI + VR mark. Each AgentScript compiles alone, so the import is made safe here as well.
+        const string logoPath = "Assets/Airlift/Branding/nerdy-ai-vr-logo.png";
+        var logoImporter = AssetImporter.GetAtPath(logoPath) as TextureImporter;
+        if (logoImporter != null && (logoImporter.textureType != TextureImporterType.Sprite || !logoImporter.alphaIsTransparency))
+        {
+            logoImporter.textureType = TextureImporterType.Sprite; logoImporter.spriteImportMode = SpriteImportMode.Single;
+            logoImporter.alphaIsTransparency = true; logoImporter.mipmapEnabled = false; logoImporter.maxTextureSize = 2048;
+            logoImporter.SaveAndReimport();
+        }
+        var logoSprite = AssetDatabase.LoadAssetAtPath<Sprite>(logoPath);
         var logo = new GameObject("Logo", typeof(RectTransform), typeof(Image));
         logo.transform.SetParent(go.transform, false);
         var logoRect = logo.GetComponent<RectTransform>();
-        logoRect.sizeDelta = new Vector2(620f, 253f);
+        logoRect.sizeDelta = new Vector2(720f, 720f * 406f / 1963f);
         var logoImage = logo.GetComponent<Image>();
         logoImage.sprite = logoSprite;
         logoImage.preserveAspect = true;
