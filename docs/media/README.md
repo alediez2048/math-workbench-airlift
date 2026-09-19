@@ -22,4 +22,3 @@ GitHub release. Editor renders used elsewhere in the docs live under `artifacts/
 | 12-garden-planting.jpg | Community Garden: planting rows |
 | 13-garden-sunflowers.jpg | Community Garden chapter 5: 8 × 7 |
 | 14-back-at-wall.jpg | Back on the wall after a lesson |
-| 15-presenter.jpg | The owner presenting, from the 13-minute demo video |

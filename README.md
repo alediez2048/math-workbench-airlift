@@ -9,10 +9,9 @@ garden. The math is checked by deterministic code; the AI explains, never grades
 
 ## Watch it
 
-[![Alejandro presents Nerdy AI + VR, then walks through the whole app on the headset](docs/media/15-presenter.jpg)](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-demo-full-walkthrough.mp4)
+[![Nerdy AI + VR — the full walkthrough on YouTube](docs/media/04-wall-tour.jpg)](https://youtu.be/Qgww5PVUSKo)
 
-- **Full demo, 13 minutes, presented** (the pitch on camera, then every screen on the headset):
-  [nerdy-demo-full-walkthrough.mp4](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-demo-full-walkthrough.mp4) · 1080p
+- **Full demo on YouTube** (every screen on the headset): [youtu.be/Qgww5PVUSKo](https://youtu.be/Qgww5PVUSKo)
 - **Headset cut, 80 seconds**, no talking, straight from a Quest 3S recording:
   [nerdy-ai-vr-demo.mp4](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-demo.mp4)
 - **Landing page:** [nerdy-vr-landing.vercel.app](https://nerdy-vr-landing.vercel.app)
