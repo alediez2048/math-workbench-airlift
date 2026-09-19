@@ -19,21 +19,42 @@ garden. The math is checked by deterministic code; the AI explains, never grades
 
 ![Arrival in the lounge: the Nerdy AI+VR logo assembles on the board and Dee's welcome card appears](docs/media/demo.gif)
 
+## Try it on your Quest
+
+No Unity needed. You need a Meta Quest 3 or 3S with developer mode on (Meta Horizon app › Headset settings ›
+Developer mode) and either [SideQuest](https://sidequestvr.com) or `adb` on your computer.
+
+1. Download [nerdy-ai-vr-preview-v0.2.apk](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-preview-v0.2.apk) (84 MB).
+2. Install it: drop it onto SideQuest, or plug the headset in and run
+
+   ```bash
+   adb install -r nerdy-ai-vr-preview-v0.2.apk
+   ```
+
+3. In the headset, open the App Library, switch the filter to **Unknown Sources**, and launch **Nerdy Lounge (preview)**.
+
+Wi-Fi on the headset gives you Dee's voice; without it she is offline and everything works by buttons and
+captions. The first card asks for the microphone once. Voice listens only after you answer *adult* on the age
+question (or set Age to Adult in settings): this is an adult-tester preview, and your room is visible in
+passthrough only to you. To start over as a new learner: settings › *Clear saved data* twice, or
+`adb shell pm clear com.nerdy.vr.lounge`.
+
 ## Contents
 
-1. [The idea](#the-idea)
-2. [What you do](#what-you-do)
-3. [The three lessons](#the-three-lessons)
-4. [Dee, the voice guide](#dee-the-voice-guide)
-5. [Pedagogy rules the code enforces](#pedagogy-rules-the-code-enforces)
-6. [Privacy and safety](#privacy-and-safety)
-7. [Architecture](#architecture)
-8. [Testing](#testing)
-9. [Build and run](#build-and-run)
-10. [How it was built in five days](#how-it-was-built-in-five-days)
-11. [Known limits and what is next](#known-limits-and-what-is-next)
-12. [Repository map](#repository-map)
-13. [Credits and license](#credits-and-license)
+1. [Try it on your Quest](#try-it-on-your-quest)
+2. [The idea](#the-idea)
+3. [What you do](#what-you-do)
+4. [The three lessons](#the-three-lessons)
+5. [Dee, the voice guide](#dee-the-voice-guide)
+6. [Pedagogy rules the code enforces](#pedagogy-rules-the-code-enforces)
+7. [Privacy and safety](#privacy-and-safety)
+8. [Architecture](#architecture)
+9. [Testing](#testing)
+10. [Build and run](#build-and-run)
+11. [How it was built in five days](#how-it-was-built-in-five-days)
+12. [Known limits and what is next](#known-limits-and-what-is-next)
+13. [Repository map](#repository-map)
+14. [Credits and license](#credits-and-license)
 
 ## The idea
 
@@ -240,7 +261,11 @@ unity command run_tests editor GuidePolicyTests testName false true 300
 
 ## Build and run
 
-You need Unity 6000.6.0f1 with the Android modules, a Quest 3 or 3S in developer mode, and `adb`.
+To just play it, see [Try it on your Quest](#try-it-on-your-quest). To build it yourself you need Unity 6000.6.0f1
+with the Android modules, **Git LFS installed before cloning** (fonts and textures are stored in LFS), a Quest 3
+or 3S in developer mode, and `adb`. The first import pulls the Meta XR SDK from Meta's package registry and takes
+ten to fifteen minutes; the scene is committed, so no builder script needs to run. There is no custom keystore.
+The build talks to the project's own voice proxy; to run your own, see the proxy README.
 
 ```bash
 git clone git@github.com:alediez2048/math-workbench-airlift.git
