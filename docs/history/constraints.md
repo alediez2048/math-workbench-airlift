@@ -1,12 +1,12 @@
 # Constraints — Math Workbench: Airlift
 
-September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+September 15 planning checkpoint: [Cargo Crew review package](../00-build/README.md)
 contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
 is paused for owner review.** This draft does not silently replace the approved
-baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+baseline below. New progress is in [DEV-LOG](../00-build/DEV-LOG.md).
 
 Draft v0.1 · September 14, 2026. Corrected filename for the requested
-“constraings.md.” Derived from the [authoritative plan](docs/plans/2026-09-13-unity-vet/plan.md).
+“constraings.md.” Derived from the [authoritative plan](../plans/2026-09-13-unity-vet/plan.md).
 
 ## Hard boundaries
 
@@ -86,10 +86,10 @@ The contest contains a broad assignment of original entry rights and a
 noncommercial license-back, plus third-party and disclosure conditions. The owner
 must review and record an informed decision before submission. Unity tier/runtime
 terms and exact Meta package licenses also require review; this is not legal clearance.
-See [rule §7](https://hackathon.nerdy.com/terms) and the [prior evidence](docs/plans/2026-09-13-unity-vet/research.md).
+See [rule §7](https://hackathon.nerdy.com/terms) and the [prior evidence](../plans/2026-09-13-unity-vet/research.md).
 
 The GSD Skill Creator repository has additional license considerations; consult
-[skills-review.md](docs/skills-review.md) before copying any of its content into
+[skills-review.md](../skills-review.md) before copying any of its content into
 deliverables. A skill installed as a development reference is not automatically
 a runtime dependency or permission to redistribute it.
 

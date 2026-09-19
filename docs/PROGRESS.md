@@ -1,5 +1,9 @@
 # Project progress and R&D log
 
+> **History.** This log stopped on September 16, 2026. Current progress is in
+> [docs/00-build/DEV-LOG.md](00-build/DEV-LOG.md) and the current state of the app is at the top of
+> [CLAUDE.md](../CLAUDE.md). Kept unchanged below as the record of the first three days.
+
 ## Current status — September 16, 2026
 
 Owner paused work for Claude Code handoff. Read [current handoff](00-build/HANDOFF-2026-09-16.md).
@@ -46,7 +50,7 @@ lesson is not built and full Phase 1 QA remains incomplete.
 | Workstream | Status | Evidence and next action |
 |---|---|---|
 | Research and planning | Draft/vetting complete; execution gates open | [Plan](plans/2026-09-13-unity-vet/plan.md), [research](plans/2026-09-13-unity-vet/research.md). Native Unity, one fraction flagship, conditional Cargo Grid. Not proof of feasibility on this device. |
-| Product documentation | Drafts complete | [PRD](../prd.md), [requirements](../requirements.md), [constraints](../constraints.md), [tech stack](../techstack.md). Keep aligned with the authoritative plan. |
+| Product documentation | Drafts complete | [PRD](history/prd.md), [requirements](history/requirements.md), [constraints](history/constraints.md), [tech stack](history/techstack.md). Keep aligned with the authoritative plan. |
 | Mockup development | Reference package complete | Five interactive views, seven PNG references, [recorded browser checks](mockups/verification.md). No Unity interactions or live AI implemented. |
 | Skills/reuse research | Official automation route selected | [Skills review](skills-review.md). Unity CLI/Pipeline configured; third-party bridge suggestion superseded. 3D interaction skill used for reach/comfort heuristics, not physical validation. |
 | Source control | Verified complete for initial baseline | Private [repository](https://github.com/alediez2048/math-workbench-airlift); `main` and `unity-airlift` pushed at `367a7f485350b0e36cf88eced5e73d94e5dcf0dc`. 35 initial files. Ignore rules, LFS filters and local hook configured. Working branch: `unity-airlift`. |

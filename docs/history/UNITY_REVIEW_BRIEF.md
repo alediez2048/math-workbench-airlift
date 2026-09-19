@@ -1,6 +1,6 @@
 # Math Workbench: Airlift — independent review brief
 
-> The completed RAP review and current plan live in [docs/plans/2026-09-13-unity-vet](docs/plans/2026-09-13-unity-vet/plan.md).
+> The completed RAP review and current plan live in [docs/plans/2026-09-13-unity-vet](../plans/2026-09-13-unity-vet/plan.md).
 
 Review date: September 13, 2026.
 

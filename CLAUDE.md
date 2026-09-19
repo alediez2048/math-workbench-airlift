@@ -1,5 +1,29 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## CURRENT STATE — September 18, evening (read this first; everything below is history in reverse order)
+
+**Branch `docs-and-landing`** off `lounge-onboarding` (commits 456f8f3 Codex's onboarding repair, 1927bfd the
+afternoon's headset fixes). Nothing pushed. The five editor-introduced files (Unity AI packages, build and
+quality settings) are still uncommitted on purpose.
+
+**On the headset** (`com.nerdy.vr.lounge`, build of 1927bfd): lounge arrival, *Let's begin*, three questions,
+Dee's six-stop catalog tour ending on Cargo Crew, the wall, settings with Age pill and language reconnect,
+lessons always in passthrough, three playable lessons. Mic gate: adult only, notice on the bar and caption.
+Known red: `CargoVoiceCharacterizationTests` (golden not rewritten since Codex's welcome change).
+
+**Repository layout (this evening):** root planning files moved to `docs/history/`; `docs/README.md` is the
+map; `docs/WALKTHROUGH.md` and `docs/media/` are the pictures; the landing page source is `site/` (deployed
+to https://nerdy-vr-landing.vercel.app from that folder, `vercel --prod`); `services/guide-proxy/README.md`
+documents the voice server; MIT `LICENSE`. The demo MP4 is under `artifacts/demo/` (ignored) and attached
+to GitHub release `v0.2-hackathon`. Check relative links before committing docs.
+
+**Rules that still hold:** canvas or preview approval before anything reaches the headset or the live site;
+short Unity turns; `export UNITY_PROJECT_PATH=…/unity`; stale-build proof line `[Nerdy] onboarding …`;
+`GetComponent ?? AddComponent` never adds; `System.Math` inside `Airlift.*`; Cargo Crew locked; never rerun
+`CreateNerdyWelcome.cs`, `CreateFractionChapter.cs`, `ApplyCargoStyle.cs`, `ApplyNerdyStyle.cs`,
+`PatchCatalogCards.cs`; key only in `~/.config/nerdy/openai.env` and Vercel; adult testers; commit and push
+only when the owner asks.
+
 ## CURRENT OVERRIDE — September 18 onboarding repair, local editor review
 
 Latest update: owner confirms the installed tour starts automatically. New consolidated repair scope
@@ -285,7 +309,7 @@ September 18, 2026 at 11:59 PM CDT. Internal submission target: 6:00 PM.
 
 Read `docs/plans/2026-09-13-unity-vet/plan.md` and its `research.md` completely
 before changing project files. They are the authoritative plan and evidence.
-`UNITY_PLAN.md` and the numbered Markdown files are retained design history.
+`docs/history/UNITY_PLAN.md` and the numbered Markdown files under `docs/history/` are retained design history.
 If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 ## Platform contract

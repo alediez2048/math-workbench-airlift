@@ -1,16 +1,16 @@
 # Technology stack — Math Workbench: Airlift
 
-September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+September 15 planning checkpoint: [Cargo Crew review package](../00-build/README.md)
 contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
 is paused for owner review.** This draft does not silently replace the approved
-baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+baseline below. New progress is in [DEV-LOG](../00-build/DEV-LOG.md).
 
 Draft v0.2 · September 14, 2026 · scaffold created; XR/device validation pending.
 
 Checkpoint update: native safe APK built and installed on Quest 3S; owner confirms
 passthrough, tracking and grab. Full physical QA and product validation remain
-pending; [device proof](docs/qa/device-proof.md) records the exact evidence.
-The [vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md) owns exact phase
+pending; [device proof](../qa/device-proof.md) records the exact evidence.
+The [vetted execution plan](../plans/2026-09-13-unity-vet/plan.md) owns exact phase
 order and contracts. This document explains what to reuse and what to build.
 
 ## Selected stack
@@ -147,4 +147,4 @@ Do not install/configure it as part of this documentation task.
 
 SceneView, A-Frame, Three.js, Lens Studio, and Snapchat are not additions to this
 stack. They would create a different runtime/delivery path. See the
-[skills review](docs/skills-review.md) for selective reuse of design guidance.
+[skills review](../skills-review.md) for selective reuse of design guidance.

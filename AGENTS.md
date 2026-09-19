@@ -1,5 +1,13 @@
 # Math Workbench: Airlift — instructions for Codex
 
+## September 18 evening: repository layout changed
+
+Root planning files now live in `docs/history/`; `docs/README.md` is the documentation map; the landing page
+source is `site/` (Vercel project nerdy-vr-landing, deploy from that folder); headset stills are in
+`docs/media/`. Branch `docs-and-landing` carries this; commits 456f8f3 (your onboarding repair) and 1927bfd
+(afternoon headset fixes: lessons in AR, settings in lessons, mic auto-on for adults, language reconnect,
+Age pill, tour ends on Cargo Crew) precede it. Read CLAUDE.md's CURRENT STATE first.
+
 ## September 18 onboarding repair override
 
 Latest owner headset walkthrough confirms tour autostart. The consolidated revision at the top of
@@ -77,7 +85,7 @@ September 18, 2026 at 11:59 PM CDT. Internal submission target: 6:00 PM.
 
 Read `docs/plans/2026-09-13-unity-vet/plan.md` and its `research.md` completely
 before changing project files. They are the authoritative plan and evidence.
-`UNITY_PLAN.md` and the numbered Markdown files are retained design history.
+`docs/history/UNITY_PLAN.md` and the numbered Markdown files under `docs/history/` are retained design history.
 If these concise instructions differ from the vetted plan, the vetted plan wins.
 
 ## Platform contract

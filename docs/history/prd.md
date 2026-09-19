@@ -1,9 +1,9 @@
 # PRD — Math Workbench: Airlift
 
-September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+September 15 planning checkpoint: [Cargo Crew review package](../00-build/README.md)
 contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
 is paused for owner review.** This draft does not silently replace the approved
-baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+baseline below. New progress is in [DEV-LOG](../00-build/DEV-LOG.md).
 
 Draft v0.1 · September 14, 2026 · working title and art direction.
 
@@ -14,7 +14,7 @@ and see it do useful work in the world.
 This document synthesizes the vetted plan; it does not authorize new scope.
 [Requirements](requirements.md) define acceptance, [constraints](constraints.md)
 define limits, and [tech stack](techstack.md) defines reuse. The
-[execution plan](docs/plans/2026-09-13-unity-vet/plan.md) remains authoritative.
+[execution plan](../plans/2026-09-13-unity-vet/plan.md) remains authoritative.
 
 ## Problem statement
 
@@ -61,7 +61,7 @@ Offer replayable help and a return to the menu. Finish with an honest introducti
 to one whole, stating that the fraction activity is not in this build yet.
 
 The separate Onboarding scene and source are authored, not yet physically accepted.
-See [verification](docs/qa/onboarding.md). Written instructions and an in-world
+See [verification](../qa/onboarding.md). Written instructions and an in-world
 demonstration are the first iteration; narration, music and richer animation are
 later polish. Halves and the first arithmetic task follow onboarding acceptance.
 
@@ -168,9 +168,9 @@ gate passes; it must reuse the same infrastructure and fit a five-hour cap.
 The owner confirmed the cargo theme on September 14. Keep the experience mixed
 reality: a virtual cargo workbench and miniature aircraft in the real room, not a
 fully virtual port or hangar. Two alternative future settings are recorded in
-[future lesson concepts](docs/future-lessons.md). They are options on paper only.
+[future lesson concepts](../future-lessons.md). They are options on paper only.
 
-The [interactive mockups](docs/mockups/index.html) show arrival, fraction assembly,
+The [interactive mockups](../mockups/index.html) show arrival, fraction assembly,
 equivalence, comparison/repair, and completion. Their navigation and design notes
 are for reviewers, not planned headset UI. They are schematic design references,
 not Unity output or evidence of headset usability. Physical scale is specified in

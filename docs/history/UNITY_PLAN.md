@@ -1,6 +1,6 @@
 # Math Workbench: Airlift — authoritative hackathon plan
 
-> Superseded by the [RAP-vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md); this original draft is preserved as design history.
+> Superseded by the [RAP-vetted execution plan](../plans/2026-09-13-unity-vet/plan.md); this original draft is preserved as design history.
 
 Status: approved planning baseline as of September 13, 2026.
 

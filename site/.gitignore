@@ -1,0 +1,10 @@
+.vercel/
+.env*
+node_modules/
+brand/vector-tools/
+brand/trace-mask.png
+brand/trace-meta.json
+brand/nerdy-ai-vr-logo-preview.png
+.DS_Store
+.vercel
+dist/assets/nerdy-ai-vr-demo.mp4

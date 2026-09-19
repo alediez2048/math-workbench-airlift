@@ -1,14 +1,14 @@
 # Requirements — Math Workbench: Airlift
 
-September 15 planning checkpoint: [Cargo Crew review package](docs/00-build/README.md)
+September 15 planning checkpoint: [Cargo Crew review package](../00-build/README.md)
 contains the proposed narrated-fractions PRD and local phased tickets. **Implementation
 is paused for owner review.** This draft does not silently replace the approved
-baseline below. New progress is in [DEV-LOG](docs/00-build/DEV-LOG.md).
+baseline below. New progress is in [DEV-LOG](../00-build/DEV-LOG.md).
 
 Draft v0.2 · September 14, 2026 · Unity scaffold created; feature acceptance pending.
 
 This is the acceptance contract, not a progress report. It derives from the
-[vetted execution plan](docs/plans/2026-09-13-unity-vet/plan.md), which remains
+[vetted execution plan](../plans/2026-09-13-unity-vet/plan.md), which remains
 authoritative. Product intent lives in [prd.md](prd.md), boundaries in
 [constraints.md](constraints.md), and implementation choices in [techstack.md](techstack.md).
 All requirements below are **unverified** until named evidence is recorded.
@@ -24,7 +24,7 @@ into three chapters. It is not three independent lessons. **Cargo Grid** is the
 only conditional second lesson. No third implemented lesson or second hackathon
 challenge. Café and garden have owner-approved disabled Coming soon cards, not
 implemented lessons. The opening title is Arithmetic Lessons; Cargo Crew opens
-the flagship onboarding. See [onboarding acceptance](docs/qa/onboarding.md).
+the flagship onboarding. See [onboarding acceptance](../qa/onboarding.md).
 
 ## Functional requirements
 
@@ -57,7 +57,7 @@ the flagship onboarding. See [onboarding acceptance](docs/qa/onboarding.md).
 | T06 Near transfer / Apply | Construct 1/2 = 4/8; compare 1/4 and 3/8 with reduced initial support. | No answer preview; separate first-attempt/support/final evidence. |
 
 Alignment is to selected portions of 3.NF.A.2, 4.NF.A.1, and 4.NF.A.2, not full
-coverage of a grade or standard. See the [standards and evidence](docs/plans/2026-09-13-unity-vet/research.md).
+coverage of a grade or standard. See the [standards and evidence](../plans/2026-09-13-unity-vet/research.md).
 
 ## Nonfunctional requirements
 
