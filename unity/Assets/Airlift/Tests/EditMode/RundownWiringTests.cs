@@ -111,5 +111,27 @@ namespace Airlift.Tests
             }
             Assert.That(n.loungeSettings.hideWhileOpen, Does.Contain(n.hudRoot));
         }
+    
+
+        // Owner 2026-09-18: "as soon as the onboarding finishes I'm being forced to start the coffee lesson". The last
+        // stop pointed at whatever tile the chosen filter put first. It points at Cargo Crew, the flagship, whenever
+        // that tile is on the page; every playable tile stays pressable.
+        [Test] public void TheLastStopPointsAtCargoCrewWhateverTheFilter()
+        {
+            var n = Director(); var r = n.rundown;
+            n.catalogRoot.SetActive(true); r.wall.Refresh(new LibraryState()); n.hudRoot.SetActive(true);
+            foreach (var filter in new[] { DashboardFilter.Newest, DashboardFilter.MostViewed, DashboardFilter.Featured })
+            {
+                r.wall.SetFilter(filter);
+                r.PreviewStep(RundownScript.StopCount - 1);
+                var cargo = r.wall.Visible.FirstOrDefault(t => t.lessonId == LoungeRundown.FlagshipLessonId && t.chapter == 0);
+                Assert.That(cargo, Is.Not.Null, filter + ": the last stop brings Cargo Crew onto the page");
+                var corners = new Vector3[4]; ((RectTransform)cargo.transform).GetWorldCorners(corners);
+                var pts = corners.Select(c => r.pointerRoot.InverseTransformPoint(c)).ToArray();
+                var center = new Vector2((pts.Min(p => p.x) + pts.Max(p => p.x)) / 2f, (pts.Min(p => p.y) + pts.Max(p => p.y)) / 2f);
+                Assert.That(Vector2.Distance(r.ring.anchoredPosition, center), Is.LessThan(2f), filter + ": the ring sits on Cargo Crew");
+                foreach (var t in r.wall.Visible.Where(t => t.openable)) { var g = t.GetComponent<CanvasGroup>(); Assert.That(g == null || g.interactable, Is.True, filter + ": " + t.id + " stays pressable"); }
+            }
+        }
     }
 }

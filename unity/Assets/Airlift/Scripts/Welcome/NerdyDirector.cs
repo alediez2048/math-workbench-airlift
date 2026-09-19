@@ -128,6 +128,7 @@ namespace Airlift.Welcome
         {
             if (Flow.Phase != WelcomePhase.Consent) return;
             guide?.Hush();
+            RequestMicPermissionOnce();
             Flow.Begin(); ShowPhase(); ApplyMicPolicy();
             if (Flow.Phase == WelcomePhase.Welcome)
             {
@@ -135,6 +136,31 @@ namespace Airlift.Welcome
                 Caption(line); Say("Say this word for word, then stop: " + line);
             }
             AfterConsent();
+        }
+
+        /// Owner 2026-09-18: the Android microphone prompt comes at the first card's press, where the learner already
+        /// says yes to voice, instead of surprising them mid-lesson. Capture still waits for the age gate and Play.
+        void RequestMicPermissionOnce()
+        {
+            if (Application.isPlaying && !Permission.HasUserAuthorizedPermission(Permission.Microphone)) Permission.RequestUserPermission(Permission.Microphone);
+        }
+
+        /// The Age pill on the settings card (owner 2026-09-18): the same gate as the questions, answerable later.
+        void OnAgeChosen(string band)
+        {
+            Flow.Profile.ageBand = band; SaveProfile();
+            bool browsingOrLearning = Flow.Phase == WelcomePhase.Catalog || Flow.Phase == WelcomePhase.Lesson;
+            if (browsingOrLearning && GuidePolicy.MicAutoOnAfterQuestions(band, Settings.VoiceGuide, Paused)) EnableMicrophone();
+            else { ApplyMicPolicy(); RefreshNavArrows(); }
+        }
+
+        /// The questions are done and the learner is an adult: Dee listens from here on. Stop still cuts it.
+        void EnableMicrophone()
+        {
+            Flow.SetVoiceConsent(true);
+            if (Application.isPlaying && !Permission.HasUserAuthorizedPermission(Permission.Microphone)) Permission.RequestUserPermission(Permission.Microphone);
+            ApplyMicPolicy();
+            Caption("Microphone on: talk to Dee or use the buttons. Stop turns it off.");
         }
 
         public void ToggleMicrophone()
@@ -147,6 +173,7 @@ namespace Airlift.Welcome
         }
         public void ConsentAllowVoice()
         {
+            RequestMicPermissionOnce();
             Flow.Consent(true); ShowPhase();
             if (guide != null) { guide.language = Language; ApplyMicPolicy(); if (!greeted) guide.Begin(); }
             if (!greeted) StartCoroutine(GreetWhenLive());
@@ -224,10 +251,22 @@ namespace Airlift.Welcome
         /// Consent card: the voice language for the whole session (owner 2026-09-17). The server locks the minted session to it.
         public void ChooseLanguage(string code)
         {
+            string previous = Language;
             Language = GuideLanguage.Normalize(code);
             try { PlayerPrefs.SetString(GuideLanguage.PrefsKey, Language); } catch (System.Exception) { }
             settingsPanel?.SetLanguage(Language);
             if (guide != null) guide.language = Language;
+            // Owner 2026-09-18: Spanish chosen in settings, Dee kept speaking English. The session is locked in the
+            // language it was minted in, so she is reconnected and picks up where she was (tour line, lesson step, greeting).
+            bool connected = guide != null && (guide.Mode == GuideMode.Live || guide.State == "minting" || guide.State == "connecting");
+            if (Application.isPlaying && GuidePolicy.ReconnectForLanguage(previous, Language, connected, Paused))
+            {
+                guide.End(); guide.language = Language; guide.Begin();
+                int version = ++resumeVersion;
+                if (Flow.Phase == WelcomePhase.Consent) StartCoroutine(GreetWhenLive());
+                else StartCoroutine(ResumeWhenLive(version));
+                Caption(Language == "es" ? "Dee ahora habla español." : "Dee now speaks English.");
+            }
             if (languageButtons != null)
                 for (int i = 0; i < languageButtons.Length && i < GuideLanguage.Codes.Length; i++)
                 {
@@ -282,6 +321,16 @@ namespace Airlift.Welcome
             if (Flow.Phase != WelcomePhase.Welcome) return;
             guide?.Hush();
             GoToCatalog();
+            RemindAge();
+        }
+
+        /// Owner 2026-09-18: said out loud and in the caption, not only on the bar. No age answer means Dee cannot
+        /// listen (adult testers only); the Age pill on the settings card fixes that in one press.
+        void RemindAge()
+        {
+            if (GuidePolicy.MicNotice(Flow.Profile.ageBand, Settings.VoiceGuide, Paused) != GuidePolicy.AgeNotice) return;
+            Caption(GuidePolicy.AgeNotice + ".");
+            Say("Say this word for word, then stop: Set your age in settings to talk with me.");
         }
 
         void OnToolCall(string name, string callId, string args)
@@ -498,6 +547,7 @@ namespace Airlift.Welcome
             else if (Flow.Phase == WelcomePhase.Lesson) Flow.BackToCatalog();
             if (fromQuestions) { Library.RundownSeen = false; SaveLibrary(); }
             ShowWall();
+            if (fromQuestions && GuidePolicy.MicAutoOnAfterQuestions(Flow.Profile.ageBand, Settings.VoiceGuide, Paused)) EnableMicrophone();
             if (TourDue) { StartTour(0); return; }
             if (guide != null && narrate && !(rundown != null && rundown.Running)) Say("Say one short sentence: the lessons are in front of them and " + LessonCatalog.ReadyPhrase() + ". Then stop.");
         }
@@ -541,6 +591,7 @@ namespace Airlift.Welcome
             Debug.Log("[Nerdy] catalog tour " + (skipped ? "skipped" : "completed"));
             Flow.MarkRundownSeen(); Library.RundownSeen = true; SaveLibrary();
             if (skipped) { Caption("You can replay the tour from the gear any time."); Say("Say in a few words that they can replay the tour from the gear any time. Then stop."); }
+            RemindAge();
             RefreshNavArrows();
         }
 
@@ -604,9 +655,10 @@ namespace Airlift.Welcome
             if (micLabel != null) micLabel.text = Flow.VoiceConsented ? "Mic on" : "Mic off";
             if (conversationLabel != null) conversationLabel.text = Paused ? "▶ Play" : "■ Stop";
             if (pauseLabel != null) pauseLabel.text = Paused ? "Play" : "Stop";
-            string notice = Paused ? CanListen && !Muted && Settings.VoiceGuide ? "Play enables microphone" : "Microphone stays off" : "";
+            string notice = Paused ? CanListen && !Muted && Settings.VoiceGuide ? "Play enables microphone" : "Microphone stays off"
+                : GuidePolicy.MicNotice(Flow.Profile.ageBand, Settings.VoiceGuide, Paused);
             if (conversationNotice != null) conversationNotice.text = notice;
-            if (settingsConversationNotice != null) settingsConversationNotice.text = Paused ? notice : "Conversation";
+            if (settingsConversationNotice != null) settingsConversationNotice.text = Paused || !string.IsNullOrEmpty(notice) ? notice : "Conversation";
         }
         static void Dim(Button b, bool on)
         {
@@ -691,9 +743,12 @@ namespace Airlift.Welcome
                 settingsPanel.Bind(Settings, Library);
                 settingsPanel.Changed += ApplySettings;
                 settingsPanel.ReplayRundownRequested += ReplayRundown;
+                settingsPanel.SetAge(Flow.Profile.ageBand);
+                settingsPanel.AgeChosen += OnAgeChosen;
                 settingsPanel.SavedDataCleared += () => { Flow.RundownSeen = false; if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); };
             }
             if (rundown != null) { rundown.StepShown += OnRundownStep; rundown.Ended += OnRundownEnded; }
+            if (loungeSettings != null) { loungeSettings.Opened += ApplyWelcomeRaySurface; loungeSettings.Closed += ApplyWelcomeRaySurface; }
             if (wall != null) wall.TileOpened += (lesson, chapter) => OpenTile(lesson, chapter);
             if (backButton != null) backButton.Pressed += PressBack;
         }
@@ -975,8 +1030,16 @@ namespace Airlift.Welcome
             if (onboarding != null && onboarding.catalog != null) onboarding.catalog.SetActive(false);
             // The welcome canvas stays in the world during the lesson; its invisible ray surface must not
             // steal presses from the workbench card when it ends up closer to the controller.
-            if (hudWelcomeCanvas != null) { var ray = hudWelcomeCanvas.Find("ISDK_RayCanvasInteraction"); if (ray != null) ray.gameObject.SetActive(!lesson); }
+            ApplyWelcomeRaySurface();
             ApplyFallbackButtons();
+        }
+
+        /// Off during a lesson, back while the settings card (which lives on that canvas) is open.
+        void ApplyWelcomeRaySurface()
+        {
+            if (hudWelcomeCanvas == null) return;
+            var ray = hudWelcomeCanvas.Find("ISDK_RayCanvasInteraction");
+            if (ray != null) ray.gameObject.SetActive(GuidePolicy.WelcomeRaySurfaceOn(Flow.Phase, SettingsOpen));
         }
 
         void LateUpdate()

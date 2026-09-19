@@ -56,5 +56,24 @@ namespace Airlift.Tests
         {
             Assert.That(SettingsPanel.OnOff(true), Is.EqualTo("On")); Assert.That(SettingsPanel.Percent(0.4f), Is.EqualTo("40%"));
         }
+    
+
+        // Owner 2026-09-18: a learner who skipped the questions has no age answer, so Dee may not listen (adult
+        // testers only). The settings card gets one Age pill that cycles the bands, adult first, and tells the director.
+        [Test] public void AgePillCyclesAdultFirstAndTellsTheDirector()
+        {
+            string chosen = null; panel.AgeChosen += b => chosen = b;
+            Assert.That(panel.AgeBand, Is.EqualTo(""));
+            Assert.That(SettingsPanel.AgeLabel(""), Is.EqualTo("Not answered"));
+            panel.CycleAge(); Assert.That(panel.AgeBand, Is.EqualTo("adult")); Assert.That(chosen, Is.EqualTo("adult"));
+            Assert.That(SettingsPanel.AgeLabel("adult"), Is.EqualTo("Adult"));
+            panel.CycleAge(); Assert.That(panel.AgeBand, Is.EqualTo("14_to_17"));
+            panel.CycleAge(); panel.CycleAge(); Assert.That(panel.AgeBand, Is.EqualTo("under_10"));
+            panel.CycleAge(); Assert.That(panel.AgeBand, Is.EqualTo("prefer_not_to_say"));
+            panel.CycleAge(); Assert.That(panel.AgeBand, Is.EqualTo("adult"), "wraps");
+            panel.SetAge("10_to_13"); Assert.That(panel.AgeBand, Is.EqualTo("10_to_13")); Assert.That(chosen, Is.EqualTo("adult"), "binding the saved answer is not a choice");
+            panel.ClearSavedData(); panel.ClearSavedData();
+            Assert.That(panel.AgeBand, Is.EqualTo(""), "the profile went with the saved data");
+        }
     }
 }

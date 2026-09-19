@@ -21,6 +21,9 @@ namespace Airlift.Lounge
         /// Passthrough until the learner asks for the room: their own space is the safer place to start, and the
         /// lessons are built for it.
         public const Scenery Default = Scenery.YourRoom;
+        /// Owner 2026-09-18: "lessons only show in AR". Whatever scenery the learner chose on the wall, a lesson runs
+        /// over passthrough with no sky or fog; the choice returns with the wall.
+        public static SceneryState Lesson => For(Scenery.YourRoom);
 
         public static SceneryState For(Scenery scenery) => scenery == Scenery.NerdyLounge
             ? new SceneryState(shell: true, furniture: true, passthrough: false, sky: true, fog: true)
@@ -83,7 +86,12 @@ namespace Airlift.Lounge
         public void Apply(Scenery scenery)
         {
             Mode = scenery;
-            var state = LoungeScenery.For(scenery);
+            ApplyState(LoungeScenery.For(scenery));
+            SceneryChanged?.Invoke(scenery);
+        }
+
+        void ApplyState(SceneryState state)
+        {
             if (shell != null) shell.SetActive(state.ShellVisible);
             if (furniture != null) furniture.SetActive(state.FurnitureVisible);
             if (passthrough != null) passthrough.enabled = state.PassthroughOn;
@@ -103,7 +111,6 @@ namespace Airlift.Lounge
                 cam.clearFlags = state.SkyVisible ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor;
                 if (!state.SkyVisible) cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
             }
-            SceneryChanged?.Invoke(scenery);
         }
 
         /// UnityEvent-friendly overloads for the scenery pills in the scene.
@@ -113,11 +120,12 @@ namespace Airlift.Lounge
         /// The board rides with the welcome panel, so it is hidden by phase rather than by scenery.
         public void ShowBoard(bool on) { if (board != null && board.activeSelf != on) board.SetActive(on); }
 
-        /// The whole root, off only while a lesson runs.
+        /// The whole root, off only while a lesson runs. The passthrough layer, sky and fog live outside this root, so
+        /// hiding it is not enough: the lesson state is applied explicitly and the chosen scenery comes back with Show(true).
         public void Show(bool on)
         {
             if (gameObject.activeSelf != on) gameObject.SetActive(on);
-            if (on) Apply(Mode);
+            if (on) Apply(Mode); else ApplyState(LoungeScenery.Lesson);
         }
     }
 }

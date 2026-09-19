@@ -11,6 +11,20 @@ namespace Airlift.Lounge
     {
         public const string ClearArmedLabel = "Press again to clear", ClearLabel = "Clear saved data", ClearedLabel = "Cleared";
         public static readonly float[] VolumeSteps = { 1f, 0.75f, 0.5f, 0.25f, 0f };
+        /// Owner 2026-09-18: the age answer from the settings card, adult first because that is who tests today.
+        public static readonly string[] AgeCycle = { "adult", "14_to_17", "10_to_13", "under_10", "prefer_not_to_say" };
+        public static string AgeLabel(string band)
+        {
+            switch (band)
+            {
+                case "adult": return "Adult";
+                case "14_to_17": return "14 to 17";
+                case "10_to_13": return "10 to 13";
+                case "under_10": return "Under 10";
+                case "prefer_not_to_say": return "Prefer not to say";
+                default: return "Not answered";
+            }
+        }
 
         [Serializable] public sealed class LabelRef { public string key; public TMP_Text label; }
         public List<LabelRef> labels = new List<LabelRef>();
@@ -22,6 +36,9 @@ namespace Airlift.Lounge
         public LibraryState Library { get; private set; } = new LibraryState();
         public event Action<string> Changed;
         public event Action ReplayRundownRequested;
+        /// The profile stays NerdyDirector's; the card only reports the band the learner picked.
+        public event Action<string> AgeChosen;
+        public string AgeBand { get; private set; } = "";
         public event Action SavedDataCleared;
         float clearArmedUntil = -1f;
 
@@ -93,6 +110,19 @@ namespace Airlift.Lounge
             switch (bus) { case "Voice": return State.VoiceVolume; case "Music": return State.MusicVolume; case "Effects": return State.EffectsVolume; default: return 1f; }
         }
 
+        /// Bound from the saved profile; not a choice, so no event.
+        public void SetAge(string band) { AgeBand = band ?? ""; RefreshLabels(); }
+
+        /// The Age pill: adult → 14 to 17 → 10 to 13 → under 10 → prefer not to say → adult.
+        public void CycleAge()
+        {
+            int i = Array.IndexOf(AgeCycle, AgeBand);
+            AgeBand = AgeCycle[(i + 1) % AgeCycle.Length];
+            NerdyHaptics.Tick();
+            RefreshLabels();
+            AgeChosen?.Invoke(AgeBand);
+        }
+
         public void SetLanguage(string code) { if (State.Language != code) { State.Language = code; Save("Language"); } }
 
         public void ResetToDefaults()
@@ -114,6 +144,7 @@ namespace Airlift.Lounge
             Library.ClearAll();
             SaveLibrary();
             try { Airlift.Welcome.LearnerProfile.Clear(); } catch (Exception) { }
+            AgeBand = "";
             SavedDataCleared?.Invoke();
             RefreshLabels(ClearedLabel);
         }
@@ -135,6 +166,7 @@ namespace Airlift.Lounge
                     case "VoiceGuide": case "Captions": case "Haptics": case "ButtonLabels": l.label.text = OnOff(Get(l.key)); break;
                     case "Voice": case "Music": case "Effects": l.label.text = l.key + " " + Percent(Volume(l.key)); break;
                     case "Clear": l.label.text = clearText ?? (ClearArmed ? ClearArmedLabel : ClearLabel); break;
+                    case "Age": l.label.text = AgeLabel(AgeBand); break;
                 }
             }
             if (versionText != null) versionText.text = "Nerdy AI+VR " + Application.version + " · build " + Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length));

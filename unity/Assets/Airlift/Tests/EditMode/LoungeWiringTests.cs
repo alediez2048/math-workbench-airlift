@@ -265,5 +265,22 @@ namespace Airlift.Tests
             Assert.That(n.wall.nextButton.transform.parent.name, Does.Not.StartWith("Retired control"));
             Assert.That(n.exitLessonButton, Is.Not.Null);
         }
+    
+
+        // Owner 2026-09-18: the age answer can be given from the settings card too, so a learner who skipped the
+        // questions can still let Dee listen. One pill, wired to CycleAge, with a live label.
+        [Test] public void TheSettingsCardHasAnAgePillWiredToTheDirector()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var settings = n.GetComponent<LoungeSettings>(); Assert.That(settings, Is.Not.Null);
+            var row = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).FirstOrDefault(r => r.name == "Age row");
+            Assert.That(row, Is.Not.Null, "run AgentScripts/AddAgeRow.cs");
+            var pill = row.GetComponentInChildren<Button>(true); Assert.That(pill, Is.Not.Null);
+            var sp = n.settingsPanel; Assert.That(sp, Is.Not.Null);
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == sp && pill.onClick.GetPersistentMethodName(k) == "CycleAge");
+            Assert.That(wired, Is.True, "the Age pill calls SettingsPanel.CycleAge");
+            Assert.That(sp.labels.Any(l => l.key == "Age" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the pill shows the current answer");
+            Assert.That(n.conversationNotice, Is.Not.Null); Assert.That(n.conversationNotice.rectTransform.sizeDelta.x, Is.GreaterThanOrEqualTo(300f), "room for the age notice");
+        }
     }
 }

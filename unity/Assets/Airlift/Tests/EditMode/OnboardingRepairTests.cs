@@ -69,5 +69,23 @@ namespace Airlift.Tests
             Assert.That(r.CanOpenLesson, Is.True);
             r.Start(); r.Skip(); Assert.That(r.CanOpenLesson, Is.True);
         }
+    
+
+        // Owner 2026-09-18: the small bar notice was missed; when the questions are skipped without an age answer the
+        // caption (and Dee) say why she cannot listen. With no tour in the scene the caption stays as written.
+        [Test] public void SkippingTheQuestionsWithoutAnAgeSaysWhyDeeCannotListen()
+        {
+            var go = new GameObject("skip notice test");
+            try
+            {
+                var n = go.AddComponent<NerdyDirector>();
+                n.captionText = new GameObject("caption", typeof(RectTransform)).AddComponent<TMPro.TextMeshProUGUI>();
+                n.captionText.transform.SetParent(go.transform);
+                n.Flow.Begin(); n.SkipQuestions();
+                Assert.That(n.Flow.Phase, Is.EqualTo(WelcomePhase.Catalog));
+                Assert.That(n.captionText.text, Does.Contain(GuidePolicy.AgeNotice));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
     }
 }

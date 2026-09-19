@@ -37,6 +37,8 @@ namespace Airlift.Lounge
         public bool Voice { get; private set; }
         public event Action<RundownStep, string> StepShown;
         public event Action<bool> Ended;
+        /// The lesson the tour ends on: Cargo Crew, chapter 1.
+        public const string FlagshipLessonId = "cargo_crew_fractions";
 
         bool subscribed, settingsWereOpened;
         Scenery lastScenery;
@@ -95,6 +97,10 @@ namespace Airlift.Lounge
             if (Running && wall != null && wall.PageCount <= 1 && (step.Gate == RundownGate.PageNext || step.Gate == RundownGate.PageBack)) { Report(step.Gate); return; }
             if (Running && step.Gate == RundownGate.SceneryChanged && (lounge == null || yourRoomButton == null || nerdyLoungeButton == null)) { Report(step.Gate); return; }
             if (stepLabel != null) stepLabel.text = step.Eyebrow;
+            // The last stop ends on Cargo Crew. A filter chosen at stop 1 (Newest) leaves it off the page, so the wall
+            // goes back to Featured first; every playable tile stays pressable (owner 2026-09-18: "forced to start the coffee lesson").
+            if (step.Target == TourTarget.FirstTile && wall != null && !wall.Visible.Any(v => v.openable && v.lessonId == FlagshipLessonId && v.chapter == 0))
+                wall.SetFilter(Airlift.Welcome.DashboardFilter.Featured);
             string say = settingsWereOpened ? SettingsInstruction : Voice ? step.Say : step.SayWithoutVoice;
             Point(step);
             StepShown?.Invoke(step, say);
@@ -137,7 +143,12 @@ namespace Airlift.Lounge
             {
                 case TourTarget.ConsentPills: foreach (var b in consentPills) if (b != null) yield return (RectTransform)b.transform; break;
                 case TourTarget.NextArrow: if (nextArrow != null) yield return (RectTransform)nextArrow.transform; break;
-                case TourTarget.FirstTile: { var t = wall != null ? wall.Visible.FirstOrDefault() : null; if (t != null) yield return (RectTransform)t.transform; break; }
+                case TourTarget.FirstTile:
+                {
+                    // The flagship when it is on the page (owner 2026-09-18: a filter had put the café first), else the first tile.
+                    var t = wall != null ? wall.Visible.FirstOrDefault(v => v.openable && v.lessonId == FlagshipLessonId && v.chapter == 0) ?? wall.Visible.FirstOrDefault() : null;
+                    if (t != null) yield return (RectTransform)t.transform; break;
+                }
                 case TourTarget.Filters: foreach (var b in new[] { wall?.featuredButton, wall?.newestButton, wall?.mostViewedButton }) if (b != null) yield return (RectTransform)b.transform; break;
                 case TourTarget.Gear: if (gearButton != null) yield return (RectTransform)gearButton.transform; break;
                 case TourTarget.BackArrow: if (backArrow != null) yield return (RectTransform)backArrow.transform; break;

@@ -28,6 +28,17 @@ namespace Airlift.Tests
             Assert.That(s.FogOn, Is.False, "fog would grey out passthrough");
         }
 
+        // Owner 2026-09-18: "lessons only show in AR". Hiding the lounge for a lesson must also drop the sky, fog and
+        // passthrough-off that the Nerdy lounge scenery set, or the workbench floats in a blue void with no walls.
+        [Test] public void LessonsAlwaysRunInArWhateverSceneryWasChosen()
+        {
+            var s = LoungeScenery.Lesson;
+            Assert.That(s.PassthroughOn, Is.True, "the workbench sits in the learner's own room");
+            Assert.That(s.ShellVisible, Is.False);
+            Assert.That(s.SkyVisible, Is.False, "the lounge sky must not follow the learner into a lesson");
+            Assert.That(s.FogOn, Is.False);
+        }
+
         [Test] public void ArIsTheDefaultUntilTheLearnerChooses()
         {
             Assert.That(LoungeScenery.Default, Is.EqualTo(Scenery.YourRoom));

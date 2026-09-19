@@ -37,7 +37,7 @@ public static class ApplyControlCleanup
         }
         n.conversationNotice.text = ""; n.conversationNotice.raycastTarget = false;
         n.conversationNotice.rectTransform.anchoredPosition = new Vector2(260, -28);
-        n.conversationNotice.rectTransform.sizeDelta = new Vector2(236, 20);
+        n.conversationNotice.rectTransform.sizeDelta = new Vector2(320, 20);
         n.conversationNotice.fontSizeMin = 12; n.conversationNotice.fontSizeMax = 14;
         n.conversationNotice.alignment = TextAlignmentOptions.Center;
         var control = (RectTransform)n.conversationButton.transform;

@@ -29,7 +29,8 @@ namespace Airlift.Tests
                 Assert.That(n.conversationNotice.text, Is.EqualTo(notice));
                 n.TogglePause();
                 Assert.That(n.conversationLabel.text, Is.EqualTo("■ Stop"));
-                Assert.That(n.conversationNotice.text, Is.Empty);
+                // Owner 2026-09-18: while Dee cannot listen the notice says why (no age answer yet); adults get no notice.
+                Assert.That(n.conversationNotice.text, Is.EqualTo(age == "adult" ? "" : GuidePolicy.AgeNotice));
             } finally { Object.DestroyImmediate(go); }
         }
 
