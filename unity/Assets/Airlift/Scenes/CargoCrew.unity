@@ -38441,12 +38441,12 @@ GameObject:
   - component: {fileID: 289760858}
   - component: {fileID: 289760857}
   m_Layer: 0
-  m_Name: No voice
+  m_Name: Skip onboarding
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &289760856
 RectTransform:
   m_ObjectHideFlags: 0
@@ -38464,8 +38464,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 170, y: -110}
-  m_SizeDelta: {x: 260, y: 56}
+  m_AnchoredPosition: {x: 147, y: -110}
+  m_SizeDelta: {x: 270, y: 56}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &289760857
 MonoBehaviour:
@@ -38540,7 +38540,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1877789747}
         m_TargetAssemblyTypeName: Airlift.Welcome.NerdyDirector, Airlift.Runtime
-        m_MethodName: ConsentNoVoice
+        m_MethodName: SkipOnboardingNow
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -92049,8 +92049,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -110}
-  m_SizeDelta: {x: 300, y: 56}
+  m_AnchoredPosition: {x: -147, y: -110}
+  m_SizeDelta: {x: 270, y: 56}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &696083222
 MonoBehaviour:
@@ -122141,7 +122141,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 288, y: 52}
+  m_SizeDelta: {x: 258, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &946436486
 MonoBehaviour:
@@ -142773,7 +142773,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 248, y: 52}
+  m_SizeDelta: {x: 258, y: 52}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1088201404
 MonoBehaviour:
@@ -142795,7 +142795,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: Skip onboarding
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
   m_sharedMaterial: {fileID: -227747822308592786, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}

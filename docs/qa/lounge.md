@@ -59,6 +59,14 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 | D7 | Clear saved data, twice | Label says *Press again to clear*, then *Cleared*: Continue ribbon goes to Cargo chapter 1, the rundown will run on next launch |
 | D8 | Reset settings | Switches and volumes back to defaults; language stays |
 
+## A2. Skip onboarding from the welcome card (added 2026-09-28)
+
+| # | Do | Expect |
+|---|---|---|
+| A2.1 | Welcome card → **Skip onboarding** (right of Let's begin) | The wall, no questions, no tour; age reminder if age is not adult. |
+| A2.2 | Open a lesson → Exit lesson | Dee stops mid-sentence; the wall returns without a new line from her. |
+| A2.3 | Mac: `adb logcat -d -s Unity:I \| grep "\[Guide\] said"` | Every finished line, prefixed with the session language, e.g. `said (es): …`. |
+
 ## D2. Skip onboarding (tester switch, added 2026-09-28)
 
 | # | Do | Expect |

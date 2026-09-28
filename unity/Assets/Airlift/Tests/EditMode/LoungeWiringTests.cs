@@ -138,7 +138,7 @@ namespace Airlift.Tests
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
                 .SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
             var buttons = n.consentRoot.GetComponentsInChildren<Button>(true).Select(b => b.name).ToArray();
-            Assert.That(buttons, Is.EquivalentTo(new[] { "Allow voice", "No voice" }),
+            Assert.That(buttons, Is.EquivalentTo(new[] { "Allow voice", "Skip onboarding" }),   // owner 2026-09-28: Let's begin + Skip onboarding
                 "the board should offer voice or no voice and nothing else");
         }
 
@@ -298,6 +298,24 @@ namespace Airlift.Tests
             var age = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).First(r => r.name == "Age row");
             var actions = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).First(r => r.name == "Actions row");
             Assert.That(age.anchoredPosition.y - NerdySpace.PillHeight / 2f, Is.GreaterThan(actions.anchoredPosition.y + NerdySpace.PillHeight / 2f), "the Age row stays clear of the actions row");
+        }
+
+
+        // Owner 2026-09-28: "the skip onboarding button should be right next to Let's begin".
+        [Test] public void TheWelcomeCardHasSkipOnboardingBesideLetsBegin()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var consent = n.consentRoot.transform;
+            var begin = consent.Find("Allow voice") as RectTransform; Assert.That(begin, Is.Not.Null);
+            var skip = consent.Find("Skip onboarding") as RectTransform; Assert.That(skip, Is.Not.Null, "run AgentScripts/AddSkipOnboardingPill.cs");
+            Assert.That(skip.gameObject.activeSelf, Is.True);
+            Assert.That(skip.GetComponentInChildren<TMP_Text>(true).text, Is.EqualTo("Skip onboarding"));
+            Assert.That(begin.GetComponentInChildren<TMP_Text>(true).text, Is.EqualTo("Let's begin"));
+            Assert.That(Mathf.Abs(skip.anchoredPosition.y - begin.anchoredPosition.y), Is.LessThan(1f), "same row");
+            Assert.That(skip.anchoredPosition.x, Is.GreaterThan(begin.anchoredPosition.x + begin.sizeDelta.x / 2f), "to the right of Let's begin, not overlapping");
+            var pill = skip.GetComponent<Button>();
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == n && pill.onClick.GetPersistentMethodName(k) == "SkipOnboardingNow");
+            Assert.That(wired, Is.True, "the pill calls NerdyDirector.SkipOnboardingNow");
         }
 
     }

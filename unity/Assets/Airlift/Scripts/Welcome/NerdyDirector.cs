@@ -98,7 +98,7 @@ namespace Airlift.Welcome
                 guide.ModeChanged += m => { Debug.Log("[Guide] mode " + m + " language " + guide.language); SetState(m == GuideMode.Live ? "live guide" : "offline guide"); ApplyFallbackButtons(); };
                 guide.StateChanged += s => { Debug.Log("[Guide] state " + s + " micEnabled=" + guide.MicEnabled + " micGateOpen=" + guide.MicGateOpen); if (stateText != null) stateText.text = s; };
                 guide.GuideTranscriptDelta += d => { lastGuideLine += d; if (captionText != null) captionText.text = lastGuideLine; };
-                guide.GuideTranscriptDone += t => { lastGuideLine = ""; if (captionText != null) captionText.text = t; };
+                guide.GuideTranscriptDone += t => { lastGuideLine = ""; if (captionText != null) captionText.text = t; Debug.Log("[Guide] said (" + guide.language + "): " + t); };
                 guide.UserTranscriptDone += t => { if (userText != null) userText.text = t; };
                 guide.ToolCall += OnToolCall;
                 guide.Error += e => Debug.LogWarning("[Guide] " + e);
@@ -136,6 +136,19 @@ namespace Airlift.Welcome
                 Caption(line); Say("Say this word for word, then stop: " + line);
             }
             AfterConsent();
+        }
+
+        /// Owner 2026-09-28: the Skip onboarding pill beside Let's begin. No questions, no tour, straight to the wall;
+        /// nothing is invented, so the age reminder still applies. Same session only (the settings switch remembers).
+        public void SkipOnboardingNow()
+        {
+            if (Flow.Phase != WelcomePhase.Consent) return;
+            guide?.Hush();
+            Flow.SkipOnboarding = true;
+            Debug.Log("[Nerdy] onboarding skipped from the welcome card");
+            Flow.Begin(); ShowPhase(); ApplyMicPolicy();
+            AfterConsent();
+            RemindAge();
         }
 
         /// Owner 2026-09-18: the Android microphone prompt comes at the first card's press, where the learner already
@@ -816,7 +829,9 @@ namespace Airlift.Welcome
         }
 
         /// Wired to the workbench's Back button after OnboardingDirector.Back.
-        public void OnLessonBack() { if (Flow.Phase == WelcomePhase.Lesson) GoToCatalog(); }
+        /// Owner 2026-09-28: "if I exit the lesson Dee should pause". She is cut off and the wall comes back without a
+        /// new line; she speaks again when asked.
+        public void OnLessonBack() { if (Flow.Phase != WelcomePhase.Lesson) return; guide?.Hush(); ShowCatalog(narrate: false); }
 
         // ---- workbench guide: instruction text is the app-authored event source ----
         void Update()

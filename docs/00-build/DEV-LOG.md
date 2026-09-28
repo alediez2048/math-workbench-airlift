@@ -1,5 +1,16 @@
 # Cargo Crew development log
 
+## 2026-09-28 (later) — Skip onboarding on the welcome card, Exit lesson silences Dee, spoken-word log
+
+Owner on the headset: "the skip onboarding button should be right next to Let's begin". The welcome card's hidden
+second pill is now **Skip onboarding** beside Let's begin (`AgentScripts/AddSkipOnboardingPill.cs`, idempotent, after
+PatchConsentCopy/FixWelcomeLayout), wired to `NerdyDirector.SkipOnboardingNow`: no questions, no tour, straight to
+the wall; the settings switch from earlier today still remembers the choice across launches. Owner: "if I exit the
+lesson Dee should pause" → `OnLessonBack` now hushes her and returns to the wall silently. `[Guide] said (<lang>): …`
+is logged for every finished line; the first run proved Dee greets in Spanish when Spanish is the saved language.
+LoungeWiringTests 14/14 (the two-answers test now expects Let's begin + Skip onboarding). Build md5 c36ce453… on the
+new Quest; QA `docs/qa/lounge.md` A2.
+
 ## 2026-09-28 — new headset, key rotation, tester "Skip onboarding" switch
 
 The owner returned the original Quest 3S and set up a new one (serial 3487C10J3706GW, developer mode, USB debugging
