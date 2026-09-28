@@ -26,6 +26,7 @@ namespace Airlift.Welcome
             if (Phase != WelcomePhase.Consent) return;
             VoiceConsented = allowVoice;
             Returning = Profile.IsComplete;
+            if (SkipOnboarding) RundownSeen = true;   // Owner 2026-09-28: the tester switch skips the tour too; Replay the tour still works
             Phase = Returning || SkipOnboarding ? WelcomePhase.Catalog : WelcomePhase.Welcome;
         }
 

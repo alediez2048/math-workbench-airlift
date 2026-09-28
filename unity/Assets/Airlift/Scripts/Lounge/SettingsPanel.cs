@@ -69,6 +69,7 @@ namespace Airlift.Lounge
                 case "Captions": State.Captions = !State.Captions; break;
                 case "Haptics": State.Haptics = !State.Haptics; break;
                 case "ButtonLabels": State.ButtonLabels = !State.ButtonLabels; break;
+                case "SkipOnboarding": State.SkipOnboarding = !State.SkipOnboarding; break;
                 default: return;
             }
             NerdyHaptics.Enabled = State.Haptics;
@@ -84,6 +85,7 @@ namespace Airlift.Lounge
                 case "Captions": return State.Captions;
                 case "Haptics": return State.Haptics;
                 case "ButtonLabels": return State.ButtonLabels;
+                case "SkipOnboarding": return State.SkipOnboarding;
                 default: return false;
             }
         }
@@ -163,7 +165,7 @@ namespace Airlift.Lounge
                 if (l == null || l.label == null) continue;
                 switch (l.key)
                 {
-                    case "VoiceGuide": case "Captions": case "Haptics": case "ButtonLabels": l.label.text = OnOff(Get(l.key)); break;
+                    case "VoiceGuide": case "Captions": case "Haptics": case "ButtonLabels": case "SkipOnboarding": l.label.text = OnOff(Get(l.key)); break;
                     case "Voice": case "Music": case "Effects": l.label.text = l.key + " " + Percent(Volume(l.key)); break;
                     case "Clear": l.label.text = clearText ?? (ClearArmed ? ClearArmedLabel : ClearLabel); break;
                     case "Age": l.label.text = AgeLabel(AgeBand); break;

@@ -138,5 +138,16 @@ namespace Airlift.Tests
             var e = JObject.Parse(GuideContextBuilder.Entered("Cargo Crew", new[] { "a", "b" }).Substring("APP CONTEXT ".Length));
             Assert.That(((JArray)e["facts"]).Count, Is.EqualTo(2));
         }
+
+        // Owner 2026-09-28: a tester switch that opens on the wall with no questions and no tour.
+        [Test] public void SkippingOnboardingAlsoMarksTheTourSeenSoItDoesNotAutoStart()
+        {
+            var f = new WelcomeFlow { SkipOnboarding = true, RundownSeen = false };
+            f.Consent(false);
+            Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Catalog));
+            Assert.That(f.RundownSeen, Is.True, "the tour never starts over a skipped welcome");
+            Assert.That(f.Profile.IsComplete, Is.False, "no answers are invented");
+        }
+
     }
 }

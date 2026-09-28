@@ -11,7 +11,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UNITY_PROJECT="$ROOT/unity"
 APK="$ROOT/artifacts/lounge-preview/nerdy-lounge.apk"
-ADB=/Applications/Unity/Hub/Editor/6000.6.0f1/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb
+ADB=${ADB:-$HOME/Library/Android/sdk/platform-tools/adb}
 PKG=com.nerdy.vr.lounge
 
 cd "$UNITY_PROJECT"

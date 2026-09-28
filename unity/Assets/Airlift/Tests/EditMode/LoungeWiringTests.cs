@@ -282,5 +282,23 @@ namespace Airlift.Tests
             Assert.That(sp.labels.Any(l => l.key == "Age" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the pill shows the current answer");
             Assert.That(n.conversationNotice, Is.Not.Null); Assert.That(n.conversationNotice.rectTransform.sizeDelta.x, Is.GreaterThanOrEqualTo(300f), "room for the age notice");
         }
+
+        // Owner 2026-09-28: a tester switch on the settings card; On = the next launch opens on the wall.
+        [Test] public void TheSettingsCardHasASkipOnboardingSwitch()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var settings = n.GetComponent<LoungeSettings>(); Assert.That(settings, Is.Not.Null);
+            var row = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).FirstOrDefault(r => r.name == "Skip onboarding row");
+            Assert.That(row, Is.Not.Null, "run AgentScripts/AddSkipOnboardingRow.cs");
+            var pill = row.GetComponentInChildren<Button>(true); Assert.That(pill, Is.Not.Null);
+            var sp = n.settingsPanel;
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == sp && pill.onClick.GetPersistentMethodName(k) == "Toggle");
+            Assert.That(wired, Is.True, "the pill calls SettingsPanel.Toggle");
+            Assert.That(sp.labels.Any(l => l.key == "SkipOnboarding" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the pill reads On/Off");
+            var age = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).First(r => r.name == "Age row");
+            var actions = settings.panel.transform.GetComponentsInChildren<RectTransform>(true).First(r => r.name == "Actions row");
+            Assert.That(age.anchoredPosition.y - NerdySpace.PillHeight / 2f, Is.GreaterThan(actions.anchoredPosition.y + NerdySpace.PillHeight / 2f), "the Age row stays clear of the actions row");
+        }
+
     }
 }

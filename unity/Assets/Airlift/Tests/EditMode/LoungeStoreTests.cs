@@ -119,5 +119,14 @@ namespace Airlift.Tests
             Assert.That(back.RundownSeen, Is.False, "clear saved data means the rundown plays again");
             Assert.That(LibraryState.FromJson("{\"version\":1}").RundownSeen, Is.False, "an older file without the flag");
         }
+
+        [Test] public void SkipOnboardingDefaultsOffAndSurvivesARoundTrip()
+        {
+            Assert.That(new SettingsState().SkipOnboarding, Is.False, "every learner gets the welcome unless a tester turns it off");
+            var back = SettingsState.FromJson(new SettingsState { SkipOnboarding = true }.ToJson());
+            Assert.That(back.SkipOnboarding, Is.True);
+            Assert.That(SettingsState.FromJson("{\"version\":1}").SkipOnboarding, Is.False, "an older file without the flag");
+        }
+
     }
 }

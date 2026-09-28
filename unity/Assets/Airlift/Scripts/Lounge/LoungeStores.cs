@@ -17,6 +17,9 @@ namespace Airlift.Lounge
         public int Version = CurrentVersion;
         public Scenery Scenery = LoungeScenery.Default;
         public bool VoiceGuide = true, Captions = true, Haptics = true, ButtonLabels = true;
+        /// Owner 2026-09-28: a tester switch. On = the next launch opens on the lesson wall with no welcome card,
+        /// no questions and no tour; the saved VoiceGuide answer stands in for the mic consent. Off for every learner.
+        public bool SkipOnboarding = false;
         public string Language = "en";
         public float VoiceVolume = 1f, MusicVolume = 0.4f, EffectsVolume = 0.75f;
 
@@ -28,6 +31,7 @@ namespace Airlift.Lounge
             ["Captions"] = Captions,
             ["Haptics"] = Haptics,
             ["ButtonLabels"] = ButtonLabels,
+            ["SkipOnboarding"] = SkipOnboarding,
             ["Language"] = Language,
             ["VoiceVolume"] = VoiceVolume,
             ["MusicVolume"] = MusicVolume,
@@ -47,6 +51,7 @@ namespace Airlift.Lounge
             s.Captions = (bool?)o["Captions"] ?? s.Captions;
             s.Haptics = (bool?)o["Haptics"] ?? s.Haptics;
             s.ButtonLabels = (bool?)o["ButtonLabels"] ?? s.ButtonLabels;
+            s.SkipOnboarding = (bool?)o["SkipOnboarding"] ?? s.SkipOnboarding;
             string language = (string)o["Language"];
             s.Language = Languages.Contains(language) ? language : s.Language;   // never lock the guide to a language it has no persona for
             s.VoiceVolume = Clamp01((float?)o["VoiceVolume"] ?? s.VoiceVolume);

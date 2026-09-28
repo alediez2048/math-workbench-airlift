@@ -75,5 +75,15 @@ namespace Airlift.Tests
             panel.ClearSavedData(); panel.ClearSavedData();
             Assert.That(panel.AgeBand, Is.EqualTo(""), "the profile went with the saved data");
         }
+
+        [Test] public void SkipOnboardingIsASwitchLikeTheOthers()
+        {
+            string changed = null; panel.Changed += k => changed = k;
+            Assert.That(panel.Get("SkipOnboarding"), Is.False);
+            panel.Toggle("SkipOnboarding");
+            Assert.That(panel.State.SkipOnboarding, Is.True); Assert.That(panel.Get("SkipOnboarding"), Is.True);
+            Assert.That(changed, Is.EqualTo("SkipOnboarding"));
+        }
+
     }
 }

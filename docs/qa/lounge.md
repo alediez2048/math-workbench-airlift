@@ -59,6 +59,17 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 | D7 | Clear saved data, twice | Label says *Press again to clear*, then *Cleared*: Continue ribbon goes to Cargo chapter 1, the rundown will run on next launch |
 | D8 | Reset settings | Switches and volumes back to defaults; language stays |
 
+## D2. Skip onboarding (tester switch, added 2026-09-28)
+
+| # | Do | Expect |
+|---|---|---|
+| D2.1 | Gear → **Skip onboarding** pill | Reads Off; one press turns it On (haptic tick). |
+| D2.2 | Quit the app, launch again | Lounge arrival, then the wall directly: no welcome card, no questions, no tour. Dee is live if Voice guide is On, offline if Off. |
+| D2.3 | With age not adult | The age reminder line on the bar and in the caption, same as Skip to lessons. |
+| D2.4 | Gear → Replay the tour | Still works with the switch On. |
+| D2.5 | Gear → Clear saved data (two presses), relaunch | Full onboarding again: the switch was cleared with the rest. |
+| D2.6 | Mac: `adb logcat -d -s Unity:I \| grep "\[Nerdy\] onboarding"` | `skip=True` on the first line, then `onboarding skipped by the settings switch; voice=…`. |
+
 ## G. The ‹ › arrows (bottom-right corner of every screen)
 
 | # | Do | Expect |

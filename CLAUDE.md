@@ -1,5 +1,15 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## September 28: new headset, rotated key, tester "Skip onboarding" switch
+
+New Quest 3S (3487C10J3706GW) runs the v0.2 demo build; `scripts/lounge-preview.sh` now defaults to the SDK adb. The
+OpenAI key was rotated: new key in `~/.config/nerdy/openai.env` and the Vercel production env, proxy redeployed, credit
+added. Owner-approved design: **Skip onboarding** switch on the settings card (`SettingsState.SkipOnboarding`,
+`NerdyDirector.AutoSkipWelcome`, builder `AgentScripts/AddSkipOnboardingRow.cs` after AddAgeRow; QA `docs/qa/lounge.md`
+D2; render `artifacts/lounge/welcome-settings.png`). Not yet on a headset. The Higgsfield art uplift lives on
+`design/higgsfield-uplift` and is reviewed separately before it reaches main. Open: what the owner heard after Español;
+age band must be adult for the mic.
+
 ## CURRENT STATE — September 18, evening (read this first; everything below is history in reverse order)
 
 **Branch `docs-and-landing`** off `lounge-onboarding` (commits 456f8f3 Codex's onboarding repair, 1927bfd the

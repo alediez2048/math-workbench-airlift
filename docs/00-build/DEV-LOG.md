@@ -1,5 +1,29 @@
 # Cargo Crew development log
 
+## 2026-09-28 — new headset, key rotation, tester "Skip onboarding" switch
+
+The owner returned the original Quest 3S and set up a new one (serial 3487C10J3706GW, developer mode, USB debugging
+authorized). Nothing in the repo was bound to the old device; the demo build (`artifacts/lounge-preview/nerdy-lounge.apk`,
+md5 ea1e7dc0…, identical to the v0.2 release APK) installed and launched with `bash scripts/lounge-preview.sh --install`.
+The install script now defaults to the SDK adb at `~/Library/Android/sdk` (override with `ADB=`).
+
+Voice was dead on first launch: the stored OpenAI key had been rotated (`invalid_api_key`) and the Vercel proxy still
+carried it (502 "mint failed"). The owner supplied a new key (env file only, Vercel production env replaced, proxy
+redeployed, probe 200), then the socket closed with "no credits remaining"; the owner added credit and Dee went live.
+Device log showed the Español pill reconnecting Dee in Spanish each press (transport works; what the owner heard is
+still to be confirmed) and the mic gated off because the owner answered the age question with "Under 10" (adult only).
+
+Owner request, approved as a bounded design: a tester switch **Skip onboarding** on the settings card (right column,
+between Show button labels and Age; six rows re-spaced to 68). On = the next launch skips the welcome card (the saved
+Voice guide answer stands in for the mic consent), the questions (no answers invented, so the age reminder still
+applies) and the tour (marked seen; Replay the tour still works), and opens on the wall. Off by default; Clear saved
+data and Reset settings reset it. Startup log line already prints `skip=`. TDD: `SettingsState.SkipOnboarding`
+round-trip (LoungeStoreTests 12), `SettingsPanel.Toggle/Get` (SettingsPanelTests 7), `WelcomeFlow.Consent` marks the
+tour seen (WelcomeFlowTests 13), scene wiring (LoungeWiringTests 13). Scene edited by
+`AgentScripts/AddSkipOnboardingRow.cs` (idempotent, run after AddAgeRow). Render `artifacts/lounge/welcome-settings.png`
+awaiting owner approval before a headset build. The director's auto-consent (`AutoSkipWelcome`) is covered by the
+device log line `[Nerdy] onboarding skipped by the settings switch`, not by an EditMode test.
+
 ## 2026-09-18 — control cleanup implementation and editor verification
 
 Owner authorized the consolidated repair. Source and scene now replace companion shortcuts with

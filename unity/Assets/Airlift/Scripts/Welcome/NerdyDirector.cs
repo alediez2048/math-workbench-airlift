@@ -218,7 +218,7 @@ namespace Airlift.Welcome
         /// The logo arrival, then the board. Always ends, even with no guide and no network.
         IEnumerator RunArrival()
         {
-            if (arrival == null || lounge == null) { GreetOnArrival(); yield break; }
+            if (arrival == null || lounge == null) { GreetOnArrival(); AutoSkipWelcome(); yield break; }
             arriving = true; ShowPhase();
             arrival.Finished += OnArrivalFinished;
             arrival.Begin(() => lounge.StartupProgress, () => lounge.Startup.ShouldShowBar);
@@ -236,6 +236,18 @@ namespace Airlift.Welcome
             arriving = false;
             ShowPhase();
             StartCoroutine(GreetWhenLive());
+            AutoSkipWelcome();
+        }
+
+        /// Owner 2026-09-28: the "Skip onboarding" switch on the settings card. The saved Voice guide answer stands in
+        /// for the welcome card's mic choice, the questions and the tour are skipped, and the wall is next. No answers
+        /// are invented, so the age reminder still applies. Takes effect at launch; Clear saved data resets it.
+        void AutoSkipWelcome()
+        {
+            if (!Flow.SkipOnboarding || Flow.Phase != WelcomePhase.Consent) return;
+            Debug.Log("[Nerdy] onboarding skipped by the settings switch; voice=" + Settings.VoiceGuide);
+            if (Settings.VoiceGuide) ConsentAllowVoice(); else ConsentNoVoice();
+            RemindAge();
         }
 
         /// First run with the onboarding on: the host tour is Dee's greeting. Returning learners get the short one.
@@ -722,12 +734,14 @@ namespace Airlift.Welcome
                 Library = new Airlift.Lounge.LibraryState();
                 if (fixture != "fresh") Flow.Profile.Merge("{\"ageBand\":\"adult\",\"interests\":[\"space\"],\"goal\":\"curious\"}");
                 Flow.RundownSeen = Library.RundownSeen = fixture == "returning" || fixture == "skipped";
+                Flow.SkipOnboarding = Settings.SkipOnboarding = fixture == "skipped";
                 return;
             }
 #endif
             Settings = Airlift.Lounge.LoungeStoreFiles.LoadSettings();
             Library = Airlift.Lounge.LoungeStoreFiles.LoadLibrary();
             Flow.RundownSeen = Library.RundownSeen;
+            Flow.SkipOnboarding = Settings.SkipOnboarding;
             try { Flow.Profile.Merge(LearnerProfile.Load().ToJson()); } catch (System.Exception) { }
             Airlift.Lounge.NerdyHaptics.Enabled = Settings.Haptics;
         }
@@ -763,6 +777,7 @@ namespace Airlift.Welcome
             if (playback != null) { var src = playback.GetComponent<AudioSource>(); if (src != null) src.volume = Settings.VoiceVolume; }
             if (music != null) music.volumeScale = Settings.MusicVolume / 0.4f;
             if (!Settings.VoiceGuide) guide?.Hush();
+            Flow.SkipOnboarding = Settings.SkipOnboarding;   // next launch
             if (!Settings.ButtonLabels || !LessonHintsEnabled) helper?.Hide();
             ApplyMicPolicy();
         }
