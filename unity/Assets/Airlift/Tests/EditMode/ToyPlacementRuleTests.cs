@@ -21,5 +21,12 @@ namespace Airlift.Tests
             Assert.That(p.y, Is.EqualTo(0.05f).Within(0.001f));
             Assert.That(ToyPlacementRule.Settle(new Vector3(1f, 0.9f, 1f), 0.05f).y, Is.EqualTo(0.9f), "above the floor it stays where it is");
         }
+        [Test] public void AToyPutBackOnItsSlotAtItsBuiltSizeIsHome()
+        {
+            var home = new Vector3(-0.92f, 1.7f, 0f);
+            Assert.That(ToyPlacementRule.IsHome(home + new Vector3(0.03f, 0f, 0.02f), home, 1.7f, 1.7f), Is.True, "a few centimetres off the slot still counts");
+            Assert.That(ToyPlacementRule.IsHome(home + new Vector3(0.3f, 0f, 0f), home, 1.7f, 1.7f), Is.False, "30 cm away is a place of its own");
+            Assert.That(ToyPlacementRule.IsHome(home, home, 2.5f, 1.7f), Is.False, "resized on the slot: the size is worth remembering");
+        }
     }
 }

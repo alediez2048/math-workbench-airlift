@@ -35,6 +35,18 @@ Also: **Mute** on Dee's bar beside Play/Stop (`AddBarMute`), mic in every phase 
 **Exit app** and **Restart fresh** pills in settings, **Skip onboarding** beside Let's begin, Exit lesson hushes Dee,
 English at every launch, Spanish speech in lessons via `GuideLanguage.Localize`, `[Guide] said (<lang>)` log.
 
+**13:00 fix:** the cone (distance) grab on each toy outranked the ray in the hand's interactor group and switched
+the ray off on every earned toy (no cursor, no trigger; proven by `InteractionProbe` `[Probe]` lines on the device). Toys now
+have ray grab only, with pull-to-hand movement (`RetargetToyGrabToRay.cs`; `AddToyRack.cs` builds it that way). Rig untouched.
+Owner confirmed point-and-trigger grab on the headset (12:5x build); the probe was removed from the scene before the
+commit (`AddInteractionProbe.cs` / `RemoveInteractionProbe.cs` remain for the next diagnosis). Grip on a toy at a distance
+is not a feature any more; grip holds a toy up close, two grips resize.
+
+**Afternoon fix:** remembered toy places are measured from the rack, not the room
+(the rack re-chooses its wall at every launch from the board's yaw), files carry `poseFrame: rack` and drop older poses;
+seen flags and poses are pruned to earned toys on load; a toy let go on its slot at its built size is home again
+(`ToyPlacementRule.IsHome`). Suites: LoungeStore 18, ToyPlacementRule 3, ToyRack 3 (new), LoungeWiring 18. QA E2.3–E2.8.
+
 **Root cause fixed last:** duplicate controller interactors (the old "[BuildingBlock] Controller Interactions" block
 duplicated the comprehensive rig's ray, and the distance-grab wizard added one to both blocks) gave a two-point toy two
 coincident grab points → nothing moved. `DisableDuplicateRayAndDistanceInteractors.cs` + test

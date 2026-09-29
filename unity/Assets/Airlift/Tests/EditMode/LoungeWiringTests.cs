@@ -351,7 +351,12 @@ namespace Airlift.Tests
             {
                 Assert.That(slot.toy, Is.Not.Null, slot.id + " has a toy");
                 Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.Grabbable>(true), Is.Not.Null, slot.id + " is grabbable");
-                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.DistanceGrabInteractable>(true), Is.Not.Null, slot.id + " can be pulled to the hand from where the learner stands");
+                // Device log 2026-09-29: a cone (distance) grab on the toy outranks the ray in the hand's interactor group and
+                // switches the ray off while it points at the toy: no cursor, no trigger. The ray alone takes a toy from afar.
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.DistanceGrabInteractable>(true), Is.Null, slot.id + " has no cone grab (it would silence the ray)");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.HandGrab.DistanceHandGrabInteractable>(true), Is.Null, slot.id + " has no hand cone grab either");
+                var rayProvider = new SerializedObject(slot.toy.GetComponentInChildren<Oculus.Interaction.RayInteractable>(true)).FindProperty("_movementProvider").objectReferenceValue;
+                Assert.That(rayProvider, Is.InstanceOf<Oculus.Interaction.MoveTowardsTargetProvider>(), slot.id + " comes to the hand on the trigger, from where the learner stands");
                 Assert.That(slot.toy.GetComponent<ToyPlace>(), Is.Not.Null, slot.id + " keeps its place");
                 var grabbable = slot.toy.GetComponentInChildren<Oculus.Interaction.Grabbable>(true);
                 Assert.That(grabbable.MaxGrabPoints, Is.Not.EqualTo(1), slot.id + " takes two hands");
@@ -370,7 +375,7 @@ namespace Airlift.Tests
             var room = n.lounge; Assert.That(room, Is.Not.Null);
             Assert.That(n.toyRack.transform.IsChildOf(room.furniture.transform), Is.True, "hidden with the furniture in Your room");
             var distance = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Oculus.Interaction.DistanceGrabInteractor>(true)).ToArray();
-            Assert.That(distance.Length, Is.GreaterThanOrEqualTo(2), "a distance-grab interactor per controller");
+            Assert.That(distance.Length, Is.GreaterThanOrEqualTo(2), "the rig keeps its distance-grab interactor per controller (lessons may use it)");
         }
 
 

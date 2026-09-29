@@ -1,5 +1,34 @@
 # Cargo Crew development log
 
+## 2026-09-29 (13:00) — why the orange toys could not be pointed at: the cone grab silenced the ray
+
+Owner on the 12:10 build: "grip does not work, I can't grab, and the pointer for each toy is totally gone". Diagnosed
+with evidence instead of another guess. Editor: each hand's interactors sit in one BestHoverInteractorGroup; the
+distance (cone) grab is index 8, the ray index 10, lower wins. Device (`Airlift.Diagnostics.InteractionProbe`, builder
+`AgentScripts/AddInteractionProbe.cs`, `[Probe]` lines): pointing at an unlocked toy, the distance grab reports Hover on
+the toy's DistanceGrabInteractable while the ray reports `Disabled` with the same toy as its candidate (hit at 2.0 m);
+pointing at a locked toy (no cone grab) the ray reports Hover and the cursor shows. So the invisible cone claimed every
+earned toy and switched the ray off: no cursor, no trigger. Grip was never pressed in that session (0 grip transitions),
+so its behaviour stays unproven. Fix (test-first, LoungeWiringTests 18): the ray alone takes a toy from afar, with
+pull-to-hand movement (`MoveTowardsTargetProvider` on the ray interactable, travel data copied from the wizard's cone
+grab); the cone-grab objects are removed from all fifteen toys (`AgentScripts/RetargetToyGrabToRay.cs`; `AddToyRack.cs`
+builds new racks this way). The rig keeps its distance-grab interactors. Near grab (grip) and two-hand resize unchanged.
+Owner on the 12:5x build: "point and grab is finally working"; the device log shows the ray's Select on
+Toy cargo_crew_fractions#2 (no grip press in that session). Probe removed from the scene before the commit
+(`RemoveInteractionProbe.cs`); the scripts stay for the next diagnosis.
+
+## 2026-09-29 (afternoon) — remembered toy places follow the rack; stale flags from older builds dropped
+
+Found while preparing the headset checks, from the saved library on the device: toy places were measured from the
+room, but the rack itself moves to whichever windowless wall is beside the whiteboard at each launch (the board follows
+the head's yaw), so an untouched unlocked toy could appear at the previous launch's rack spot. The file also carried
+"seen" flags and places for all fifteen toys, left by builds that let every toy be grabbed; a stale seen flag would have
+silenced the unlock line for that chapter. TDD: `LibraryState` now tags files with `poseFrame: rack`, drops poses from
+any other frame and prunes seen flags and poses to earned toys on load (LoungeStoreTests 18); `ToyRack` records and
+applies poses in its own space and forgets the place of a toy let go on its own slot at its built size
+(`ToyPlacementRule.IsHome`, 8 cm; ToyPlacementRuleTests 3, new ToyRackTests 3, LoungeWiringTests 18). No scene change,
+no render (logic only). QA `docs/qa/lounge.md` E2.3–E2.7 rewritten for "toys stay where let go".
+
 ## 2026-09-29 (later) — Mute on the bar, Dee listens in every phase, Exit app, dashboard launch
 
 Owner: "1) mute/unmute next to the pause button, 2) Dee should take voice input at any point, 3) a way to exit the app

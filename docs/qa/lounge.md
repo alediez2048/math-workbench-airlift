@@ -92,9 +92,12 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 |---|---|---|
 | E2.1 | Fresh learner (Restart fresh), reach the wall | Rack left of the whiteboard: fifteen grey silhouettes on three shelves; board reads 0 of 5 three times. |
 | E2.2 | Complete Dock 7 chapter 1, Exit lesson | The orange container in colour with a glow; Dee: "Your orange container is on the rack."; board Cargo Crew 1 of 5. Mac log: `[Nerdy] chapter complete`, `[Nerdy] toy unlocked`. |
-| E2.3 | Grab the container, let go across the room | It floats back to its slot within five seconds; the glow is gone after that first grab. |
-| E2.4 | Relaunch | Container still unlocked, no glow. |
-| E2.5 | Restart fresh twice | Fifteen silhouettes again, 0 of 5. |
+| E2.3 | Point at the container (cursor on it), pull the trigger: it flies to your hand; let go across the room | It stays exactly there (settles onto the floor if dropped below it); the glow is gone after that first grab. |
+| E2.4 | Hold it with both controllers and pull your hands apart / together | It grows or shrinks, between half and three times its built size. |
+| E2.5 | Quit, relaunch, reach the wall (face any direction at launch) | The container is where you left it, measured from the rack: if the rack chose another wall, the toy moved with it. |
+| E2.6 | Put it back on its slot, let go | It snaps into the slot; relaunch: still on the slot. |
+| E2.7 | Point at a grey toy, pull the trigger | Nothing moves; Dee: "Finish … to earn the …" (at most every 15 s). |
+| E2.8 | Restart fresh twice | Fifteen silhouettes again, 0 of 5. |
 
 ## D2. Skip onboarding (tester switch, added 2026-09-28)
 

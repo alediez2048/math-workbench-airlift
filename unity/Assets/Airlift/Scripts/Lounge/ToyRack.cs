@@ -19,14 +19,16 @@ namespace Airlift.Lounge
         [Tooltip("Distance from the board's centre to the rack's centre, along the board's left.")]
         public float besideBoard = 1.75f;
         public event Action<ToySlot> ToyFirstGrabbed;
-        /// A toy was let go somewhere: its lounge-local pose and size are in the library; the director saves.
+        /// A toy was let go somewhere: its pose (measured from the rack) and size are in the library; the director saves.
         public event Action<ToySlot> ToyMoved;
         /// The learner pointed at (or pulled the trigger on) a toy that is still locked.
         public event Action<ToySlot> LockedToyPointed;
         LibraryState library;
-        Transform Room { get { var l = GetComponentInParent<LoungeRoom>(true); return l != null ? l.transform : null; } }
 
-        void Awake()
+        void Awake() => Wire();
+
+        /// Hooks each toy's first-grab and release reports to the rack (Awake does this in play; tests call it).
+        public void Wire()
         {
             foreach (var s in slots)
             {
@@ -38,10 +40,11 @@ namespace Airlift.Lounge
         void OnReleased(Slot s)
         {
             var model = FindModel(s.id); if (model == null || library == null || s.toy == null) return;
-            var room = Room; var t = s.toy.transform;
-            var pos = room != null ? room.InverseTransformPoint(t.position) : t.position;
-            var rot = room != null ? Quaternion.Inverse(room.rotation) * t.rotation : t.rotation;
-            library.RecordToyPose(s.id, pos, rot, t.localScale.x);
+            var t = s.toy.transform;
+            bool home = s.place != null && s.place.home != null
+                && ToyPlacementRule.IsHome(t.position, s.place.home.position, t.localScale.x, s.place.homeScale);
+            if (home) { library.ForgetToyPose(s.id); s.place.Apply(null, null, null); }
+            else library.RecordToyPose(s.id, transform.InverseTransformPoint(t.position), Quaternion.Inverse(transform.rotation) * t.rotation, t.localScale.x);
             ToyMoved?.Invoke(model);
         }
 
@@ -50,10 +53,7 @@ namespace Airlift.Lounge
             if (s.place == null) return;
             var saved = library?.ToyPose(s.id);
             if (saved == null) { s.place.Apply(null, null, null); return; }
-            var room = Room;
-            var pos = room != null ? room.TransformPoint(saved.Value.position) : saved.Value.position;
-            var rot = room != null ? room.rotation * saved.Value.rotation : saved.Value.rotation;
-            s.place.Apply(pos, rot, saved.Value.scale);
+            s.place.Apply(transform.TransformPoint(saved.Value.position), transform.rotation * saved.Value.rotation, saved.Value.scale);
         }
 
         /// Owner 2026-09-29: against a windowless wall, the nearest one on the learner's left of the board. The lounge

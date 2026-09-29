@@ -87,7 +87,9 @@ namespace Airlift.Lounge
         public int CompletedCount(string lessonId) => completed.Count(id => id.StartsWith(lessonId + "#", StringComparison.Ordinal));
         public void MarkToySeen(string lessonId, int chapter) { if (!string.IsNullOrEmpty(lessonId) && chapter > 0) toysSeen.Add(TileId(lessonId, chapter)); }
 
-        // ---- where the learner left each toy (lounge-local), owner 2026-09-29 ----
+        // ---- where the learner left each toy, measured from the rack (it moves wall to wall), owner 2026-09-29 ----
+        /// Files name the frame their poses are measured in; poses from any other frame are dropped on load.
+        public const string PoseFrame = "rack";
         public struct ToyPoseRecord { public Vector3 position; public Quaternion rotation; public float scale; }
         readonly Dictionary<string, ToyPoseRecord> toyPoses = new Dictionary<string, ToyPoseRecord>();
         public void RecordToyPose(string slotId, Vector3 position, Quaternion rotation, float scale) { if (!string.IsNullOrEmpty(slotId)) toyPoses[slotId] = new ToyPoseRecord { position = position, rotation = rotation, scale = scale }; }
@@ -140,6 +142,7 @@ namespace Airlift.Lounge
             foreach (var pair in toyPoses.OrderBy(x => x.Key, StringComparer.Ordinal))
                 poses[pair.Key] = new JObject { ["p"] = new JArray(pair.Value.position.x, pair.Value.position.y, pair.Value.position.z), ["r"] = new JArray(pair.Value.rotation.x, pair.Value.rotation.y, pair.Value.rotation.z, pair.Value.rotation.w), ["s"] = pair.Value.scale };
             o["toyPoses"] = poses;
+            o["poseFrame"] = PoseFrame;
             return o.ToString(Newtonsoft.Json.Formatting.None);
         }
 
@@ -163,7 +166,7 @@ namespace Airlift.Lounge
             lib.RundownSeen = (bool?)o["rundownSeen"] ?? false;
             if (o["completed"] is JArray done) foreach (var id in done) { string t = (string)id; if (!string.IsNullOrEmpty(t)) lib.completed.Add(t); }
             if (o["toysSeen"] is JArray seen) foreach (var id in seen) { string t = (string)id; if (!string.IsNullOrEmpty(t)) lib.toysSeen.Add(t); }
-            if (o["toyPoses"] is JObject poses)
+            if ((string)o["poseFrame"] == PoseFrame && o["toyPoses"] is JObject poses)   // older files measured from the room: useless once the rack moves
                 foreach (var pair in poses)
                 {
                     try
@@ -178,6 +181,9 @@ namespace Airlift.Lounge
                     }
                     catch (Exception) { }
                 }
+            // Only an earned toy can have been picked up or moved; older builds let every toy be grabbed.
+            lib.toysSeen.IntersectWith(lib.completed);
+            foreach (var id in lib.toyPoses.Keys.Where(id => !lib.completed.Contains(id)).ToList()) lib.toyPoses.Remove(id);
             return lib;
         }
     }

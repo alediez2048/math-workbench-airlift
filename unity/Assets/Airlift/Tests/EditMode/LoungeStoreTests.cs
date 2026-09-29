@@ -176,7 +176,7 @@ namespace Airlift.Tests
         // Owner 2026-09-29: "leave them around the lounge and keep the memory of the location of the toys".
         [Test] public void ToyPosesRoundTripAndClearWithEverythingElse()
         {
-            var lib = new LibraryState();
+            var lib = new LibraryState(); lib.RecordCompleted("cargo_crew_fractions", 1);   // only an earned toy can be moved
             Assert.That(lib.ToyPose("cargo_crew_fractions#1"), Is.Null, "never moved: it sits on the rack");
             lib.RecordToyPose("cargo_crew_fractions#1", new Vector3(1f, 0.5f, -2f), new Quaternion(0f, 0.7071f, 0f, 0.7071f), 2.5f);
             var back = LibraryState.FromJson(lib.ToJson());
@@ -187,6 +187,29 @@ namespace Airlift.Tests
             Assert.That(pose.Value.scale, Is.EqualTo(2.5f).Within(0.001f));
             back.ClearAll();
             Assert.That(back.ToyPose("cargo_crew_fractions#1"), Is.Null);
+        }
+
+        // Older builds let every toy be grabbed, so a file from them marks locked toys seen and places them; and their
+        // places were measured from the room, useless now that the rack moves to whichever wall is beside the board.
+        [Test] public void LockedToysKeepNoSeenFlagOrRememberedPlaceAfterLoad()
+        {
+            string json = "{\"version\":1,\"completed\":[\"cargo_crew_fractions#1\"],\"toysSeen\":[\"cargo_crew_fractions#1\",\"neighborhood_cafe_division#1\"],"
+                + "\"poseFrame\":\"rack\",\"toyPoses\":{\"cargo_crew_fractions#1\":{\"p\":[0.5,0.2,0.3],\"r\":[0,0,0,1],\"s\":1},"
+                + "\"neighborhood_cafe_division#1\":{\"p\":[0.9,1.15,0],\"r\":[0,0,0,1],\"s\":1}}}";
+            var lib = LibraryState.FromJson(json);
+            Assert.That(lib.IsToySeen("cargo_crew_fractions", 1), Is.True);
+            Assert.That(lib.ToyPose("cargo_crew_fractions#1"), Is.Not.Null);
+            Assert.That(lib.IsToySeen("neighborhood_cafe_division", 1), Is.False, "a locked toy was never picked up, so its unlock line still comes");
+            Assert.That(lib.ToyPose("neighborhood_cafe_division#1"), Is.Null, "a locked toy sits in its slot");
+        }
+
+        [Test] public void PlacesSavedInRoomSpaceByOlderBuildsAreForgotten()
+        {
+            string old = "{\"version\":1,\"completed\":[\"cargo_crew_fractions#1\"],\"toyPoses\":{\"cargo_crew_fractions#1\":{\"p\":[-0.92,1.7,2.68],\"r\":[0,1,0,0],\"s\":1}}}";
+            Assert.That(LibraryState.FromJson(old).ToyPose("cargo_crew_fractions#1"), Is.Null, "no poseFrame: the toy goes back to its slot");
+            var lib = new LibraryState(); lib.RecordCompleted("cargo_crew_fractions", 1);
+            lib.RecordToyPose("cargo_crew_fractions#1", Vector3.one, Quaternion.identity, 1f);
+            Assert.That(LibraryState.FromJson(lib.ToJson()).ToyPose("cargo_crew_fractions#1"), Is.Not.Null, "today's files say the frame is the rack");
         }
 
     }

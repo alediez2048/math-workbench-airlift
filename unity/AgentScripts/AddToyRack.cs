@@ -63,11 +63,16 @@ public static class AddToyRack
             var colourMats = renderers.Select(r => r.sharedMaterial).ToArray();
             var bounds = renderers[0].bounds; foreach (var r in renderers) bounds.Encapsulate(r.bounds);
             var collider = toy.AddComponent<BoxCollider>(); collider.center = toy.transform.InverseTransformPoint(bounds.center); collider.size = (bounds.size + Vector3.one * 0.01f) / ToyScale;
-            // Owner 2026-09-29: walking to the wall leaves the Guardian. Pull-to-hand distance grab: point, squeeze, the toy
-            // flies to the hand and can be held and turned; the rig gains a distance-grab interactor per hand (once).
-            QuickActionsAPI.AddDistanceGrabInteraction(toy, DistanceGrabMode.PullToHand);
-            QuickActionsAPI.AddGrabInteraction(toy);   // the second hand grabs it up close
-            QuickActionsAPI.AddRayGrabInteraction(toy); // the trigger grabs it on the ray, and locked toys explain themselves
+            // Owner 2026-09-29: walking to the wall leaves the Guardian, so the toy comes to the learner. Device log the same
+            // day: a cone (distance) grab on the toy outranks the ray in the hand's interactor group and switches the ray off
+            // while it points at the toy (no cursor, no trigger). So: the ray alone takes a toy from afar, and its movement is
+            // pull-to-hand; the near grab (grip) holds it once it is in the hand, and two near grabs resize it.
+            QuickActionsAPI.AddGrabInteraction(toy);   // grip, up close
+            QuickActionsAPI.AddRayGrabInteraction(toy); // trigger on the ray; locked toys explain themselves through the same ray
+            var rayInteractable = toy.GetComponentInChildren<RayInteractable>(true) ?? throw new InvalidOperationException("SDK did not create RayInteractable for " + m.Id);
+            var pull = rayInteractable.gameObject.AddComponent<MoveTowardsTargetProvider>();
+            rayInteractable.InjectOptionalMovementProvider(pull);
+            foreach (var old in rayInteractable.GetComponents<MoveFromTargetProvider>()) UnityEngine.Object.DestroyImmediate(old);
             var grabbable = toy.GetComponentInChildren<Grabbable>(true) ?? throw new InvalidOperationException("SDK did not create Grabbable for " + m.Id);
             // Owner 2026-09-29: "make it bigger or smaller by grabbing it with both controllers and expanding it".
             grabbable.MaxGrabPoints = 2;
