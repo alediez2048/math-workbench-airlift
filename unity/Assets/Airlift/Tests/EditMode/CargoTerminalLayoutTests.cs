@@ -153,5 +153,17 @@ namespace Airlift.Tests
                 .Where(g=>g.gameObject.scene.path=="Assets/Airlift/Scenes/CargoCrew.unity" && g.gameObject.activeInHierarchy).ToArray();
             Assert.That(active.Length,Is.EqualTo(2),"one squeeze must yield one grab point: "+string.Join(", ",active.Select(a=>a.transform.parent.parent.name+"/"+a.name)));
         }
+
+        // 2026-09-29: the toy rack's wizards added distance-grab interactors to BOTH controller blocks, and the older
+        // block's ray was never disabled, so a trigger or a squeeze gave a two-point toy two coincident grab points.
+        [Test] public void ExactlyOneActiveRayAndDistanceGrabInteractorPerController()
+        {
+            bool InScene(Component c) => c.gameObject.scene.path == "Assets/Airlift/Scenes/CargoCrew.unity" && c.gameObject.activeInHierarchy;
+            var rays = Object.FindObjectsByType<Oculus.Interaction.RayInteractor>(FindObjectsInactive.Include).Where(r => InScene(r) && r.name == "ControllerRayInteractor").ToArray();
+            Assert.That(rays.Length, Is.EqualTo(2), "one controller ray per hand: " + string.Join(", ", rays.Select(a => a.transform.parent.parent.name + "/" + a.name)));
+            var distance = Object.FindObjectsByType<Oculus.Interaction.DistanceGrabInteractor>(FindObjectsInactive.Include).Where(InScene).ToArray();
+            Assert.That(distance.Length, Is.EqualTo(2), "one distance grab per hand: " + string.Join(", ", distance.Select(a => a.transform.parent.parent.name + "/" + a.name)));
+        }
+
     }
 }

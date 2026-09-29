@@ -78,6 +78,23 @@ namespace Airlift.Lounge
 
         public static string TileId(string lessonId, int chapter) => lessonId + "#" + chapter;
 
+        // ---- toy rack (spec 2026-09-29): chapters completed and toys the learner has already picked up ----
+        readonly HashSet<string> completed = new HashSet<string>();
+        readonly HashSet<string> toysSeen = new HashSet<string>();
+        /// A chapter counts once, however often it is completed; chapter 0 (no chapter) and empty ids are ignored.
+        public void RecordCompleted(string lessonId, int chapter) { if (!string.IsNullOrEmpty(lessonId) && chapter > 0) completed.Add(TileId(lessonId, chapter)); }
+        public bool IsCompleted(string lessonId, int chapter) => completed.Contains(TileId(lessonId, chapter));
+        public int CompletedCount(string lessonId) => completed.Count(id => id.StartsWith(lessonId + "#", StringComparison.Ordinal));
+        public void MarkToySeen(string lessonId, int chapter) { if (!string.IsNullOrEmpty(lessonId) && chapter > 0) toysSeen.Add(TileId(lessonId, chapter)); }
+
+        // ---- where the learner left each toy (lounge-local), owner 2026-09-29 ----
+        public struct ToyPoseRecord { public Vector3 position; public Quaternion rotation; public float scale; }
+        readonly Dictionary<string, ToyPoseRecord> toyPoses = new Dictionary<string, ToyPoseRecord>();
+        public void RecordToyPose(string slotId, Vector3 position, Quaternion rotation, float scale) { if (!string.IsNullOrEmpty(slotId)) toyPoses[slotId] = new ToyPoseRecord { position = position, rotation = rotation, scale = scale }; }
+        public void ForgetToyPose(string slotId) => toyPoses.Remove(slotId ?? "");
+        public ToyPoseRecord? ToyPose(string slotId) => toyPoses.TryGetValue(slotId ?? "", out var p) ? p : (ToyPoseRecord?)null;
+        public bool IsToySeen(string lessonId, int chapter) => toysSeen.Contains(TileId(lessonId, chapter));
+
         public void RecordOpened(string lessonId, int chapter)
         {
             if (string.IsNullOrEmpty(lessonId)) return;
@@ -107,6 +124,7 @@ namespace Airlift.Lounge
             counts.Clear(); recency.Clear();
             lastLesson = null; lastChapter = 0; hasLast = false;
             RundownSeen = false;
+            completed.Clear(); toysSeen.Clear(); toyPoses.Clear();
         }
 
         public string ToJson()
@@ -116,6 +134,12 @@ namespace Airlift.Lounge
             var o = new JObject { ["version"] = 1, ["opens"] = opens, ["order"] = new JArray(recency) };
             if (hasLast) o["last"] = new JObject { ["lesson"] = lastLesson, ["chapter"] = lastChapter };
             o["rundownSeen"] = RundownSeen;
+            o["completed"] = new JArray(completed.OrderBy(x => x, StringComparer.Ordinal));
+            o["toysSeen"] = new JArray(toysSeen.OrderBy(x => x, StringComparer.Ordinal));
+            var poses = new JObject();
+            foreach (var pair in toyPoses.OrderBy(x => x.Key, StringComparer.Ordinal))
+                poses[pair.Key] = new JObject { ["p"] = new JArray(pair.Value.position.x, pair.Value.position.y, pair.Value.position.z), ["r"] = new JArray(pair.Value.rotation.x, pair.Value.rotation.y, pair.Value.rotation.z, pair.Value.rotation.w), ["s"] = pair.Value.scale };
+            o["toyPoses"] = poses;
             return o.ToString(Newtonsoft.Json.Formatting.None);
         }
 
@@ -137,6 +161,23 @@ namespace Airlift.Lounge
                 lib.hasLast = !string.IsNullOrEmpty(lib.lastLesson);
             }
             lib.RundownSeen = (bool?)o["rundownSeen"] ?? false;
+            if (o["completed"] is JArray done) foreach (var id in done) { string t = (string)id; if (!string.IsNullOrEmpty(t)) lib.completed.Add(t); }
+            if (o["toysSeen"] is JArray seen) foreach (var id in seen) { string t = (string)id; if (!string.IsNullOrEmpty(t)) lib.toysSeen.Add(t); }
+            if (o["toyPoses"] is JObject poses)
+                foreach (var pair in poses)
+                {
+                    try
+                    {
+                        var p = (JArray)pair.Value["p"]; var r = (JArray)pair.Value["r"];
+                        lib.toyPoses[pair.Key] = new ToyPoseRecord
+                        {
+                            position = new Vector3((float)p[0], (float)p[1], (float)p[2]),
+                            rotation = new Quaternion((float)r[0], (float)r[1], (float)r[2], (float)r[3]),
+                            scale = (float?)pair.Value["s"] ?? 1f,
+                        };
+                    }
+                    catch (Exception) { }
+                }
             return lib;
         }
     }

@@ -1,5 +1,33 @@
 # Cargo Crew development log
 
+## 2026-09-29 (later) — Mute on the bar, Dee listens in every phase, Exit app, dashboard launch
+
+Owner: "1) mute/unmute next to the pause button, 2) Dee should take voice input at any point, 3) a way to exit the app
+from settings, 4) launch it from the Meta dashboard". Done as one batch, TDD: `GuidePolicy.MicOn` no longer gates on the
+phase and `NerdyDirector.CanListen` drops its phase clause (GuidePolicyTests 14; the half-duplex rule, the adult gate,
+Play/Stop and Mute still decide); `SettingsPanel.ExitApp` two presses → `ExitRequested` → `NerdyDirector.ExitApp`
+(save, end the guide session, `Application.Quit`) (SettingsPanelTests 9); scene: `AgentScripts/AddBarMute.cs` (Mute pill
+between Play/Stop and the gear, 12 px gaps, `NerdyDirector.barMuteLabel`) and `AgentScripts/AddExitPill.cs` (five action
+pills of 176) (LoungeWiringTests 18). Dashboard launch: the installed manifest already has LAUNCHER + VR categories and
+`com.oculus.supportedDevices=quest2|questpro|quest3|quest3s`; sideloaded apps live under Library → Unknown sources as
+"Nerdy Lounge (preview)"; the owner's report of what happens on tap is pending. QA `docs/qa/lounge.md` D4.
+
+## 2026-09-29 — the toy rack and progress board (spec/plan under docs/superpowers, owner-approved mockup)
+
+Owner: "a rack of toys from the lessons and a scoreboard… every time a kid completes a lesson he gets a new toy… like
+Melee." Built as souvenirs, not rewards (no points/stars): `LibraryState` records completed chapters and seen toys
+(LoungeStore 15), `ToyRackModel` holds the fifteen chapter toys and board rows (ToyRackModel 4), `CompletionRecorder`
+turns the director's existing chapter.Complete observation into one record per chapter with no lesson code touched
+(CompletionRecorder 3), `ToyReturnRule`/`ToyReturn` float a released toy home after 4 s (ToyReturnRule 2), `ToyRack`
+applies locked/unlocked/new looks and grabbability, `ProgressBoard` shows checkmarks and "n of 5". Scene:
+`AgentScripts/AddToyRack.cs` (after ApplyRoomFinish; placeholder rounded-box toys in the toy's colour, Meta grab via
+QuickActionsAPI, kinematic, one grab point; world-space board above the rack; placed beside the whiteboard at edit time
+and again at runtime by `ToyRack.PlaceBeside` when the board is placed). Director: `RefreshToyRack` on ShowWall says the
+unlock line once per return to the lounge; Clear saved data refreshes; Restart fresh reloads. LoungeWiringTests 16
+(palette test exempts the rack: the toys carry the lessons' colours). Renders `artifacts/lounge/lounge-5-toyrack.png`.
+Not yet on the headset; QA `docs/qa/lounge.md` E2. Open: the rack sits under lounge furniture, which is visible in
+"Your room" too; the spec said lounge-only — owner to choose.
+
 ## 2026-09-28 (evening) — English at launch, no "welcome back" after a clear, Restart fresh
 
 Owner on the headset, build c36ce453: "the demo is starting in Spanish… it needs to start in English always", "I keep

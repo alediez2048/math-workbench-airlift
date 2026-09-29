@@ -52,6 +52,15 @@ public static class PreviewLounge
                 Shot(n.head, Path.Combine(dir, tag + "-3-right.png"));
                 Look(n.head, headPos, new Vector3(0f, -0.1f, -1f));
                 Shot(n.head, Path.Combine(dir, tag + "-4-behind.png"));
+                if (n.toyRack != null)
+                {
+                    // The mockup state: Cargo chapter 1 earned and picked up, chapter 2 just earned (glow), the rest locked.
+                    var lib = new Airlift.Lounge.LibraryState();
+                    lib.RecordCompleted(Airlift.Lounge.ToyRackModel.Cargo, 1); lib.MarkToySeen(Airlift.Lounge.ToyRackModel.Cargo, 1); lib.RecordCompleted(Airlift.Lounge.ToyRackModel.Cargo, 2);
+                    n.toyRack.Refresh(lib); if (n.progressBoard != null) n.progressBoard.Refresh(lib);
+                    var rack = n.toyRack.transform; var eye = rack.position + rack.forward * 2.6f + Vector3.up * 1.5f;   // the rack faces the room
+                    Look(n.head, eye, rack.position + Vector3.up * 1.0f - eye); Shot(n.head, Path.Combine(dir, tag + "-5-toyrack.png"));
+                }
             }
 
             room.Apply(LoungeScenery.Default);

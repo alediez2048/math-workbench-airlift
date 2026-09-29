@@ -1,5 +1,6 @@
 using Airlift.Lounge;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Airlift.Tests
 {
@@ -138,6 +139,54 @@ namespace Airlift.Tests
             Assert.That(LoungeStoreFiles.LoadSettings().Language, Is.EqualTo("en"));
             Assert.That(LoungeStoreFiles.LoadLibrary().Continue, Is.Null);
             Assert.That(LoungeStoreFiles.LoadLibrary().RundownSeen, Is.False);
+        }
+
+
+        // Toy rack (spec 2026-09-29): completed chapters and seen toys live with the library.
+        [Test] public void CompletedChaptersRoundTripAndNeverDoubleCount()
+        {
+            var lib = new LibraryState();
+            Assert.That(lib.IsCompleted("cargo_crew_fractions", 1), Is.False);
+            Assert.That(lib.CompletedCount("cargo_crew_fractions"), Is.EqualTo(0));
+            lib.RecordCompleted("cargo_crew_fractions", 1); lib.RecordCompleted("cargo_crew_fractions", 1); lib.RecordCompleted("cargo_crew_fractions", 3);
+            lib.RecordCompleted("", 2); lib.RecordCompleted("neighborhood_cafe_division", 0);
+            var back = LibraryState.FromJson(lib.ToJson());
+            Assert.That(back.IsCompleted("cargo_crew_fractions", 1), Is.True);
+            Assert.That(back.IsCompleted("cargo_crew_fractions", 2), Is.False);
+            Assert.That(back.IsCompleted("cargo_crew_fractions", 3), Is.True);
+            Assert.That(back.CompletedCount("cargo_crew_fractions"), Is.EqualTo(2), "chapter 1 twice counts once");
+            Assert.That(back.CompletedCount("neighborhood_cafe_division"), Is.EqualTo(0), "chapter 0 and empty ids are ignored");
+            Assert.That(back.Continue, Is.Null, "completion is not an open");
+        }
+
+        [Test] public void ToysSeenRoundTripAndClearWithEverythingElse()
+        {
+            var lib = new LibraryState();
+            lib.RecordCompleted("community_garden_multiplication", 2); lib.MarkToySeen("community_garden_multiplication", 2);
+            var back = LibraryState.FromJson(lib.ToJson());
+            Assert.That(back.IsToySeen("community_garden_multiplication", 2), Is.True);
+            Assert.That(back.IsToySeen("community_garden_multiplication", 1), Is.False);
+            back.ClearAll();
+            Assert.That(back.CompletedCount("community_garden_multiplication"), Is.EqualTo(0));
+            Assert.That(back.IsToySeen("community_garden_multiplication", 2), Is.False);
+            Assert.That(LibraryState.FromJson("{\"version\":1}").CompletedCount("cargo_crew_fractions"), Is.EqualTo(0), "an older file without the key");
+        }
+
+
+        // Owner 2026-09-29: "leave them around the lounge and keep the memory of the location of the toys".
+        [Test] public void ToyPosesRoundTripAndClearWithEverythingElse()
+        {
+            var lib = new LibraryState();
+            Assert.That(lib.ToyPose("cargo_crew_fractions#1"), Is.Null, "never moved: it sits on the rack");
+            lib.RecordToyPose("cargo_crew_fractions#1", new Vector3(1f, 0.5f, -2f), new Quaternion(0f, 0.7071f, 0f, 0.7071f), 2.5f);
+            var back = LibraryState.FromJson(lib.ToJson());
+            var pose = back.ToyPose("cargo_crew_fractions#1");
+            Assert.That(pose, Is.Not.Null);
+            Assert.That(pose.Value.position, Is.EqualTo(new Vector3(1f, 0.5f, -2f)));
+            Assert.That(pose.Value.rotation.y, Is.EqualTo(0.7071f).Within(0.001f));
+            Assert.That(pose.Value.scale, Is.EqualTo(2.5f).Within(0.001f));
+            back.ClearAll();
+            Assert.That(back.ToyPose("cargo_crew_fractions#1"), Is.Null);
         }
 
     }

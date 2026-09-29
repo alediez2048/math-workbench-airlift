@@ -42,6 +42,8 @@ namespace Airlift.Lounge
         public event Action SavedDataCleared;
         /// Restart fresh confirmed (second press): the director wipes everything and reloads.
         public event Action RestartRequested;
+        /// Exit app confirmed (second press): the director quits to Quest Home.
+        public event Action ExitRequested;
         float clearArmedUntil = -1f;
 
         /// NerdyDirector calls this once with what it loaded, before anything is applied.
@@ -155,6 +157,17 @@ namespace Airlift.Lounge
 
         public bool ClearArmed => Time.time <= clearArmedUntil;
 
+        // ---- exit app: two presses, then Quest Home (owner 2026-09-29) ----
+        public const string ExitLabel = "Exit app", ExitArmedLabel = "Press again to exit";
+        float exitArmedUntil = -1f;
+        public bool ExitArmed => Time.time <= exitArmedUntil;
+        public void ExitApp()
+        {
+            if (Time.time > exitArmedUntil) { exitArmedUntil = Time.time + clearArmedSeconds; NerdyHaptics.Tick(); RefreshLabels(); return; }
+            exitArmedUntil = -1f;
+            ExitRequested?.Invoke();
+        }
+
         // ---- restart fresh: two presses, then everything goes ----
         public const string RestartLabel = "Restart fresh", RestartArmedLabel = "Press again to restart";
         float restartArmedUntil = -1f;
@@ -170,6 +183,7 @@ namespace Airlift.Lounge
         {
             if (clearArmedUntil > 0f && Time.time > clearArmedUntil) { clearArmedUntil = -1f; RefreshLabels(); }
             if (restartArmedUntil > 0f && Time.time > restartArmedUntil) { restartArmedUntil = -1f; RefreshLabels(); }
+            if (exitArmedUntil > 0f && Time.time > exitArmedUntil) { exitArmedUntil = -1f; RefreshLabels(); }
         }
 
         public static string OnOff(bool on) => on ? "On" : "Off";
@@ -187,6 +201,7 @@ namespace Airlift.Lounge
                     case "Clear": l.label.text = clearText ?? (ClearArmed ? ClearArmedLabel : ClearLabel); break;
                     case "Age": l.label.text = AgeLabel(AgeBand); break;
                     case "Restart": l.label.text = RestartArmed ? RestartArmedLabel : RestartLabel; break;
+                    case "Exit": l.label.text = ExitArmed ? ExitArmedLabel : ExitLabel; break;
                 }
             }
             if (versionText != null) versionText.text = "Nerdy AI+VR " + Application.version + " · build " + Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length));

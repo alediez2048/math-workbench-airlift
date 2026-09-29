@@ -34,8 +34,10 @@ namespace Airlift.Tests
 
         [Test] public void MicStaysOffDuringConsentAndChipQuestions()
         {
-            Assert.That(GuidePolicy.MicOn(WelcomePhase.Consent, muted: false, paused: false), Is.False);
-            Assert.That(GuidePolicy.MicOn(WelcomePhase.Welcome, muted: false, paused: false), Is.False);
+            // Owner 2026-09-29: "Dee should be able to interact with me at any point": the mic no longer depends on
+            // the phase. The half-duplex rule (never while she speaks), the age gate, Play/Stop and Mute still apply.
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Consent, muted: false, paused: false), Is.True);
+            Assert.That(GuidePolicy.MicOn(WelcomePhase.Welcome, muted: false, paused: false), Is.True);
         }
 
         [Test] public void MicIsOnInCatalogAndLessonUnlessMutedOrPaused()

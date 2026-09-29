@@ -97,5 +97,16 @@ namespace Airlift.Tests
             Assert.That(asked, Is.EqualTo(1));
         }
 
+
+        // Owner 2026-09-29: "a way to exit the app entirely, in settings, call it Exit app".
+        [Test] public void ExitAppNeedsTwoPressesThenAsksTheDirectorToQuit()
+        {
+            int asked = 0; panel.ExitRequested += () => asked++;
+            panel.ExitApp();
+            Assert.That(asked, Is.EqualTo(0), "the first press only arms"); Assert.That(panel.ExitArmed, Is.True);
+            panel.ExitApp();
+            Assert.That(asked, Is.EqualTo(1));
+        }
+
     }
 }

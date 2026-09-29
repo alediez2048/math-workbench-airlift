@@ -13,6 +13,63 @@ CompactAssistantBar). Suites: RoomFinish, LessonCardArt, DeeAvatar, GeneratedArt
 licence rows in RELEASE-GATES remain open. Perf on the headset (63 s, lounge + wall): 70-73 fps, CPU&GPU p95 10.4 ms.
 Grey flashes the owner saw were Quest tracking loss (Guardian dialog after dropped camera frames), not the app.
 
+## CURRENT STATE — September 29, 11:35 (read this first; everything below is history in reverse order)
+
+**Branch `main`**, everything committed and pushed at the end of this session (see the commit list). Working tree
+also carries the intentionally uncommitted editor/package settings (XRSettings, OpenXR settings, manifest, Project/
+Quality/EditorBuildSettings) and untracked folders from other sessions (`docs/interview/`, `docs/plans/2026-09-28-langsmith-*`,
+`video/`, `unity/Assets/_Recovery/`): leave them alone.
+
+**On the new Quest 3S (serial 3487C10J3706GW):** `com.nerdy.vr.lounge` build installed 11:31 from this tree. Headset
+floor was recalibrated on 09-29 (head y 1.65 m standing; `[Nerdy] placed board: head=…` logs it at every launch).
+Voice proxy on Vercel with the rotated key and credit; Dee greets in English at every launch.
+
+**Built today (all on main):** the lounge **toy rack** (spec `docs/superpowers/specs/2026-09-29-lounge-toy-rack-design.md`,
+plan under `docs/superpowers/plans/`): fifteen chapter toys on a 2.3 m rack against a windowless wall
+(`ToyRackPlacement`: segments 0/5/6/7), grey and ungrabbable until the chapter is complete (`LibraryState.completed`,
+`CompletionRecorder` reads the director's chapter observation; lessons untouched), Dee names the earned toy on return
+to the wall, pull-to-hand (grip) and ray grab (trigger), two-hand resize (`GrabFreeTransformer`, 0.5–3x of built size),
+toys stay where let go and are remembered (`LibraryState.toyPoses`, `ToyPlace`), locked toys explain what earns them
+(`ToyLockedHint`), progress board above the rack (checkmarks, never points), tour's last stop mentions the rack.
+Also: **Mute** on Dee's bar beside Play/Stop (`AddBarMute`), mic in every phase (`GuidePolicy.MicOn`, adult gate kept),
+**Exit app** and **Restart fresh** pills in settings, **Skip onboarding** beside Let's begin, Exit lesson hushes Dee,
+English at every launch, Spanish speech in lessons via `GuideLanguage.Localize`, `[Guide] said (<lang>)` log.
+
+**Root cause fixed last:** duplicate controller interactors (the old "[BuildingBlock] Controller Interactions" block
+duplicated the comprehensive rig's ray, and the distance-grab wizard added one to both blocks) gave a two-point toy two
+coincident grab points → nothing moved. `DisableDuplicateRayAndDistanceInteractors.cs` + test
+`ExactlyOneActiveRayAndDistanceGrabInteractorPerController`. **Owner had not yet confirmed grabbing on that build.**
+
+**Builder order additions (all idempotent):** after AddAgeRow → `AddSkipOnboardingRow`, `AddRestartPill`, `AddExitPill`;
+after PatchConsentCopy/FixWelcomeLayout → `AddSkipOnboardingPill`; after ApplyControlCleanup → `AddBarMute`; after
+ApplyRoomFinish → `AddToyRack` (then `DisableDuplicateRayAndDistanceInteractors` if a grab wizard re-added interactors).
+Renders: `PreviewLounge.cs` writes `artifacts/lounge/lounge-5-toyrack.png` (mockup state); `PreviewWelcomeBoard.cs`.
+
+**Tests added today:** LoungeStore 16, ToyRackModel 5, CompletionRecorder 3, ToyPlacementRule 2, ToyRackPlacement 3,
+GuidePolicy 14, SettingsPanel 9, LoungeWiring 18, CargoTerminalLayout 13, Rundown 5, RundownWiring 6. Runner pattern:
+`~/.claude/jobs/<job>/tmp/runsuite.sh <Suite>` (delete `Temp/pipeline_test_status.json`, `run_tests editor`, poll).
+
+**Open, owner to confirm on the headset:** trigger/grip grab of an unlocked toy after the interactor cleanup, two-hand
+resize, toys remembered across relaunch, Mute/voice-anywhere/Exit app, what tapping the app under Library → Unknown
+sources does, passthrough (rack in both sceneries by default), whether another Claude session is active (one installed
+over a build on 09-28 22:12). Toy props are placeholders (rounded boxes); real props are a follow-up. Design branch
+`design/higgsfield-uplift` was fast-forwarded into main by another session on 09-28 (7a11c95).
+
+## September 29 (later): Mute on the bar, mic in every phase, Exit app
+
+`GuidePolicy.MicOn` has no phase gate (owner: Dee interacts at any point); adult gate, half-duplex, Play/Stop and Mute
+remain. Bar: Play/Stop · Mute · gear (`AddBarMute.cs` after ApplyControlCleanup). Settings actions row: five pills incl.
+Exit app (`AddExitPill.cs` after AddRestartPill; `SettingsPanel.ExitApp` → `NerdyDirector.ExitApp`). Sideloaded app is
+under Library → Unknown sources. QA `docs/qa/lounge.md` D4.
+
+## September 29: the toy rack (spec `docs/superpowers/specs/2026-09-29-lounge-toy-rack-design.md`)
+
+Owner-approved mockup and plan. Completed chapters unlock the chapter's toy on a rack beside the whiteboard; a progress
+board shows checkmarks, never points. Pieces: `LibraryState` completed/toysSeen, `ToyRackModel`, `CompletionRecorder`
+(reads the director's chapter observation; lessons untouched), `ToyRack`/`ToyReturn`/`ProgressBoard`, builder
+`AgentScripts/AddToyRack.cs` after `ApplyRoomFinish`. Palette wiring test exempts the rack. Placeholder toys (rounded
+boxes) until real props are extracted. QA `docs/qa/lounge.md` E2. Headset acceptance pending.
+
 ## September 28 evening: English at launch, Restart fresh, Skip onboarding beside Let's begin
 
 Owner rules now in code: every launch starts in English (`GuideLanguage.AtLaunch`); Clear saved data forgets the

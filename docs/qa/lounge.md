@@ -76,6 +76,26 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 | D3.3 | Press it again | The app reloads: arrival, welcome card, questions, tour, as a brand-new learner. Mac log: `[Nerdy] restart fresh`. |
 | D3.4 | Gear → Clear saved data twice, Done, then Let's begin | The questions, not "welcome back". |
 
+## D4. Mute on the bar, voice anywhere, Exit app (added 2026-09-29)
+
+| # | Do | Expect |
+|---|---|---|
+| D4.1 | Dee's bar → **Mute** while she speaks | She goes silent at once; the label reads Unmute; captions keep coming. Press again: her voice is back. |
+| D4.2 | On the welcome card or during the questions (Voice guide on, Age adult, Play on), say "hello Dee" | She answers; the mic no longer waits for the wall or a lesson. She never listens while she is speaking. |
+| D4.3 | Gear → **Exit app** once | Label reads "Press again to exit" for five seconds. |
+| D4.4 | Press it again | The app closes to Quest Home; saved data stays. Mac log: `[Nerdy] exit app requested`. |
+| D4.5 | Library → filter → Unknown sources → Nerdy Lounge (preview) | The app starts (controllers prompt if they are asleep). |
+
+## E2. The toy rack and progress board (added 2026-09-29)
+
+| # | Do | Expect |
+|---|---|---|
+| E2.1 | Fresh learner (Restart fresh), reach the wall | Rack left of the whiteboard: fifteen grey silhouettes on three shelves; board reads 0 of 5 three times. |
+| E2.2 | Complete Dock 7 chapter 1, Exit lesson | The orange container in colour with a glow; Dee: "Your orange container is on the rack."; board Cargo Crew 1 of 5. Mac log: `[Nerdy] chapter complete`, `[Nerdy] toy unlocked`. |
+| E2.3 | Grab the container, let go across the room | It floats back to its slot within five seconds; the glow is gone after that first grab. |
+| E2.4 | Relaunch | Container still unlocked, no glow. |
+| E2.5 | Restart fresh twice | Fifteen silhouettes again, 0 of 5. |
+
 ## D2. Skip onboarding (tester switch, added 2026-09-28)
 
 | # | Do | Expect |

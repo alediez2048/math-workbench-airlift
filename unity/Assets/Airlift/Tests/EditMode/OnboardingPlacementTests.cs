@@ -29,5 +29,15 @@ namespace Airlift.Tests
             var pose = OnboardingPlacement.BoardPose(new Vector3(0, 1.2f, 0), Vector3.up, 0.65f, 0.5f);
             Assert.That(pose.position.z, Is.EqualTo(0.65f).Within(1e-4f));
         }
+
+        // Owner 2026-09-29: launched over adb while the headset sat awake on a desk, the board was placed at desk
+        // height and the lounge floor cut through it. A head below a seated adult's height is not a worn headset.
+        [Test] public void AHeadsetRestingOnADeskDoesNotPlaceTheBoard()
+        {
+            Assert.That(OnboardingPlacement.IsHeadTracked(new Vector3(0, 0.75f, 0)), Is.False, "desk height");
+            Assert.That(OnboardingPlacement.IsHeadTracked(new Vector3(0, 0.85f, 0)), Is.False, "low table");
+            Assert.That(OnboardingPlacement.IsHeadTracked(new Vector3(0, 1.0f, 0)), Is.True, "seated adult");
+        }
+
     }
 }

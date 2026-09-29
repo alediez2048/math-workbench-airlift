@@ -122,6 +122,8 @@ namespace Airlift.Tests
         // The room must not stand where the lesson happens: the table, its pieces and the cards own that volume.
         [Test] public void NothingInTheLoungeStandsInTheWorkbenchVolume()
         {
+            // The toy rack's toys are the lessons' own objects (the orange container, the pastries): their colours are
+            // the lessons', not the room's palette (spec 2026-09-29), so the rack is left out of this check.
             foreach (var r in Room().GetComponentsInChildren<Renderer>(true))
             {
                 var b = r.bounds;
@@ -220,7 +222,9 @@ namespace Airlift.Tests
             Color[] allowed = { style.baseColor, style.surface, style.line, style.indigo, style.lavender, style.amber, style.magenta, style.orchid, style.cyan };
             // The guide allows the room to shift a token's VALUE (lighter walls, darker floor) but never its hue:
             // "no hue the guide does not list". So compare hue and saturation, not brightness.
-            foreach (var r in Room().GetComponentsInChildren<Renderer>(true))
+            // The toy rack's toys are the lessons' own objects (the orange container, the pastries): their colours are
+            // the lessons', not the room's palette (spec 2026-09-29), so the rack is left out of this check.
+            foreach (var r in Room().GetComponentsInChildren<Renderer>(true).Where(r => r.GetComponentInParent<ToyRack>(true) == null))
             {
                 // A textured surface takes its colour from the texture — and the only one here is the sky gradient,
                 // which is generated from these same tokens. Its material tint is plain white by design.
@@ -332,6 +336,75 @@ namespace Airlift.Tests
             Assert.That(sp.labels.Any(l => l.key == "Restart" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the label shows the armed state");
             var row = pill.transform.parent as RectTransform;
             var pills = row.GetComponentsInChildren<Button>(true).Select(b => (RectTransform)b.transform).OrderBy(r => r.anchoredPosition.x).ToArray();
+            for (int i = 1; i < pills.Length; i++) Assert.That(pills[i].anchoredPosition.x - pills[i].sizeDelta.x / 2f, Is.GreaterThanOrEqualTo(pills[i - 1].anchoredPosition.x + pills[i - 1].sizeDelta.x / 2f), "actions row pills do not overlap");
+        }
+
+
+        // Toy rack (spec 2026-09-29): fifteen slots, one grabbable toy each, a progress board, all lounge furniture.
+        [Test] public void TheLoungeHasAToyRackWithFifteenToysAndAProgressBoard()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            Assert.That(n.toyRack, Is.Not.Null, "run AgentScripts/AddToyRack.cs");
+            Assert.That(n.toyRack.slots.Length, Is.EqualTo(15));
+            Assert.That(n.toyRack.slots.Select(s => s.id).ToArray(), Is.EqualTo(ToyRackModel.Slots.Select(s => s.Id).ToArray()), "slot order matches the model");
+            foreach (var slot in n.toyRack.slots)
+            {
+                Assert.That(slot.toy, Is.Not.Null, slot.id + " has a toy");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.Grabbable>(true), Is.Not.Null, slot.id + " is grabbable");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.DistanceGrabInteractable>(true), Is.Not.Null, slot.id + " can be pulled to the hand from where the learner stands");
+                Assert.That(slot.toy.GetComponent<ToyPlace>(), Is.Not.Null, slot.id + " keeps its place");
+                var grabbable = slot.toy.GetComponentInChildren<Oculus.Interaction.Grabbable>(true);
+                Assert.That(grabbable.MaxGrabPoints, Is.Not.EqualTo(1), slot.id + " takes two hands");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.GrabFreeTransformer>(true), Is.Not.Null, slot.id + " resizes with two hands");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.GrabInteractable>(true), Is.Not.Null, slot.id + " can be grabbed up close by the second hand");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.RayInteractable>(true), Is.Not.Null, slot.id + " can be grabbed with the trigger from a distance");
+                Assert.That(slot.toy.GetComponent<ToyLockedHint>(), Is.Not.Null, slot.id + " explains itself while locked");
+                Assert.That(slot.renderers.All(r => r.sharedMaterial == slot.lockedMaterial), Is.True, slot.id + " is grey in the saved scene: nothing is earned yet");
+                Assert.That(slot.toy.GetComponentInChildren<Oculus.Interaction.Grabbable>(true).enabled, Is.False, slot.id + " cannot be grabbed while locked");
+                Assert.That(slot.toy.transform.localScale.x, Is.EqualTo(slot.toy.GetComponent<ToyPlace>().homeScale).Within(0.01f), slot.id + " sits at its built size");
+                Assert.That(slot.toy.GetComponent<ToyPlace>().homeScale, Is.GreaterThan(1.5f), slot.id + " is built big");
+                Assert.That(slot.toy.GetComponentsInChildren<Renderer>(true).Length, Is.GreaterThan(0), slot.id + " is visible");
+            }
+            Assert.That(n.progressBoard, Is.Not.Null); Assert.That(n.progressBoard.rows.Length, Is.EqualTo(3));
+            Assert.That(n.progressBoard.rows.All(r => r.marks.Length == 5 && r.title != null && r.count != null), Is.True);
+            var room = n.lounge; Assert.That(room, Is.Not.Null);
+            Assert.That(n.toyRack.transform.IsChildOf(room.furniture.transform), Is.True, "hidden with the furniture in Your room");
+            var distance = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Oculus.Interaction.DistanceGrabInteractor>(true)).ToArray();
+            Assert.That(distance.Length, Is.GreaterThanOrEqualTo(2), "a distance-grab interactor per controller");
+        }
+
+
+        // Owner 2026-09-29: "a mute/unmute button next to the pause button".
+        [Test] public void DeesBarHasMuteBesidePlayStop()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            Assert.That(n.conversationButton, Is.Not.Null);
+            var bar = n.conversationButton.transform.parent;
+            var mute = bar.Find("Mute"); Assert.That(mute, Is.Not.Null, "run AgentScripts/AddBarMute.cs");
+            Assert.That(mute.gameObject.activeSelf, Is.True);
+            var pill = mute.GetComponent<Button>();
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == n && pill.onClick.GetPersistentMethodName(k) == "ToggleMute");
+            Assert.That(wired, Is.True, "the pill calls NerdyDirector.ToggleMute");
+            Assert.That(n.barMuteLabel, Is.Not.Null); Assert.That(n.barMuteLabel.transform.IsChildOf(mute), Is.True); Assert.That(n.barMuteLabel.text, Is.EqualTo("Mute"));
+            var m = (RectTransform)mute; var c = (RectTransform)n.conversationButton.transform;
+            Assert.That(Mathf.Abs(m.anchoredPosition.y - c.anchoredPosition.y), Is.LessThan(1f), "same row as Play/Stop");
+            float gap = Mathf.Abs(m.anchoredPosition.x - c.anchoredPosition.x) - (m.sizeDelta.x + c.sizeDelta.x) / 2f;
+            Assert.That(gap, Is.GreaterThanOrEqualTo(0f).And.LessThan(30f), "right next to it, not overlapping");
+        }
+
+        [Test] public void TheSettingsCardHasAnExitAppPill()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var settings = n.GetComponent<LoungeSettings>();
+            var pill = settings.panel.transform.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name == "Exit app");
+            Assert.That(pill, Is.Not.Null, "run AgentScripts/AddExitPill.cs");
+            var sp = n.settingsPanel;
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == sp && pill.onClick.GetPersistentMethodName(k) == "ExitApp");
+            Assert.That(wired, Is.True);
+            Assert.That(sp.labels.Any(l => l.key == "Exit" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the label shows the armed state");
+            var row = pill.transform.parent as RectTransform;
+            var pills = row.GetComponentsInChildren<Button>(true).Select(b => (RectTransform)b.transform).OrderBy(r => r.anchoredPosition.x).ToArray();
+            Assert.That(pills.Length, Is.EqualTo(5));
             for (int i = 1; i < pills.Length; i++) Assert.That(pills[i].anchoredPosition.x - pills[i].sizeDelta.x / 2f, Is.GreaterThanOrEqualTo(pills[i - 1].anchoredPosition.x + pills[i - 1].sizeDelta.x / 2f), "actions row pills do not overlap");
         }
 

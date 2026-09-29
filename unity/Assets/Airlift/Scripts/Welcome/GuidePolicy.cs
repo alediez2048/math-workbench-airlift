@@ -4,8 +4,9 @@ namespace Airlift.Welcome
     /// muted or paused. Prompts only when live and not paused.
     public static class GuidePolicy
     {
-        public static bool MicOn(WelcomePhase phase, bool muted, bool paused) =>
-            !muted && !paused && (phase == WelcomePhase.Catalog || phase == WelcomePhase.Lesson || phase == WelcomePhase.Rundown);
+        /// Owner 2026-09-29: "Dee should be able to interact with me at any point": no phase gate. The half-duplex rule
+        /// in GuideSession (never while she speaks), the adult gate, Play/Stop and Mute still decide whether she hears.
+        public static bool MicOn(WelcomePhase phase, bool muted, bool paused) => !muted && !paused;
 
         /// The settings card's Voice guide switch: off means Dee neither listens nor speaks, captions stay.
         public static bool MicOn(WelcomePhase phase, bool muted, bool paused, bool voiceGuide) => voiceGuide && MicOn(phase, muted, paused);

@@ -49,9 +49,9 @@ namespace Airlift.Lounge
                 RundownGate.SettingsOpened, TourTarget.Gear,
                 "Stop silences me and stops listening. Play resumes; the nearby notice tells you whether the microphone will turn on. You can keep using buttons while I'm stopped. Open the highlighted gear to explore settings."),
             new RundownStep("lesson", "6 OF 6",
-                "You're ready. Choose a playable lesson, or say, Dee, open Cargo Crew. Inside, Exit lesson brings you back here.",
+                "You're ready. Every chapter you finish puts its toy on the rack beside the board, to grab and play with. Choose a playable lesson, or say, Dee, open Cargo Crew. Inside, Exit lesson brings you back here.",
                 RundownGate.LessonOpened, TourTarget.FirstTile,
-                "You're ready. Click a playable lesson to begin. Inside, Exit lesson brings you back here."),
+                "You're ready. Every chapter you finish puts its toy on the rack beside the board, to grab and play with. Click a playable lesson to begin. Inside, Exit lesson brings you back here."),
         };
 
         int index = -1;

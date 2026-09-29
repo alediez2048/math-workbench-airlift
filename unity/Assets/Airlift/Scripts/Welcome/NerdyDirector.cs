@@ -25,6 +25,9 @@ namespace Airlift.Welcome
         public GameObject[] stationVisuals;
         [Tooltip("The Nerdy lounge: the home the learner arrives in, is onboarded in and browses in. CC-FD-01.")]
         public Airlift.Lounge.LoungeRoom lounge;
+        [Tooltip("Toy rack (spec 2026-09-29): one toy per completed chapter, beside the whiteboard in the lounge.")]
+        public Airlift.Lounge.ToyRack toyRack;
+        public Airlift.Lounge.ProgressBoard progressBoard;
         [Tooltip("The logo arrival that plays before anything else. CC-FD-03.")]
         public Airlift.Lounge.LoungeArrival arrival;
         bool arriving;
@@ -51,6 +54,8 @@ namespace Airlift.Welcome
         public Image orb;
         public Button muteButton, helpButton, repeatButton, skipButton, pauseButton, musicButton;
         public TMP_Text muteLabel, pauseLabel, musicLabel;
+        [Tooltip("Owner 2026-09-29: the Mute pill on Dee's bar beside Play/Stop.")]
+        public TMP_Text barMuteLabel;
         public AmbientMusic music;
         [Header("Voice language (consent card)")]
         public Button[] languageButtons;          // English, Español: same order as GuideLanguage.Codes
@@ -83,6 +88,7 @@ namespace Airlift.Welcome
             if (cargoLesson == null) cargoLesson = FindAnyObjectByType<CargoLessonDirector>(FindObjectsInactive.Include);
             stations = Stations;
             LoadStores();
+            RefreshToyRack(announce: false);   // locked/unlocked/placed from the saved library before anything is shown
             Debug.Log("[Nerdy] onboarding " + (OnboardingEnabled ? "on" : "off") + " skip=" + Flow.SkipOnboarding + " rundownSeen=" + Flow.RundownSeen + " profileComplete=" + Flow.Profile.IsComplete + " tour=" + (rundown != null));
             ChooseLanguage(GuideLanguage.AtLaunch(Settings.Language));   // owner 2026-09-28: English at every launch
             WireFrontDoor();
@@ -119,6 +125,8 @@ namespace Airlift.Welcome
             var forward = Vector3.ProjectOnPlane(head.forward, Vector3.up).normalized; if (forward.sqrMagnitude < 0.01f) forward = Vector3.forward;
             if (welcomeAnchor != null) welcomeAnchor.SetPositionAndRotation(head.position + forward * welcomeDistance - Vector3.up * welcomeBelowEyes, Quaternion.LookRotation(forward));
             placed = true;
+            if (toyRack != null && welcomeAnchor != null) toyRack.PlaceBeside(welcomeAnchor);
+            Debug.Log("[Nerdy] placed board: head=" + head.position.ToString("F2") + " (y is height above the headset's calibrated floor) board=" + (welcomeAnchor != null ? welcomeAnchor.position.ToString("F2") : "n/a") + " lounge=" + (lounge != null ? lounge.transform.position.ToString("F2") : "n/a"));
         }
 
         // ---- consent ----
@@ -134,6 +142,45 @@ namespace Airlift.Welcome
                 Caption(line); Say("Say this word for word, then stop: " + line);
             }
             AfterConsent();
+        }
+
+        /// Toy rack (spec 2026-09-29): the rack and board follow the library; a newly unlocked toy gets one line from Dee.
+        void RefreshToyRack(bool announce)
+        {
+            progressBoard?.Refresh(Library);
+            if (toyRack == null) return;
+            toyRack.Refresh(Library);
+            if (!announce) return;
+            foreach (var slot in toyRack.NewlyUnlocked())
+            {
+                if (announcedToys.Contains(slot.Id)) continue;
+                announcedToys.Add(slot.Id);
+                string line = Airlift.Lounge.ToyRackModel.UnlockLine(slot);
+                Caption(line); Say("Say this word for word, then stop: " + line);
+                Debug.Log("[Nerdy] toy unlocked " + slot.Id);
+                break;   // one line per return to the lounge
+            }
+        }
+        readonly System.Collections.Generic.HashSet<string> announcedToys = new System.Collections.Generic.HashSet<string>();
+
+        /// A locked toy was pointed at: one line on what earns it, at most every 15 s and never twice in a row for the same toy.
+        string lastLockedToy; float lastLockedHintAt = -100f;
+        void OnLockedToyPointed(Airlift.Lounge.ToySlot slot)
+        {
+            if (Time.time - lastLockedHintAt < 15f && slot.Id == lastLockedToy) return;
+            if (Time.time - lastLockedHintAt < 4f) return;
+            lastLockedToy = slot.Id; lastLockedHintAt = Time.time;
+            string line = Airlift.Lounge.ToyRackModel.LockedLine(slot);
+            Caption(line); Say("Say this word for word, then stop: " + line);
+        }
+
+        /// Owner 2026-09-29: "a way to exit the app entirely". Saved data stays; the guide session ends; Quest goes home.
+        public void ExitApp()
+        {
+            Debug.Log("[Nerdy] exit app requested from settings");
+            try { SaveLibrary(); } catch (System.Exception) { }
+            try { guide?.End(); } catch (System.Exception) { }
+            Application.Quit();
         }
 
         /// Owner 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
@@ -594,6 +641,7 @@ namespace Airlift.Welcome
         {
             ShowPhase();
             if (wall != null) wall.Refresh(Library);
+            RefreshToyRack(announce: true);
             rundown?.Repoint();
             // The catalog context is unchanged on purpose: the Cargo golden recording pins it byte for byte. What the
             // wall holds (tiles, filters, the six coming-soon worlds) is in the proxy's persona and tool descriptions.
@@ -784,8 +832,12 @@ namespace Airlift.Welcome
                 settingsPanel.ReplayRundownRequested += ReplayRundown;
                 settingsPanel.SetAge(Flow.Profile.ageBand);
                 settingsPanel.AgeChosen += OnAgeChosen;
-                settingsPanel.SavedDataCleared += () => { Flow.ForgetLearner(); if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); };
+                settingsPanel.SavedDataCleared += () => { Flow.ForgetLearner(); announcedToys.Clear(); if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); RefreshToyRack(announce: false); };
                 settingsPanel.RestartRequested += RestartFresh;
+            if (toyRack != null) toyRack.ToyFirstGrabbed += _ => { SaveLibrary(); progressBoard?.Refresh(Library); };
+            if (toyRack != null) toyRack.ToyMoved += _ => SaveLibrary();
+            if (toyRack != null) toyRack.LockedToyPointed += OnLockedToyPointed;
+            if (settingsPanel != null) settingsPanel.ExitRequested += ExitApp;
             }
             if (rundown != null) { rundown.StepShown += OnRundownStep; rundown.Ended += OnRundownEnded; }
             if (loungeSettings != null) { loungeSettings.Opened += ApplyWelcomeRaySurface; loungeSettings.Closed += ApplyWelcomeRaySurface; }
@@ -880,6 +932,12 @@ namespace Airlift.Welcome
             var chapter = station != null && station.ChapterActive ? station.Chapter : default;
             if (chapter.Number <= 0) { observedChapter = 0; observedComplete = false; return; }
             string line = GuideTools.StoryLine(observedChapter, observedComplete, chapter);
+            int done = Airlift.Lounge.CompletionRecorder.Newly(observedChapter, observedComplete, chapter.Number, chapter.Complete);
+            if (done > 0 && Library != null && !Library.IsCompleted(Flow.ActiveLessonId, done))
+            {
+                Library.RecordCompleted(Flow.ActiveLessonId, done); SaveLibrary();
+                Debug.Log("[Nerdy] chapter complete lesson=" + Flow.ActiveLessonId + " chapter=" + done + " completed=" + Library.CompletedCount(Flow.ActiveLessonId));
+            }
             observedChapter = chapter.Number; observedComplete = chapter.Complete;
             if (line != null) Say("Say this " + station.StoryName + " line warmly in your own words, in at most two short sentences, then stop: " + line);
         }
@@ -929,7 +987,7 @@ namespace Airlift.Welcome
         }
 
         bool CanSay => guide != null && GuidePolicy.CanPrompt(Paused, guide.Mode == GuideMode.Live, Settings.VoiceGuide);
-        bool CanListen => adultTesterOnly && Flow.Profile.ageBand == "adult" && (Flow.Phase == WelcomePhase.Catalog || Flow.Phase == WelcomePhase.Lesson);
+        bool CanListen => adultTesterOnly && Flow.Profile.ageBand == "adult";   // owner 2026-09-29: any phase
         /// Every spoken request goes through here: nothing is prompted while paused or offline.
         void Say(string instructions) { if (CanSay) guide.Prompt(GuideLanguage.Localize(instructions, Language)); }
         void ApplyMicPolicy()
@@ -970,6 +1028,7 @@ namespace Airlift.Welcome
             ApplyMicPolicy();
             if (Muted) guide?.Hush();
             if (muteLabel != null) muteLabel.text = Muted ? "Unmute" : "Mute";
+            if (barMuteLabel != null) barMuteLabel.text = Muted ? "Unmute" : "Mute";
         }
 
         /// Pause: hush the guide, close the mic and block prompts. Play: resume the phase's normal policy.

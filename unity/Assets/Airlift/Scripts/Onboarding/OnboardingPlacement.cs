@@ -7,7 +7,9 @@ namespace Airlift.Onboarding
     /// the floor; placement must wait for a tracked head.
     public static class OnboardingPlacement
     {
-        public const float MinimumHeadHeight = 0.3f;
+        /// Below a seated adult's eye height the headset is on a desk or a lap, not on a head: the board waits.
+        /// (Owner 2026-09-29: an adb launch with the headset awake on the desk placed the board under the floor.)
+        public const float MinimumHeadHeight = 0.9f;
         public const float MinimumBoardHeight = 0.35f;
 
         public static bool IsHeadTracked(Vector3 headPosition)
