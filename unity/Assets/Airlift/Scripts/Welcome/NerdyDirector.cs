@@ -84,9 +84,7 @@ namespace Airlift.Welcome
             stations = Stations;
             LoadStores();
             Debug.Log("[Nerdy] onboarding " + (OnboardingEnabled ? "on" : "off") + " skip=" + Flow.SkipOnboarding + " rundownSeen=" + Flow.RundownSeen + " profileComplete=" + Flow.Profile.IsComplete + " tour=" + (rundown != null));
-            string savedLanguage = Settings.Language;
-            try { savedLanguage = PlayerPrefs.GetString(GuideLanguage.PrefsKey, Settings.Language); } catch (System.Exception) { }
-            ChooseLanguage(savedLanguage);
+            ChooseLanguage(GuideLanguage.AtLaunch(Settings.Language));   // owner 2026-09-28: English at every launch
             WireFrontDoor();
             ApplySettings("all");
             ShowPhase();
@@ -136,6 +134,20 @@ namespace Airlift.Welcome
                 Caption(line); Say("Say this word for word, then stop: " + line);
             }
             AfterConsent();
+        }
+
+        /// Owner 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
+        /// Every store goes (settings, library, profile, PlayerPrefs), the guide session ends, and the scene reloads,
+        /// which runs the whole arrival and onboarding again as a brand-new learner.
+        public void RestartFresh()
+        {
+            Debug.Log("[Nerdy] restart fresh: wiping saved data and reloading");
+            try { guide?.End(); } catch (System.Exception) { }
+            try { Airlift.Lounge.LoungeStoreFiles.DeleteAll(); } catch (System.Exception e) { Debug.LogWarning("[Nerdy] store delete: " + e.Message); }
+            try { LearnerProfile.Clear(); } catch (System.Exception) { }
+            try { PlayerPrefs.DeleteAll(); PlayerPrefs.Save(); } catch (System.Exception) { }
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            UnityEngine.SceneManagement.SceneManager.LoadScene(scene.buildIndex >= 0 ? scene.buildIndex : 0);
         }
 
         /// Owner 2026-09-28: the Skip onboarding pill beside Let's begin. No questions, no tour, straight to the wall;
@@ -772,7 +784,8 @@ namespace Airlift.Welcome
                 settingsPanel.ReplayRundownRequested += ReplayRundown;
                 settingsPanel.SetAge(Flow.Profile.ageBand);
                 settingsPanel.AgeChosen += OnAgeChosen;
-                settingsPanel.SavedDataCleared += () => { Flow.RundownSeen = false; if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); };
+                settingsPanel.SavedDataCleared += () => { Flow.ForgetLearner(); if (Flow.Phase == WelcomePhase.Catalog && wall != null) wall.Refresh(Library); };
+                settingsPanel.RestartRequested += RestartFresh;
             }
             if (rundown != null) { rundown.StepShown += OnRundownStep; rundown.Ended += OnRundownEnded; }
             if (loungeSettings != null) { loungeSettings.Opened += ApplyWelcomeRaySurface; loungeSettings.Closed += ApplyWelcomeRaySurface; }
@@ -918,7 +931,7 @@ namespace Airlift.Welcome
         bool CanSay => guide != null && GuidePolicy.CanPrompt(Paused, guide.Mode == GuideMode.Live, Settings.VoiceGuide);
         bool CanListen => adultTesterOnly && Flow.Profile.ageBand == "adult" && (Flow.Phase == WelcomePhase.Catalog || Flow.Phase == WelcomePhase.Lesson);
         /// Every spoken request goes through here: nothing is prompted while paused or offline.
-        void Say(string instructions) { if (CanSay) guide.Prompt(instructions); }
+        void Say(string instructions) { if (CanSay) guide.Prompt(GuideLanguage.Localize(instructions, Language)); }
         void ApplyMicPolicy()
         {
             bool on = Flow.VoiceConsented && CanListen && GuidePolicy.MicOn(Flow.Phase, Muted, Paused, Settings.VoiceGuide);

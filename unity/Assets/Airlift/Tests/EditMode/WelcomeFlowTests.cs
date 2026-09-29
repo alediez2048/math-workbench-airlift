@@ -149,5 +149,17 @@ namespace Airlift.Tests
             Assert.That(f.Profile.IsComplete, Is.False, "no answers are invented");
         }
 
+
+        // Owner 2026-09-28: after Clear saved data, Let's begin must run the questions again, not say "welcome back".
+        [Test] public void ForgettingTheLearnerMakesLetsBeginRunTheQuestionsAgain()
+        {
+            var f = new WelcomeFlow { RundownSeen = true };
+            f.Profile.Merge("{\"ageBand\":\"adult\",\"interests\":[\"space\"],\"goal\":\"curious\"}");
+            f.ForgetLearner();
+            Assert.That(f.Profile.HasAnyAnswer, Is.False); Assert.That(f.RundownSeen, Is.False);
+            f.Consent(false);
+            Assert.That(f.Phase, Is.EqualTo(WelcomePhase.Welcome)); Assert.That(f.Returning, Is.False);
+        }
+
     }
 }

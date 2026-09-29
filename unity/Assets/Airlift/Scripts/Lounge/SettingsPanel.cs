@@ -40,6 +40,8 @@ namespace Airlift.Lounge
         public event Action<string> AgeChosen;
         public string AgeBand { get; private set; } = "";
         public event Action SavedDataCleared;
+        /// Restart fresh confirmed (second press): the director wipes everything and reloads.
+        public event Action RestartRequested;
         float clearArmedUntil = -1f;
 
         /// NerdyDirector calls this once with what it loaded, before anything is applied.
@@ -153,7 +155,22 @@ namespace Airlift.Lounge
 
         public bool ClearArmed => Time.time <= clearArmedUntil;
 
-        void Update() { if (clearArmedUntil > 0f && Time.time > clearArmedUntil) { clearArmedUntil = -1f; RefreshLabels(); } }
+        // ---- restart fresh: two presses, then everything goes ----
+        public const string RestartLabel = "Restart fresh", RestartArmedLabel = "Press again to restart";
+        float restartArmedUntil = -1f;
+        public bool RestartArmed => Time.time <= restartArmedUntil;
+        public void RestartFresh()
+        {
+            if (Time.time > restartArmedUntil) { restartArmedUntil = Time.time + clearArmedSeconds; NerdyHaptics.Tick(); RefreshLabels(); return; }
+            restartArmedUntil = -1f;
+            RestartRequested?.Invoke();
+        }
+
+        void Update()
+        {
+            if (clearArmedUntil > 0f && Time.time > clearArmedUntil) { clearArmedUntil = -1f; RefreshLabels(); }
+            if (restartArmedUntil > 0f && Time.time > restartArmedUntil) { restartArmedUntil = -1f; RefreshLabels(); }
+        }
 
         public static string OnOff(bool on) => on ? "On" : "Off";
         public static string Percent(float v) => Mathf.RoundToInt(v * 100f) + "%";
@@ -169,6 +186,7 @@ namespace Airlift.Lounge
                     case "Voice": case "Music": case "Effects": l.label.text = l.key + " " + Percent(Volume(l.key)); break;
                     case "Clear": l.label.text = clearText ?? (ClearArmed ? ClearArmedLabel : ClearLabel); break;
                     case "Age": l.label.text = AgeLabel(AgeBand); break;
+                    case "Restart": l.label.text = RestartArmed ? RestartArmedLabel : RestartLabel; break;
                 }
             }
             if (versionText != null) versionText.text = "Nerdy AI+VR " + Application.version + " · build " + Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length));

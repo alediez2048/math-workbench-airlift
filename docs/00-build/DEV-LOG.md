@@ -1,5 +1,33 @@
 # Cargo Crew development log
 
+## 2026-09-28 (evening) — English at launch, no "welcome back" after a clear, Restart fresh
+
+Owner on the headset, build c36ce453: "the demo is starting in Spanish… it needs to start in English always", "I keep
+getting welcome back", "give me a button on the settings that restarts the entire app with absolutely no progress
+data", and "there's still no Skip onboarding button". Fixes, all TDD, all suites green (GuideLanguage 6, WelcomeFlow 14,
+SettingsPanel 8, LoungeStore 13, LoungeWiring 15):
+- `GuideLanguage.AtLaunch` returns English; `NerdyDirector.Start` no longer reads the saved language. The pill still
+  switches Dee within a session (transcript log proved Spanish speech works).
+- `WelcomeFlow.ForgetLearner` runs on SavedDataCleared: the in-memory profile, tour flag, returning flag and skip flag
+  go with the files, so the next Let's begin runs the questions instead of WelcomeBack. (Root cause of the "welcome
+  back": Clear saved data wiped the files but left the answers in memory.)
+- Settings actions row: fourth pill **Restart fresh** (`AgentScripts/AddRestartPill.cs`, four pills of 210), two presses
+  ("Press again to restart"), `SettingsPanel.RestartRequested` → `NerdyDirector.RestartFresh`: `LoungeStoreFiles.DeleteAll`,
+  `LearnerProfile.Clear`, `PlayerPrefs.DeleteAll`, guide session ended, active scene reloaded (arrival → consent →
+  questions → tour as a brand-new learner). Static state that survives the reload: `NerdyHaptics.Enabled` (re-applied
+  on load), `UiPressLog.hooked`, `InputDiagnostics.selectors` (diagnostics only).
+- Spanish in lessons: owner "changed the language to spanish and clicked a lesson and the lesson was in english";
+  log showed `said (es): Welcome to Dock 7…` in English because lesson lines are sent as "word for word".
+  `GuideLanguage.Localize` (used by `NerdyDirector.Say`, the only prompt exit) turns the verbatim request into "render
+  the following in Spanish, faithfully; never read the English text aloud" (GuideLanguageTests 7, GuidePolicyTests 14).
+  Captions stay English.
+- Skip onboarding pill confirmed on the headset: log `[Nerdy] onboarding skipped from the welcome card` from the
+  owner's press. English at launch confirmed (`mode Live language en`). The earlier "not there" reports were the
+  builds before c36ce453.
+- Skip onboarding pill (earlier note): the installed APK's scene data contains the "Skip onboarding" object beside "Allow voice" and
+  no longer contains "No voice"; no runtime code touches the consent card's children. Not yet confirmed on the headset
+  (no frame captured while the owner looked at the card). Build ad707b59… installed; QA `docs/qa/lounge.md` A2/D3.
+
 ## 2026-09-28 (later) — Skip onboarding on the welcome card, Exit lesson silences Dee, spoken-word log
 
 Owner on the headset: "the skip onboarding button should be right next to Let's begin". The welcome card's hidden

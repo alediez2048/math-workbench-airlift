@@ -1,5 +1,16 @@
 # Math Workbench: Airlift — instructions for Claude
 
+## September 28 evening: English at launch, Restart fresh, Skip onboarding beside Let's begin
+
+Owner rules now in code: every launch starts in English (`GuideLanguage.AtLaunch`); Clear saved data forgets the
+learner in memory (`WelcomeFlow.ForgetLearner`) so Let's begin never says "welcome back" after a clear; settings
+actions row has **Restart fresh** (two presses → `NerdyDirector.RestartFresh`: all stores wiped, scene reloaded);
+the welcome card has **Skip onboarding** beside Let's begin (`AddSkipOnboardingPill.cs`); Exit lesson hushes Dee;
+`[Guide] said (<lang>): …` logs every spoken line. Builders after AddAgeRow: `AddSkipOnboardingRow`, `AddRestartPill`,
+`AddSkipOnboardingPill`. The Skip onboarding pill and English-at-launch are confirmed by the owner's own presses in the device log.
+Spanish speech inside lessons: `GuideLanguage.Localize` rewrites "word for word" prompts (captions stay English). QA `docs/qa/lounge.md`
+A2/D2/D3.
+
 ## September 28: new headset, rotated key, tester "Skip onboarding" switch
 
 New Quest 3S (3487C10J3706GW) runs the v0.2 demo build; `scripts/lounge-preview.sh` now defaults to the SDK adb. The

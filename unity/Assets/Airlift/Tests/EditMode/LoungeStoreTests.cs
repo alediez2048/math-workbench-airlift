@@ -128,5 +128,17 @@ namespace Airlift.Tests
             Assert.That(SettingsState.FromJson("{\"version\":1}").SkipOnboarding, Is.False, "an older file without the flag");
         }
 
+
+        [Test] public void DeleteAllLeavesOnlyDefaultsBehind()
+        {
+            LoungeStoreFiles.Save(new SettingsState { Language = "es", SkipOnboarding = true });
+            var lib = new LibraryState(); lib.RecordOpened("cargo_crew_fractions", 2); lib.RundownSeen = true; LoungeStoreFiles.Save(lib);
+            LoungeStoreFiles.DeleteAll();
+            Assert.That(LoungeStoreFiles.LoadSettings().SkipOnboarding, Is.False);
+            Assert.That(LoungeStoreFiles.LoadSettings().Language, Is.EqualTo("en"));
+            Assert.That(LoungeStoreFiles.LoadLibrary().Continue, Is.Null);
+            Assert.That(LoungeStoreFiles.LoadLibrary().RundownSeen, Is.False);
+        }
+
     }
 }

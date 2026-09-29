@@ -152,6 +152,13 @@ namespace Airlift.Lounge
         public static LibraryState LoadLibrary() => LibraryState.FromJson(ReadOrNull(LibraryFile));
         public static void Save(SettingsState settings) { if (settings != null) Write(SettingsFile, settings.ToJson()); }
         public static void Save(LibraryState library) { if (library != null) Write(LibraryFile, library.ToJson()); }
+        /// Restart fresh: both files go; a missing file reads as the defaults.
+        public static void DeleteAll()
+        {
+            foreach (var file in new[] { SettingsFile, LibraryFile })
+                try { string p = PathFor(file); if (System.IO.File.Exists(p)) System.IO.File.Delete(p); }
+                catch (Exception e) { Debug.LogWarning("[Nerdy] could not delete " + file + ": " + e.Message); }
+        }
 
         static string ReadOrNull(string file)
         {

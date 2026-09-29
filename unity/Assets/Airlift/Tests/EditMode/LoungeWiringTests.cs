@@ -318,5 +318,22 @@ namespace Airlift.Tests
             Assert.That(wired, Is.True, "the pill calls NerdyDirector.SkipOnboardingNow");
         }
 
+
+        // Owner 2026-09-28: a Restart fresh pill in the settings actions row, two presses, wired to SettingsPanel.RestartFresh.
+        [Test] public void TheSettingsCardHasARestartFreshPill()
+        {
+            var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
+            var settings = n.GetComponent<LoungeSettings>();
+            var pill = settings.panel.transform.GetComponentsInChildren<Button>(true).FirstOrDefault(b => b.name == "Restart fresh");
+            Assert.That(pill, Is.Not.Null, "run AgentScripts/AddRestartPill.cs");
+            var sp = n.settingsPanel;
+            bool wired = Enumerable.Range(0, pill.onClick.GetPersistentEventCount()).Any(k => pill.onClick.GetPersistentTarget(k) == sp && pill.onClick.GetPersistentMethodName(k) == "RestartFresh");
+            Assert.That(wired, Is.True);
+            Assert.That(sp.labels.Any(l => l.key == "Restart" && l.label != null && l.label.transform.IsChildOf(pill.transform)), Is.True, "the label shows the armed state");
+            var row = pill.transform.parent as RectTransform;
+            var pills = row.GetComponentsInChildren<Button>(true).Select(b => (RectTransform)b.transform).OrderBy(r => r.anchoredPosition.x).ToArray();
+            for (int i = 1; i < pills.Length; i++) Assert.That(pills[i].anchoredPosition.x - pills[i].sizeDelta.x / 2f, Is.GreaterThanOrEqualTo(pills[i - 1].anchoredPosition.x + pills[i - 1].sizeDelta.x / 2f), "actions row pills do not overlap");
+        }
+
     }
 }

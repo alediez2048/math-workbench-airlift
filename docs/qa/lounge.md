@@ -67,6 +67,15 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 | A2.2 | Open a lesson → Exit lesson | Dee stops mid-sentence; the wall returns without a new line from her. |
 | A2.3 | Mac: `adb logcat -d -s Unity:I \| grep "\[Guide\] said"` | Every finished line, prefixed with the session language, e.g. `said (es): …`. |
 
+## D3. Restart fresh, English at launch (added 2026-09-28)
+
+| # | Do | Expect |
+|---|---|---|
+| D3.1 | Any launch | Dee greets in English whatever language was chosen last time; the Español pill still switches her. |
+| D3.2 | Gear → **Restart fresh** once | Label reads "Press again to restart" for five seconds, nothing else happens. |
+| D3.3 | Press it again | The app reloads: arrival, welcome card, questions, tour, as a brand-new learner. Mac log: `[Nerdy] restart fresh`. |
+| D3.4 | Gear → Clear saved data twice, Done, then Let's begin | The questions, not "welcome back". |
+
 ## D2. Skip onboarding (tester switch, added 2026-09-28)
 
 | # | Do | Expect |

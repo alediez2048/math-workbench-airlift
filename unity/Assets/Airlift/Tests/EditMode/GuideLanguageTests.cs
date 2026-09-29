@@ -61,5 +61,28 @@ namespace Airlift.Tests
                 Assert.That(font.HasCharacters(spanish, out var missing), Is.True, name + " missing " + (missing == null ? "" : string.Join(",", missing)));
             }
         }
+
+        // Owner 2026-09-28: "it needs to start in english always". The language pill still switches within a session.
+        [Test] public void EveryLaunchStartsInEnglishWhateverWasSaved()
+        {
+            Assert.That(GuideLanguage.AtLaunch("es"), Is.EqualTo("en"));
+            Assert.That(GuideLanguage.AtLaunch("en"), Is.EqualTo("en"));
+            Assert.That(GuideLanguage.AtLaunch(null), Is.EqualTo("en"));
+        }
+
+
+        // Owner 2026-09-28: "changed the language to spanish and clicked a lesson and the lesson was in english".
+        // Lesson lines are authored in English and sent as "word for word"; in Spanish Dee must render them in Spanish.
+        [Test] public void PromptsAreRenderedInSpanishInsteadOfReadVerbatim()
+        {
+            const string p = "Say these exact words word for word, then stop: Welcome to Dock 7.";
+            Assert.That(GuideLanguage.Localize(p, "en"), Is.EqualTo(p), "English prompts are untouched");
+            string es = GuideLanguage.Localize(p, "es");
+            Assert.That(es, Does.Not.Contain("word for word"));
+            Assert.That(es, Does.Contain("Spanish"));
+            Assert.That(es, Does.Contain("Welcome to Dock 7."), "the source line still travels");
+            Assert.That(GuideLanguage.Localize("Say one short sentence: the lessons are in front of them.", "es"), Does.Contain("Spanish"));
+        }
+
     }
 }

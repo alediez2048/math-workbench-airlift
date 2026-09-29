@@ -31,6 +31,14 @@ namespace Airlift.Welcome
         }
 
         public void Begin() => Consent(false);
+
+        /// Clear saved data: the in-memory learner goes too, so the next Let's begin runs the questions and the tour
+        /// instead of saying welcome back.
+        public void ForgetLearner()
+        {
+            Profile.ageBand = ""; Profile.interests.Clear(); Profile.goal = "";
+            RundownSeen = false; Returning = false; SkipOnboarding = false;
+        }
         public void SetVoiceConsent(bool allowed) => VoiceConsented = allowed;
 
         /// The ‹ arrow during the questions: back to the welcome card, where the mic choice can be made again.

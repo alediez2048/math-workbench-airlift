@@ -85,5 +85,17 @@ namespace Airlift.Tests
             Assert.That(changed, Is.EqualTo("SkipOnboarding"));
         }
 
+
+        // Owner 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
+        [Test] public void RestartFreshNeedsTwoPressesThenAsksTheDirectorToRestart()
+        {
+            int asked = 0; panel.RestartRequested += () => asked++;
+            panel.Library.RecordOpened("cargo_crew_fractions", 1);
+            panel.RestartFresh();
+            Assert.That(asked, Is.EqualTo(0), "the first press only arms"); Assert.That(panel.RestartArmed, Is.True);
+            panel.RestartFresh();
+            Assert.That(asked, Is.EqualTo(1));
+        }
+
     }
 }
