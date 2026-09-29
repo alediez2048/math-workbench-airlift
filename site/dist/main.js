@@ -32,3 +32,10 @@ document.querySelectorAll('[data-chapter]').forEach(button => {
     document.getElementById('chapter-caption').textContent = chapter.caption;
   });
 });
+
+// The coming-soon loop starts muted; visitors who prefer reduced motion see its first frame instead.
+const comingSoonLoop = document.querySelector('.illustration-loop');
+if (comingSoonLoop && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  comingSoonLoop.removeAttribute('autoplay');
+  comingSoonLoop.pause();
+}

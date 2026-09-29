@@ -7,7 +7,7 @@ Standalone, static landing page for the Cargo Crew mixed-reality prototype. No U
 Reference: https://claude.ai/artifact/5LwzYqPEPoXTJ4PcJv55mr (Live Learning Style Guide).
 Indigo #202344, surfaces #161C2C, glass borders #6C6E87, Poppins/Karla, brand and spectrum gradients, rounded cards and pill controls. Muted text increased from 64% to 72% for readability. Body text is 16px minimum. Fonts are locally hosted under their supplied OFL licenses.
 
-Imagery is copied from the project's own Unity scene previews; it is labeled accordingly and is not presented as headset footage. Voice dialogue is explicitly illustrative. No generated product artwork or unverified learning-outcome claims. The site is identified as an independent hackathon prototype, not an official Nerdy or Meta offering.
+Imagery is copied from the project's own Unity scene previews; it is labeled accordingly and is not presented as headset footage. Voice dialogue is explicitly illustrative. No unverified learning-outcome claims. Generated artwork (Higgsfield, 2026-09-28) appears only as a labelled illustration of coming-soon worlds, never as product footage. The site is identified as an independent hackathon prototype, not an official Nerdy or Meta offering.
 
 ## Preview and deploy
 
@@ -23,6 +23,9 @@ The chapter buttons switch between the whole, quarters and equivalence previews.
 - cargo-equivalence.png: math-workbench-airlift/artifacts/dock7/4b-docked.png
 - cafe-sharing.png: math-workbench-airlift/artifacts/cafe/2b-placed.png
 - garden-arrays.png: math-workbench-airlift/artifacts/garden/3b-planted.png
+- illustration-coming-soon.jpg: generated with Higgsfield (gpt_image_2_5), see docs/plans/2026-09-28-higgsfield-visual-uplift/generation-log.md; labelled "Illustration" on the page
+- coming-soon-loop.mp4: 5 s loop animated from illustration-coming-soon.jpg with Higgsfield (Kling 3.0); muted, pauses for reduced-motion visitors
+- dee-avatar.png: Dee character (owner-picked direction B), generated with Higgsfield from the approved character sheet
 - Fonts and licenses: math-workbench-airlift/unity/Assets/Airlift/Fonts/Nerdy/
 - nerdy-ai-vr-logo.svg: vector trace of the logo supplied by the project owner in Downloads, with the wordmark gradients recreated as SVG fills. The original PNG remains untouched.
 - nerdy-ai-vr-navbar-supplied.svg: archival copy of the owner-supplied Navbar logo from Downloads/Nerdy_AI_VR_logo.svg. The file embeds a PNG with a dark background. The live navbar uses the transparent vector trace of this artwork instead.

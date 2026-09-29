@@ -53,3 +53,7 @@
 .demo-video figcaption a{color:var(--lavender);text-decoration:underline;text-underline-offset:3px}
 .closing .hero-actions{justify-content:center}
 @media(max-width:760px){.lounge-grid{grid-template-columns:1fr}}
+
+.illustration-section{padding-block:40px 20px}.illustration-section h2{margin-bottom:28px}.illustration{background:var(--surface);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}.illustration figcaption{padding:16px 24px}
+.guide-avatar img{width:100%;height:100%;object-fit:contain;border-radius:50%}.guide-avatar:has(img){background:rgba(255,255,255,.08);overflow:hidden}
+.illustration-loop{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}

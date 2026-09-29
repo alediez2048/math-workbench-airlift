@@ -68,6 +68,9 @@ public static class PreviewWelcomeBoard
                 Shot(n.head, Path.Combine(dir, "welcome-wall.png"));
                 wall.SetFilter(DashboardFilter.Newest); wall.NextPage(); Canvas.ForceUpdateCanvases();
                 Shot(n.head, Path.Combine(dir, "welcome-wall-newest-p2.png"));
+                wall.SetFilter(DashboardFilter.Featured); wall.NextPage(); wall.NextPage(); Canvas.ForceUpdateCanvases();
+                Shot(n.head, Path.Combine(dir, "welcome-wall-p3.png"));
+                sb.AppendLine("WALL featured page 3: " + string.Join(" | ", wall.Visible.Select(v => v.id)));
                 wall.SetFilter(DashboardFilter.Featured);
                 sb.AppendLine("WALL page 1: " + string.Join(" | ", wall.Visible.Select(v => v.id + (v.ribbon != null && v.ribbon.activeSelf ? " [CONTINUE]" : ""))));
                 Dump(sb, "wall", (RectTransform)n.catalogRoot.transform);

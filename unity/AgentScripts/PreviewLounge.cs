@@ -56,7 +56,7 @@ public static class PreviewLounge
 
             room.Apply(LoungeScenery.Default);
             var seat = room.transform.Find("Furniture/Dee seat");
-            sb.AppendLine("Dee seat at " + seat.position.ToString("F2"));
+            if (seat != null) sb.AppendLine("Dee seat at " + seat.position.ToString("F2"));
             sb.AppendLine("renderers " + room.GetComponentsInChildren<Renderer>(true).Length
                           + ", lights " + room.GetComponentsInChildren<Light>(true).Length);
             return sb.ToString() + "renders in artifacts/lounge/";
@@ -71,7 +71,8 @@ public static class PreviewLounge
     {
         var camObj = new GameObject("Preview cam") { hideFlags = HideFlags.HideAndDontSave }; var cam = camObj.AddComponent<Camera>();
         cam.transform.SetPositionAndRotation(head.position, head.rotation); cam.fieldOfView = 70; cam.nearClipPlane = 0.05f;
-        cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.06f, 0.07f, 0.1f);
+        // Like the runtime camera (LoungeRoom): the skybox when the scenery shows one, a flat backdrop otherwise.
+        cam.clearFlags = RenderSettings.skybox != null ? CameraClearFlags.Skybox : CameraClearFlags.SolidColor; cam.backgroundColor = new Color(0.06f, 0.07f, 0.1f);
         var rt = new RenderTexture(1600, 1000, 24); var tex = new Texture2D(1600, 1000, TextureFormat.RGB24, false); var prior = RenderTexture.active;
         try { Canvas.ForceUpdateCanvases(); cam.targetTexture = rt; cam.Render(); RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, 1600, 1000), 0, 0); tex.Apply(); File.WriteAllBytes(path, tex.EncodeToPNG()); }
         finally { RenderTexture.active = prior; cam.targetTexture = null; UnityEngine.Object.DestroyImmediate(tex); UnityEngine.Object.DestroyImmediate(rt); UnityEngine.Object.DestroyImmediate(camObj); }

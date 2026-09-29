@@ -8,6 +8,44 @@
     }
   ],
   "tickets": {
+    "CC-HF-03": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "RoomFinishTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-HF-02": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "LessonCardArtTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "DeeAvatarTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
+    "CC-HF-01": {
+      "suites": [
+        {
+          "mode": "editor",
+          "filter": "ArtImportBudgetTests"
+        },
+        {
+          "mode": "editor",
+          "filter": "GeneratedArtTests"
+        }
+      ],
+      "requiredAssets": [],
+      "requiredCueIds": []
+    },
     "CC-P1-02": {
       "suites": [
         {

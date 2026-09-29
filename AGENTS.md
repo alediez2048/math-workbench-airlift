@@ -1,5 +1,18 @@
 # Math Workbench: Airlift — instructions for Codex
 
+## September 28 night: Higgsfield keeps merged (lounge, Dee, lesson cards, wall tiles)
+
+Owner kept four parts of the Higgsfield pass (`design/higgsfield-uplift`): the lounge finish (fluted wall panels,
+herringbone floor, lower panel + lavender rail, window panorama, fabric detail), Dee's robot look (face in the bar
+orb + DeeAvatar beside the bar), lesson card art (place behind a scrim) and the wall tile art (Café/Garden chapters,
+Coming soon). Owner rejected the board screen/bezel and pill tint (the whiteboard stays classic) and did not keep
+the motion, painted table tops or studio reflections; those stay on the design branch only. Scene patched by rerunning
+ApplyArtImportSettings → ApplyComingSoonArt → ApplyLoungePanorama → ApplyDeeFace → ApplyDetailTextures →
+ApplyRoomFinish → ApplyCardArt → ApplyDeeAvatar (all idempotent; rerun after BuildLounge / the lesson builders /
+CompactAssistantBar). Suites: RoomFinish, LessonCardArt, DeeAvatar, GeneratedArt, ArtImportBudget. Higgsfield
+licence rows in RELEASE-GATES remain open. Perf on the headset (63 s, lounge + wall): 70-73 fps, CPU&GPU p95 10.4 ms.
+Grey flashes the owner saw were Quest tracking loss (Guardian dialog after dropped camera frames), not the app.
+
 ## September 18 evening: repository layout changed
 
 Root planning files now live in `docs/history/`; `docs/README.md` is the documentation map; the landing page
