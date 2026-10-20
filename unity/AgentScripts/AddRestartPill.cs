@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
+// Headset test 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
 // A fourth pill, Restart fresh, in the settings actions row (Replay the tour · Clear saved data · Reset settings ·
 // Restart fresh), wired to SettingsPanel.RestartFresh (two presses) with a live label. Idempotent. Run after AddAgeRow.
 // Run: unity command run_script --file AgentScripts/AddRestartPill.cs --entry AddRestartPill.Run

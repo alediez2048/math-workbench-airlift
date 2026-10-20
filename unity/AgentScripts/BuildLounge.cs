@@ -117,7 +117,7 @@ public static class BuildLounge
         Cylinder(f.transform, "Rug", new Vector3(0f, 0.006f, 0.35f), new Vector3(3.6f, 0.006f, 3.6f), matRug);
         Cylinder(f.transform, "Rug ring", new Vector3(0f, 0.014f, 0.35f), new Vector3(3.0f, 0.005f, 3.0f), matRugInner);
 
-        // Owner 2026-09-17: "lets get rid of everything but the carpet and the whiteboard, I want nothing else
+        // Headset test 2026-09-17: "lets get rid of everything but the carpet and the whiteboard, I want nothing else
         // in here for now." The couches, coffee table, plants, lamp, shelf and Dee's pedestal are gone. The room
         // shell and its light stay, because they are the room rather than things standing in it.
 
@@ -313,7 +313,7 @@ public static class BuildLounge
 
     // ---- the board: one surface, mounted on the welcome panel ----------------------------------------------------
 
-    /// Owner 2026-09-17: "our onboarding dashboard is the whiteboard, not having two". The board is built as a
+    /// Headset test 2026-09-17: "our onboarding dashboard is the whiteboard, not having two". The board is built as a
     /// child of the welcome panel, so the card sits ON it and the existing handle still moves and resizes both.
     static GameObject BuildBoard(LoungeRoom room)
     {
@@ -328,7 +328,7 @@ public static class BuildLounge
         board.transform.localRotation = Quaternion.identity;
 
         // The board frames the panel: one standard panel plus an even margin, so it never dwarfs the card it
-        // carries. Owner 2026-09-17 had a 1.62 m board around a 0.96 m card.
+        // carries. Headset test 2026-09-17 had a 1.62 m board around a 0.96 m card.
         float w = NerdySpace.PanelWidthMetres + NerdySpace.BoardMargin * 2f;
         float h = NerdySpace.PanelHeightMetres + NerdySpace.BoardMargin * 2f;
         const float back = 0.035f;

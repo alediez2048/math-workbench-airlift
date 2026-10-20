@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-// Owner 2026-09-18: "this floating sphere is everywhere, delete it entirely across the entire experience."
+// Headset test 2026-09-18: "this floating sphere is everywhere, delete it entirely across the entire experience."
 // Deletes Dee's orb from the bar and switches the controller helper (its glow sphere) off. Saves CargoCrew.
 public static class RemoveOrb
 {

@@ -11,7 +11,7 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-18, approved on the canvas: ‹ Back and › Next circle actions in the board's bottom-right corner, on
+// Headset test 2026-09-18, approved on the canvas: ‹ Back and › Next circle actions in the board's bottom-right corner, on
 // every screen, dimmed when there is nothing to do. They ride on Dee's bar so they follow it above the workbench in
 // a lesson; the station HUD canvas grows so its ray surface still covers them there.
 // Idempotent. Run after CompactAssistantBar. Saves CargoCrew.

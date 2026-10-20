@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: "the edges ... don't look polished, from beginning to end". One card language on every screen
+    /// Headset test 2026-09-17: "the edges ... don't look polished, from beginning to end". One card language on every screen
     /// (consent, welcome, catalog, assistant bar, the three lesson cards): anti-aliased rendering, high-resolution
     /// rounded sprites that are never squashed into ovals, a hairline stroke and a soft shadow on every card.
     public class CardPolishTests

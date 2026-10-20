@@ -60,7 +60,7 @@ namespace Airlift.Tests
                 "the handle hangs below the board, not across the middle of it");
         }
 
-        // Owner 2026-09-17, revised: the assistant belongs "at the bottom of the whiteboard, but inside the
+        // Headset test 2026-09-17, revised: the assistant belongs "at the bottom of the whiteboard, but inside the
         // whiteboard" — under the content, above the bottom edge, not hanging off the board.
         [Test] public void TheAssistantBarSitsInsideTheBoardBelowTheContent()
         {
@@ -92,7 +92,7 @@ namespace Airlift.Tests
         }
 
         // The board's content is spaced through the board with even margins, and nothing touches anything.
-        // Owner 2026-09-17, after several rounds of too-tight and too-spread: "properly spaced out inside of the
+        // Headset test 2026-09-17, after several rounds of too-tight and too-spread: "properly spaced out inside of the
         // whiteboard". Judged against the rendered board, then pinned here.
         [Test] public void TheCardContentIsSpacedThroughTheBoardWithoutOverlap()
         {
@@ -134,7 +134,7 @@ namespace Airlift.Tests
             }
         }
 
-        // Owner 2026-09-17: the welcome board asks one question. Language and scenery moved behind the gear.
+        // Headset test 2026-09-17: the welcome board asks one question. Language and scenery moved behind the gear.
         [Test] public void TheWelcomeBoardKeepsOnlyTheTwoAnswers()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
@@ -164,7 +164,7 @@ namespace Airlift.Tests
             Assert.That(wired, Is.True, "the gear opens the settings card");
         }
 
-        // Owner 2026-09-17: the settings control overlapped its neighbour, and a word is not a gear.
+        // Headset test 2026-09-17: the settings control overlapped its neighbour, and a word is not a gear.
         [Test] public void TheBarControlsNeverOverlapAndTheGearIsAnIcon()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
@@ -185,7 +185,7 @@ namespace Airlift.Tests
             foreach (var r in controls)
                 Assert.That(Mathf.Abs(r.anchoredPosition.x) + r.sizeDelta.x / 2f, Is.LessThanOrEqualTo(half),
                     r.name + " hangs off the bar");
-            // Owner 2026-09-18: "very compact, not so much space between elements". Neighbouring controls sit one
+            // Headset test 2026-09-18: "very compact, not so much space between elements". Neighbouring controls sit one
             // BarGap apart and the bar itself is the compact standard width.
             Assert.That(bar.sizeDelta.x, Is.EqualTo(NerdySpace.BarWidth).Within(0.5f), "compact bar width");
             for (int i = 1; i < controls.Length; i++)
@@ -251,7 +251,7 @@ namespace Airlift.Tests
             }
         }
 
-        /// Owner 2026-09-18 revision: retire corner arrows; preserve real catalog paging and lesson exit.
+        /// Headset test 2026-09-18 revision: retire corner arrows; preserve real catalog paging and lesson exit.
         [Test] public void RetiredCornerArrowsCannotReappearButCatalogPagingAndExitRemainWired()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects()
@@ -271,7 +271,7 @@ namespace Airlift.Tests
         }
     
 
-        // Owner 2026-09-18: the age answer can be given from the settings card too, so a learner who skipped the
+        // Headset test 2026-09-18: the age answer can be given from the settings card too, so a learner who skipped the
         // questions can still let Dee listen. One pill, wired to CycleAge, with a live label.
         [Test] public void TheSettingsCardHasAnAgePillWiredToTheDirector()
         {
@@ -287,7 +287,7 @@ namespace Airlift.Tests
             Assert.That(n.conversationNotice, Is.Not.Null); Assert.That(n.conversationNotice.rectTransform.sizeDelta.x, Is.GreaterThanOrEqualTo(300f), "room for the age notice");
         }
 
-        // Owner 2026-09-28: a tester switch on the settings card; On = the next launch opens on the wall.
+        // Headset test 2026-09-28: a tester switch on the settings card; On = the next launch opens on the wall.
         [Test] public void TheSettingsCardHasASkipOnboardingSwitch()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
@@ -305,7 +305,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-28: "the skip onboarding button should be right next to Let's begin".
+        // Headset test 2026-09-28: "the skip onboarding button should be right next to Let's begin".
         [Test] public void TheWelcomeCardHasSkipOnboardingBesideLetsBegin()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
@@ -323,7 +323,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-28: a Restart fresh pill in the settings actions row, two presses, wired to SettingsPanel.RestartFresh.
+        // Headset test 2026-09-28: a Restart fresh pill in the settings actions row, two presses, wired to SettingsPanel.RestartFresh.
         [Test] public void TheSettingsCardHasARestartFreshPill()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();
@@ -379,7 +379,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-29: "a mute/unmute button next to the pause button".
+        // Headset test 2026-09-29: "a mute/unmute button next to the pause button".
         [Test] public void DeesBarHasMuteBesidePlayStop()
         {
             var n = SceneManager.GetSceneByPath("Assets/Airlift/Scenes/CargoCrew.unity").GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<NerdyDirector>(true)).First();

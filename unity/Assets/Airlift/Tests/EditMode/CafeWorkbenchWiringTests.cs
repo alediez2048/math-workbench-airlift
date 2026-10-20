@@ -465,7 +465,7 @@ namespace Airlift.Tests
             Assert.That(CafeLayout.ShapeFor("pastry", 0) != CafeLayout.ShapeFor("pastry", 1), Is.True, "mixed pastries");
         }
 
-        /// Owner 2026-09-17: "the croissants are too little". Pastries are 2x the first build (0.045 m collider,
+        /// Headset test 2026-09-17: "the croissants are too little". Pastries are 2x the first build (0.045 m collider,
         /// croissant 0.047 m wide) with every chapter's numbers unchanged.
         [Test] public void PastriesAreTwiceTheFirstBuildAndKeepEveryChapterNumber()
         {

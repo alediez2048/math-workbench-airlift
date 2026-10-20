@@ -173,7 +173,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-29: "leave them around the lounge and keep the memory of the location of the toys".
+        // Headset test 2026-09-29: "leave them around the lounge and keep the memory of the location of the toys".
         [Test] public void ToyPosesRoundTripAndClearWithEverythingElse()
         {
             var lib = new LibraryState(); lib.RecordCompleted("cargo_crew_fractions", 1);   // only an earned toy can be moved

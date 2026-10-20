@@ -53,7 +53,7 @@ namespace Airlift.Tests
             Assert.That(ToyRackModel.UnlockLine(ToyRackModel.Slots[0]), Is.EqualTo("Your orange container is on the rack."));
         }
 
-        // Owner 2026-09-29: pointing at a locked toy should say what earns it instead of doing nothing.
+        // Headset test 2026-09-29: pointing at a locked toy should say what earns it instead of doing nothing.
         [Test] public void ALockedToyExplainsWhatEarnsIt()
         {
             Assert.That(ToyRackModel.Slots[0].ChapterTitle, Is.EqualTo("Big truck"));

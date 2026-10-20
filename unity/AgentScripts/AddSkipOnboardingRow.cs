@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-28: a "Skip onboarding" switch for testers on the settings card, right column between Show button
+// Headset test 2026-09-28: a "Skip onboarding" switch for testers on the settings card, right column between Show button
 // labels and Age. The six right-column rows are re-spaced to 68 so the Age row stays clear of the actions row.
 // Clones the Captions row, re-aims the pill at SettingsPanel.Toggle("SkipOnboarding"). Idempotent. Run after AddAgeRow.
 // Run: unity command run_script --file AgentScripts/AddSkipOnboardingRow.cs --entry AddSkipOnboardingRow.Run

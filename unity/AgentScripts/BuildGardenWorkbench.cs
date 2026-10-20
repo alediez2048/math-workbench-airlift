@@ -26,7 +26,7 @@ using UnityEngine.UI;
 // numbers and numbered fence spots, two seedling trays, 8 grabbable seedling strips (8 seedlings each, every seedling
 // able to grow into lettuce, a carrot, a sunflower or beans), a grabbable fence divider, trees, bushes, a back fence,
 // sunflowers, a Sunny Plot sign, the watering can and butterfly for the payoff, and the "Garden card" canvas in the
-// Lesson interface frame. Owner 2026-09-17 ("the plants are too little"): strips, plants, fence and payoff are twice
+// Lesson interface frame. Headset test 2026-09-17 ("the plants are too little"): strips, plants, fence and payoff are twice
 // the first build; positions and sizes come from GardenTableLayout (trays front to back beside the bed). Cargo objects
 // are not touched except the shared TableHandle piece list and the TypographyBindings inventory. Root inactive by default.
 // Run: unity command run_script --file AgentScripts/BuildGardenWorkbench.cs --entry BuildGardenWorkbench.Run

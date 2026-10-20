@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-17: "lets leave only two buttons visible on the dashboard, I'm an adult tester and continue without
+// Headset test 2026-09-17: "lets leave only two buttons visible on the dashboard, I'm an adult tester and continue without
 // voice, everything else should be inside a gear icon next to the ai assistant."
 // Moves the language and scenery rows off the consent card into a settings card, and puts a gear on the assistant
 // bar that opens it. The welcome board is then one question with two answers.
@@ -79,7 +79,7 @@ public static class BuildSettingsPanel
             rows[i].anchoredPosition = new Vector2(0f, i < ys.Length ? ys[i] : -30f - i * 60f);
         }
 
-        // Owner 2026-09-17: "remove the pause, again and mute buttons ... these should live inside the gear icon."
+        // Headset test 2026-09-17: "remove the pause, again and mute buttons ... these should live inside the gear icon."
         // The director keeps its references — these are the same objects, moved — so its listeners still fire.
         var guideRow = panelRect.Find("Guide row") as RectTransform;
         if (guideRow == null)
@@ -219,7 +219,7 @@ public static class BuildSettingsPanel
         return LayOutBar(bar);
     }
 
-    /// Owner 2026-09-17: "the settings option is overlapping with another button." Two mistakes to undo: the gear
+    /// Headset test 2026-09-17: "the settings option is overlapping with another button." Two mistakes to undo: the gear
     /// was placed by arithmetic that ran out of bar, and the fix that followed spread every button across the
     /// whole bar — over the orb, the caption and the transcript on the left. The bar has two halves: text on the
     /// left, controls on the right. Controls are laid out in the right half only, one row, even gaps.

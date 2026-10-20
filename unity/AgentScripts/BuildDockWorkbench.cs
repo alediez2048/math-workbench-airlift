@@ -29,16 +29,16 @@ public static class BuildDockWorkbench
     const string ScenePath = "Assets/Airlift/Scenes/CargoCrew.unity";
     const string MeshFolder = "Assets/Airlift/Meshes";
     public const float TrayZ = -0.30f;   // far enough in front of the dock-edge strip and the exit lane that waiting crates never cover them
-    // Owner 2026-09-17: crates twice as tall and deep (5.5 x 6 cm -> 11 x 12 cm); length stays exact to the ruler cells.
+    // Headset test 2026-09-17: crates twice as tall and deep (5.5 x 6 cm -> 11 x 12 cm); length stays exact to the ruler cells.
     public const float CrateHeight = 0.11f, CrateDepth = 0.12f, TrayY = 0.0175f + CrateHeight / 2;
     public static readonly Vector3 QuarterTrayOrigin = new Vector3(-0.265f, TrayY, TrayZ);
     public const float QuarterTraySpacing = 0.09f;
     const float RowY = -196f, RowHeight = 48f, RowWidth = 165f, RowStep = 172f;
     // Round 2 geometry (station-local metres): bed floor top, bed depth, dock-edge strip z (ruler-local).
     public const float BedTop = 0.052f, BedDepth = 0.13f, EdgeZ = -0.11f, RearZ = -0.0725f;
-    // Owner 2026-09-17: station-space exit lane z and dock exit gate x.
+    // Headset test 2026-09-17: station-space exit lane z and dock exit gate x.
     public const float LaneZ = -0.05f, ExitGateX = -0.40f;
-    // Owner 2026-09-17: splitter station at the front right of the dock (station space). The pad holds a whole crate and
+    // Headset test 2026-09-17: splitter station at the front right of the dock (station space). The pad holds a whole crate and
     // sits between the crate tray (x <= 0.04), the table handle (z <= -0.387), the exit lane (z >= -0.195) and the staging
     // platform (x >= 0.38, z >= -0.22); the console stands to its right, tilted toward the seated learner.
     public static readonly Vector3 SplitterPadCenter = new Vector3(0.23f, 0.0255f, -0.305f);   // top surface centre
@@ -92,7 +92,7 @@ public static class BuildDockWorkbench
         lesson.halfB.lockedMark = LockedMark(lesson.halfB.piece, RulerLayout.PieceLength(4));
         report.Add("4 quarter crates + locked marks on both halves");
 
-        // 1b. Owner 2026-09-17: the practice and demonstration crates were smaller than the lesson crates. Same chunky
+        // 1b. Headset test 2026-09-17: the practice and demonstration crates were smaller than the lesson crates. Same chunky
         //     size now; they rest on the deck in the tray and on the measuring pad's inset when placed.
         PracticeCrate(d.strap); PracticeCrate(d.demonstrationStrap);
         var inset = d.station.GetComponentsInChildren<MeshFilter>(true).FirstOrDefault(f => f.name == "Pad inset");
@@ -161,7 +161,7 @@ public static class BuildDockWorkbench
         var bayGo = Group("Vehicle bay", terminal.transform, Vector3.zero).gameObject;
         var bay = bayGo.AddComponent<VehicleBay>();
         bay.ruler = ruler; bay.parkHeight = 0.0175f;
-        // Owner 2026-09-17: loaded vehicles turn left and leave through a DOCK EXIT gate. Station-space lane between the
+        // Headset test 2026-09-17: loaded vehicles turn left and leave through a DOCK EXIT gate. Station-space lane between the
         // crate tray (z <= -0.195) and the left crane base (z >= 0.08); vehicles vanish once fully past the left edge.
         Vector3 BaySpace(Vector3 station) => bayGo.transform.InverseTransformPoint(d.transform.TransformPoint(station));
         bay.laneZ = BaySpace(new Vector3(0, 0, LaneZ)).z;
@@ -189,7 +189,7 @@ public static class BuildDockWorkbench
         lesson.expressionLine = CardText(briefing, "Expression line", new Vector2(0, -127), new Vector2(830, 30), style.headingFont, 28, style.primary);
         lesson.sayHints = CardText(briefing, "Say hints", new Vector2(0, -157), new Vector2(830, 24), style.bodyFont, 18, style.muted);
 
-        // 4b. Owner 2026-09-17: splitter station (splitting only worked by voice). Under the chapter objects so it shows
+        // 4b. Headset test 2026-09-17: splitter station (splitting only worked by voice). Under the chapter objects so it shows
         //     with a chapter; CrateSplitter hides it during the concept intro. Never in a fallback button group.
         Replace(chapter, "Dock splitter");
         var splitter = Splitter(chapter, d, lesson);
@@ -274,7 +274,7 @@ public static class BuildDockWorkbench
             EditorUtility.SetDirty(binding);
         }
 
-        // 10. Owner 2026-09-17: "What is a fraction?" runs between Start fractions and chapter 1. Start fractions and the
+        // 10. Headset test 2026-09-17: "What is a fraction?" runs between Start fractions and chapter 1. Start fractions and the
         //     intro's Next go through CargoStation.ContinueFromReady, which starts chapter 1 after the last step.
         var cargoStation = d.GetComponent<CargoStation>();
         if (cargoStation == null) cargoStation = d.gameObject.AddComponent<CargoStation>();
@@ -321,7 +321,7 @@ public static class BuildDockWorkbench
         return quarter;
     }
 
-    /// Owner 2026-09-17: resizes an existing crate in place to CrateHeight x CrateDepth (length stays its cells): grab
+    /// Headset test 2026-09-17: resizes an existing crate in place to CrateHeight x CrateDepth (length stays its cells): grab
     /// box, body (unrounded on a cut face), cut caps, sticker and a label twice as large on the top face. Idempotent.
     static void ChunkyCrate(CargoLessonDirector.PieceView v, int cells, bool roundMin, bool roundMax)
     {
@@ -354,7 +354,7 @@ public static class BuildDockWorkbench
         label.fractionBar.GetComponent<MeshFilter>().sharedMesh = RoundedMesh(new Vector3(0.044f, 0.005f, 0.001f), 0.0005f);
     }
 
-    /// Owner 2026-09-17: the practice (and striped demonstration) crate resized in place to the chunky lesson crate: body
+    /// Headset test 2026-09-17: the practice (and striped demonstration) crate resized in place to the chunky lesson crate: body
     /// mesh and grab box 28 x 11 x 12 cm, stripe on the new top face. The SDK grab setup is untouched. Idempotent.
     static void PracticeCrate(Transform crate)
     {
@@ -478,7 +478,7 @@ public static class BuildDockWorkbench
     }
 
     // ---- vehicles (rear toward the learner, cab +z; the bed is exactly bedCells container cells wide) ----
-    // Owner 2026-09-17: "the trucks don't really look like trucks". Root-local, y 0 = deck top, bed centred on x 0 over
+    // Headset test 2026-09-17: "the trucks don't really look like trucks". Root-local, y 0 = deck top, bed centred on x 0 over
     // the cells, rear bumper at RearZ. Every part stays inside the bed width so neighbours never overlap, low parts
     // stay inside the lane clearances (inset wheels), and the tops stay under the lesson-card sightline. Beds are
     // deep enough for the chunky crates and cabs rise above them.
@@ -601,7 +601,7 @@ public static class BuildDockWorkbench
         }
     }
 
-    /// Owner 2026-09-17: a DOCK EXIT gate over the exit lane on the left, with lane chevrons pointing to it. Posts stand
+    /// Headset test 2026-09-17: a DOCK EXIT gate over the exit lane on the left, with lane chevrons pointing to it. Posts stand
     /// outside the widest vehicle's lane band; the beam clears the tallest cab; the sign faces the learner.
     static void DockExit(Transform terminal, Transform station)
     {

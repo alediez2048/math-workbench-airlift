@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: "What is a fraction?" before Dock 7 chapter 1, once per app run, after "Start fractions". Four
+    /// Headset test 2026-09-17: "What is a fraction?" before Dock 7 chapter 1, once per app run, after "Start fractions". Four
     /// steps pose the real lesson crates over the ruler (whole; halves; halves with 1/2 + 1/2 = 1; quarters) without
     /// touching the lesson model. Pure intro state, the station on in-memory objects, and the scene wiring (scene tests
     /// pass after AgentScripts/BuildDockWorkbench.cs runs).

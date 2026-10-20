@@ -179,7 +179,7 @@ namespace Airlift.Tests
                 }
         }
 
-        /// Owner 2026-09-17 ("the plants are too little"): seedling strips and every plant on them are twice the first
+        /// Headset test 2026-09-17 ("the plants are too little"): seedling strips and every plant on them are twice the first
         /// build in all three dimensions: body, pitch, collider, sprout and every crop they grow into.
         [Test] public void StripsAndPlantsAreTwiceTheFirstBuild()
         {

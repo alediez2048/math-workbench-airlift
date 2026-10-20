@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: elementary learners get a short spoken concept intro before chapter 1 of every lesson
+    /// Headset test 2026-09-17: elementary learners get a short spoken concept intro before chapter 1 of every lesson
     /// (docs/00-build/INTRO-SPLITTER-CONTRACTS.md). Dee reads Say word for word and the card shows it.
     public class ConceptIntroTests
     {

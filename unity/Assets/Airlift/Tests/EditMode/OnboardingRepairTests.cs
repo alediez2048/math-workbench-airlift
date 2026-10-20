@@ -71,7 +71,7 @@ namespace Airlift.Tests
         }
     
 
-        // Owner 2026-09-18: the small bar notice was missed; when the questions are skipped without an age answer the
+        // Headset test 2026-09-18: the small bar notice was missed; when the questions are skipped without an age answer the
         // caption (and Dee) say why she cannot listen. With no tour in the scene the caption stays as written.
         [Test] public void SkippingTheQuestionsWithoutAnAgeSaysWhyDeeCannotListen()
         {

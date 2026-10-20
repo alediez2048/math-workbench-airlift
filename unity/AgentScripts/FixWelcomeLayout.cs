@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-17: "the ai panel is sitting on top of the bottom of the dashboard, it needs to go right below.
+// Headset test 2026-09-17: "the ai panel is sitting on top of the bottom of the dashboard, it needs to go right below.
 // Also the language and lounge buttons are all crammed up." Two real faults: the consent card grew two option rows
 // without growing itself, so the scenery row overlapped the Allow/Continue buttons; and the assistant bar sat at a
 // hand-set offset that the taller card now reaches past.
@@ -40,12 +40,12 @@ public static class FixWelcomeLayout
         Move(consent, "Allow voice", new Vector2(-150f, -110f));
         Move(consent, "No voice", new Vector2(170f, -110f));
 
-        // Owner 2026-09-17: the logo takes more of the card than it earns.
+        // Headset test 2026-09-17: the logo takes more of the card than it earns.
         var logo = consent.Find("Logo") as RectTransform;
         // The logo is a mark, not a headline: it holds a fixed share of the card however large the card gets.
         if (logo != null)
         {
-            // Owner 2026-09-17: the Nerdy AI + VR mark replaces the green wordmark everywhere in the app.
+            // Headset test 2026-09-17: the Nerdy AI + VR mark replaces the green wordmark everywhere in the app.
             var sprite = LogoSprite();
             var image = logo.GetComponent<Image>();
             if (image != null && sprite != null) { image.sprite = sprite; image.preserveAspect = true; }
@@ -125,7 +125,7 @@ public static class FixWelcomeLayout
         t.anchoredPosition = at;
     }
 
-    /// Owner 2026-09-17: the assistant belongs "at the bottom of the whiteboard, but inside the whiteboard".
+    /// Headset test 2026-09-17: the assistant belongs "at the bottom of the whiteboard, but inside the whiteboard".
     /// So it sits in the empty band between the last row of content and the board's bottom edge — measured, not
     /// guessed, because the card and the bar live on different canvases at different scales.
     static string PlaceBarBelowCard(NerdyDirector n, RectTransform consent)

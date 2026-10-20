@@ -4,7 +4,7 @@ using TMPro;
 using UnityEditor;
 using UnityEngine;
 
-// Owner 2026-09-17: Dee can speak Spanish, so the Nerdy caption and label fonts need Spanish letters. Adds them to the
+// Headset test 2026-09-17: Dee can speak Spanish, so the Nerdy caption and label fonts need Spanish letters. Adds them to the
 // static SDF atlases in place (same assets, materials and references): switch to dynamic with the source font, add the
 // characters, switch back to static. Idempotent.
 // Run: unity command run_script --file AgentScripts/AddSpanishGlyphs.cs --entry AddSpanishGlyphs.Run

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-29: "a mute/unmute button next to the pause button". A Mute pill on Dee's bar between Play/Stop and the
+// Headset test 2026-09-29: "a mute/unmute button next to the pause button". A Mute pill on Dee's bar between Play/Stop and the
 // gear, wired to NerdyDirector.ToggleMute with its own label; Play/Stop narrows and the caption gives way. Idempotent.
 // Run after ApplyControlCleanup / CompactAssistantBar. Run: unity command run_script --file AgentScripts/AddBarMute.cs --entry AddBarMute.Run
 public static class AddBarMute

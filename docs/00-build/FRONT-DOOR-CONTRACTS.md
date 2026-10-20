@@ -1,6 +1,6 @@
 # Nerdy lounge and onboarding — contracts (CC-FD-*)
 
-Design: `docs/superpowers/specs/2026-09-17-nerdy-front-door-design.md`. Structural reference:
+Structural reference:
 `docs/00-build/REFERENCE-THEATRE-ELSEWHERE.md`. Tickets: CC-FD-01…10 in TICKETS.md.
 Implementation starts **after the Friday 2026-09-18 submission**. Nothing here is authorized before then.
 

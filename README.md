@@ -325,11 +325,9 @@ characterization test so nobody can change what Dee is told without a diff.
 | [site/](site) | The landing page, deployed to Vercel from this folder |
 | [docs/README.md](docs/README.md) | The documentation map |
 | [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md) | The experience step by step, with pictures and voice commands |
-| [docs/00-build/](docs/00-build) | Dev log, plans, contracts, tickets, style guide, privacy gate, release gates |
+| [docs/00-build/](docs/00-build) | Interface contracts, style guide, voice guide, privacy gate, release gates |
 | [docs/qa/](docs/qa) | Headset test scripts and evidence |
-| [docs/plans/](docs/plans), [docs/superpowers/specs/](docs/superpowers/specs) | Approved plans and design specs |
 | [docs/media/](docs/media) | Headset stills and the demo GIF |
-| [docs/history/](docs/history) | The first days' planning documents, unchanged |
 | [scripts/](scripts) | `lounge-preview.sh` (build, install, launch) and the verification wrapper |
 
 ## Credits and license

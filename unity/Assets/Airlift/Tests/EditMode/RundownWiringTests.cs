@@ -113,7 +113,7 @@ namespace Airlift.Tests
         }
     
 
-        // Owner 2026-09-18: "as soon as the onboarding finishes I'm being forced to start the coffee lesson". The last
+        // Headset test 2026-09-18: "as soon as the onboarding finishes I'm being forced to start the coffee lesson". The last
         // stop pointed at whatever tile the chosen filter put first. It points at Cargo Crew, the flagship, whenever
         // that tile is on the page; every playable tile stays pressable.
         [Test] public void TheLastStopPointsAtCargoCrewWhateverTheFilter()

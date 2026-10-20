@@ -1,6 +1,6 @@
 # Higgsfield art uplift — QA record (2026-09-28)
 
-Plan: [plan.md](../plans/2026-09-28-higgsfield-visual-uplift/plan.md). States are labelled verified, owner-reported or pending.
+States are labelled verified, owner-reported or pending.
 
 ## Baseline
 - Performance baseline: **not captured** (owner not in the headset during the automated run). Task 7 compares against the 13.9 ms budget only.

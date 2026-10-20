@@ -43,7 +43,7 @@ namespace Airlift.Tests
             Assert.That(n.consentRoot.transform.localScale.x, Is.EqualTo(1f).Within(0.05f), "consent card is standard-sized, not specially scaled");
         }
 
-        // Owner 2026-09-17: the logo vanished from the consent card after the launcher-icon attempt re-imported the
+        // Headset test 2026-09-17: the logo vanished from the consent card after the launcher-icon attempt re-imported the
         // logo as a plain texture, which removes the sprite the Image points at.
         [Test] public void ConsentCardShowsTheNerdyLogo()
         {
@@ -65,7 +65,7 @@ namespace Airlift.Tests
             for (int i = 0; i < 2; i++)
             {
                 var b = n.languageButtons[i];
-                // Owner 2026-09-17: the board asks voice or no voice; language moved behind the gear on the bar.
+                // Headset test 2026-09-17: the board asks voice or no voice; language moved behind the gear on the bar.
                 var settings = n.GetComponent<Airlift.Lounge.LoungeSettings>();
                 Assert.That(settings, Is.Not.Null, "run AgentScripts/BuildSettingsPanel.cs");
                 Assert.That(b.transform.IsChildOf(settings.panel.transform), Is.True, "language lives in the settings card");
@@ -92,7 +92,7 @@ namespace Airlift.Tests
         [Test] public void HudHasPauseAndMusicControlsAndSitsAboveTheLessonPanel()
         {
             var n = Director();
-            // Owner 2026-09-17: Pause, Again and Mute live behind the gear now; Music and Help stay on the bar.
+            // Headset test 2026-09-17: Pause, Again and Mute live behind the gear now; Music and Help stay on the bar.
             var settings = n.GetComponent<Airlift.Lounge.LoungeSettings>();
             Assert.That(n.pauseButton, Is.Not.Null); Assert.That(n.pauseButton.transform.IsChildOf(settings.panel.transform), Is.True, "Pause/Play lives in the settings card");
             Assert.That(n.repeatButton.transform.IsChildOf(settings.panel.transform), Is.True, "Again lives in the settings card");

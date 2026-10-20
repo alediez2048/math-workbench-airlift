@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-29: "a way to exit the app entirely, in settings, call it Exit app". A fifth pill in the settings actions
+// Headset test 2026-09-29: "a way to exit the app entirely, in settings, call it Exit app". A fifth pill in the settings actions
 // row (Replay the tour · Clear saved data · Reset settings · Restart fresh · Exit app), two presses, wired to
 // SettingsPanel.ExitApp with a live label. Idempotent. Run after AddRestartPill.
 // Run: unity command run_script --file AgentScripts/AddExitPill.cs --entry AddExitPill.Run

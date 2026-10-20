@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEditor.Events;
 
-// Owner 2026-09-18: "all the bar items are not compact, we need to make this bar very compact, not having so much
+// Headset test 2026-09-18: "all the bar items are not compact, we need to make this bar very compact, not having so much
 // space between elements." One bar of NerdySpace.BarWidth x BarHeight: orb and state on the left, the caption beside
 // it, and every control packed on the right at BarGap. Idempotent. Run LAST, after FixWelcomeLayout. Saves CargoCrew.
 // Run: unity command run_script --file AgentScripts/CompactAssistantBar.cs --entry CompactAssistantBar.Run
@@ -30,7 +30,7 @@ public static class CompactAssistantBar
         foreach (RectTransform child in bar)
             if ((child.name == "Glass" || child.name == "Stroke") && child.anchorMin == child.anchorMax) child.sizeDelta = bar.sizeDelta;
 
-        // Owner 2026-09-18: "get rid of any instances of a blue orb floating". The orb is off everywhere; the state
+        // Headset test 2026-09-18: "get rid of any instances of a blue orb floating". The orb is off everywhere; the state
         // line keeps its corner and the caption starts at the bar's left padding.
         var style = AssetDatabase.LoadAssetAtPath<NerdyStyle>("Assets/Airlift/Fonts/NerdyStyle.asset");
         if (bar.Find("Orb") == null)

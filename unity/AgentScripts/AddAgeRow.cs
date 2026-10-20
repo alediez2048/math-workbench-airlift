@@ -12,7 +12,7 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-18 ("keep the gate, add a clear notice"): an Age row on the settings card, right column under the
+// Headset test 2026-09-18 ("keep the gate, add a clear notice"): an Age row on the settings card, right column under the
 // four switches, one pill wired to SettingsPanel.CycleAge with a live label; the actions row, Done and the version
 // line move down to make room; Dee's bar notice widens for the age line. Idempotent. Run after ApplyControlCleanup.
 // Run: unity command run_script --file AgentScripts/AddAgeRow.cs --entry AddAgeRow.Run

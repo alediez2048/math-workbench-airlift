@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-29: toys stay where they are let go. The rack moves to whichever windowless wall is beside the
+    /// Headset test 2026-09-29: toys stay where they are let go. The rack moves to whichever windowless wall is beside the
     /// board at each launch, so a remembered place is measured from the rack, not the room, and a toy put back on its
     /// slot is simply "home" again.
     public class ToyRackTests

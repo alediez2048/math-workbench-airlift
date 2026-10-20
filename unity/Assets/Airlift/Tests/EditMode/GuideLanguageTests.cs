@@ -8,7 +8,7 @@ using UnityEditor;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: "voice ai keeps switching from english to spanish ... select a language ... and stick to only that
+    /// Headset test 2026-09-17: "voice ai keeps switching from english to spanish ... select a language ... and stick to only that
     /// language". The consent card picks English or Español; the mint request carries it and the server locks the session.
     public class GuideLanguageTests
     {
@@ -62,7 +62,7 @@ namespace Airlift.Tests
             }
         }
 
-        // Owner 2026-09-28: "it needs to start in english always". The language pill still switches within a session.
+        // Headset test 2026-09-28: "it needs to start in english always". The language pill still switches within a session.
         [Test] public void EveryLaunchStartsInEnglishWhateverWasSaved()
         {
             Assert.That(GuideLanguage.AtLaunch("es"), Is.EqualTo("en"));
@@ -71,7 +71,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-28: "changed the language to spanish and clicked a lesson and the lesson was in english".
+        // Headset test 2026-09-28: "changed the language to spanish and clicked a lesson and the lesson was in english".
         // Lesson lines are authored in English and sent as "word for word"; in Spanish Dee must render them in Spanish.
         [Test] public void PromptsAreRenderedInSpanishInsteadOfReadVerbatim()
         {

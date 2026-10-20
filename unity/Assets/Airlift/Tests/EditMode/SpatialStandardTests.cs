@@ -13,7 +13,7 @@ using UnityEngine.SceneManagement;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: panels stood at 1.85 m and 0.65 m, in six different sizes, with headings landing at four
+    /// Headset test 2026-09-17: panels stood at 1.85 m and 0.65 m, in six different sizes, with headings landing at four
     /// different physical heights and the workbench cards still set in the pre-Nerdy font. This suite is what stops
     /// that coming back: one distance, one panel size, one type ramp, everywhere.
     /// Run AgentScripts/ApplySpatialStandards.cs after any builder that makes a panel.

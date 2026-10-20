@@ -24,7 +24,7 @@ using UnityEngine.UI;
 // world-locked root is replaced on every run; Cafe*.mat materials and the CafeTheme asset are created or updated.
 // Builds a cream deck with the Cargo "Workbench" footprint, the coffee counter, espresso machine, awning, menu board,
 // guest table and delivery bike, 4 plates and 6 boxes as drop targets, a pool of 15 grabbable pastries and the
-// "Cafe card" canvas in the Lesson interface frame. Owner 2026-09-17: pastries are 2x the first build
+// "Cafe card" canvas in the Lesson interface frame. Headset test 2026-09-17: pastries are 2x the first build
 // (CafeLayout.PieceScale); the tray and one row of plates or boxes fill the front half, and the counter, guest table
 // and bike stand in the back half (CafeLayout footprints). Cargo objects are not touched except the shared TableHandle
 // piece list and the TypographyBindings inventory. Root inactive by default.

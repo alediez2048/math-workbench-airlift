@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEditor.Events;
 
-// Owner 2026-09-18: "replace the copy and CTAs from the Meet your Nerdy guide section ... just talk about the Nerdy AI
+// Headset test 2026-09-18: "replace the copy and CTAs from the Meet your Nerdy guide section ... just talk about the Nerdy AI
 // assistant, and for the buttons just have turn on mic or continue without voice." Copy only; positions stay
 // (FixWelcomeLayout owns them). Idempotent. Saves CargoCrew.
 // Run: unity command run_script --file AgentScripts/PatchConsentCopy.cs --entry PatchConsentCopy.Run

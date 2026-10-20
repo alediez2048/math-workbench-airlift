@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-28: "the skip onboarding button should be right next to Let's begin". The welcome card's second pill
+// Headset test 2026-09-28: "the skip onboarding button should be right next to Let's begin". The welcome card's second pill
 // (hidden since PatchConsentCopy) becomes Skip onboarding, wired to NerdyDirector.SkipOnboardingNow; Let's begin moves
 // left so the two sit side by side. Idempotent. Run after PatchConsentCopy and FixWelcomeLayout.
 // Run: unity command run_script --file AgentScripts/AddSkipOnboardingPill.cs --entry AddSkipOnboardingPill.Run

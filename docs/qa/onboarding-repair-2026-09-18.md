@@ -37,7 +37,6 @@ Cargo voice golden differences have not been rewritten or resolved.
 
 ## Latest owner headset walkthrough — notes only
 
-**Consolidated plan:** `docs/plans/2026-09-18-onboarding-repair/plan.md` (current revision at top).
 The requests below were captured before implementation; see the latest checkpoint above for current status.
 
 - **Tour coverage for the new conversation control:** introduce Dee's **Play / Stop** control before final lesson selection, with matching highlight, spoken explanation, and persistent written guidance. Explain that Stop silences Dee and stops listening; Play resumes the conversation. If the learner stops Dee during this step, keep the written resume instruction and tour controls usable without voice, preserve their place, and do not automatically resume speech or microphone capture. Remove references to the retired Mic / Music / Help controls. Planned only.

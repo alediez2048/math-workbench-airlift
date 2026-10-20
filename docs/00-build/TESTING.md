@@ -2,7 +2,7 @@
 
 ## September 16 evidence caveat
 
-Read [current handoff](HANDOFF-2026-09-16.md) before testing. Twenty-five passing
+Twenty-five passing
 Cargo checks did not detect the physical grab failure. The isolated vendor cube
 control is invalid (controller GrabInteractable absent; cube not visible). Neither
 build/install success nor candidate hover proves selection. No repeated owner QA

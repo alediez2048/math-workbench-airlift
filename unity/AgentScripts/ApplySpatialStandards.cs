@@ -11,7 +11,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// Owner 2026-09-17: "we need to standardize spacial dimensons across the experience ... the whiteboard should be at
+// Headset test 2026-09-17: "we need to standardize spacial dimensons across the experience ... the whiteboard should be at
 // the same distance as the workbenches, titles should all be the same size and fonts, dashboards should be the same
 // size." Measured first: six panel sizes, 1.85 m vs 0.65 m, headings at 24/36/40/49 mm, and the workbench cards
 // still set in Nunito because the Nerdy font rule only ever scanned the welcome panel.
@@ -59,7 +59,7 @@ public static class ApplySpatialStandards
 
         // 2b. The ray-pointable area IS the welcome canvas rect (RayInteractable -> ClippedPlaneSurface clipped to
         //     it). It was still 960x640 after the panels grew, so the gear and Help sat where no ray could land.
-        //     Owner 2026-09-17: "gear icon does nothing when i click on it."
+        //     Headset test 2026-09-17: "gear icon does nothing when i click on it."
         var canvas = (RectTransform)n.hudWelcomeCanvas;
         canvas.sizeDelta = new Vector2(NerdySpace.PanelWidth, NerdySpace.PanelHeight);
         EditorUtility.SetDirty(canvas);

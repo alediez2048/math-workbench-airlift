@@ -5,7 +5,7 @@
 Owner deferred live AI/spoken guidance and associated audio controls. Existing F-*
 requirements remain traceable future scope, not acceptance gates for the immediate
 whole/halves demo. Physical grabbing, stable placement, exact fractions and readable
-labels remain essential. See [handoff](HANDOFF-2026-09-16.md) for current failures.
+labels remain essential.
 
 Draft F-* namespace belongs to this revision. Existing root FR/NFR IDs are retained
 history, not silently renumbered.

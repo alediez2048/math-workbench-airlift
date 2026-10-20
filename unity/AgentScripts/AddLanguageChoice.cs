@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// Owner 2026-09-17: "select a language ... and stick to only that language". Adds a "Voice language" row with English and
+// Headset test 2026-09-17: "select a language ... and stick to only that language". Adds a "Voice language" row with English and
 // Español pills to the consent card (between the explanation and the voice buttons), wired to NerdyDirector.ChooseLanguage.
 // Pills copy the "No voice" button (outline, focus pointer, press log). Idempotent. Run after PolishCards. Saves CargoCrew.
 // Run: unity command run_script --file AgentScripts/AddLanguageChoice.cs --entry AddLanguageChoice.Run

@@ -63,7 +63,7 @@
   verified on device). 38 checks + scan pass. Supersedes 130202 (29 checks), which had the
   same diagnostics without the fraction chapter.
 - Contains: tracked-head startup placement fix; temporary practice-panel input readout;
-  temporary grip-or-trigger practice grab override (CargoCrew only). See DEV-LOG.
+  temporary grip-or-trigger practice grab override (CargoCrew only).
 - Still unverified on device: board height at start, grab with grip, grab with trigger,
   release-on-pad completion. Owner script:
   1. Wear headset, both controllers awake; launch Airlift from Library > Unknown sources.
@@ -84,7 +84,6 @@
 
 ## September 16 physical evidence — NOT accepted
 
-See [complete handoff](../00-build/HANDOFF-2026-09-16.md).
 Owner confirms gravity fix keeps station still and cargo props look correct.
 Board initially too low; system recenter helps. Free movement is not implemented.
 Practice strap fails to grab after demo; actual practice instructions confirmed.

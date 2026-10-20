@@ -58,7 +58,7 @@ namespace Airlift.Tests
         }
     
 
-        // Owner 2026-09-18: a learner who skipped the questions has no age answer, so Dee may not listen (adult
+        // Headset test 2026-09-18: a learner who skipped the questions has no age answer, so Dee may not listen (adult
         // testers only). The settings card gets one Age pill that cycles the bands, adult first, and tells the director.
         [Test] public void AgePillCyclesAdultFirstAndTellsTheDirector()
         {
@@ -86,7 +86,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
+        // Headset test 2026-09-28: "a button on the settings that restarts the entire app with absolutely no progress data".
         [Test] public void RestartFreshNeedsTwoPressesThenAsksTheDirectorToRestart()
         {
             int asked = 0; panel.RestartRequested += () => asked++;
@@ -98,7 +98,7 @@ namespace Airlift.Tests
         }
 
 
-        // Owner 2026-09-29: "a way to exit the app entirely, in settings, call it Exit app".
+        // Headset test 2026-09-29: "a way to exit the app entirely, in settings, call it Exit app".
         [Test] public void ExitAppNeedsTwoPressesThenAsksTheDirectorToQuit()
         {
             int asked = 0; panel.ExitRequested += () => asked++;

@@ -19,7 +19,7 @@ namespace Airlift.Tests
             Assert.That(GuideTools.BackButton(WelcomePhase.Welcome, false, false), Is.EqualTo(BackAction.BackToWelcomeCard), "approved 2026-09-18: B does what the ‹ arrow does");
         }
 
-        // Owner 2026-09-18, approved on the canvas: ‹ heads toward the main screen (settings closed first), › forward.
+        // Headset test 2026-09-18, approved on the canvas: ‹ heads toward the main screen (settings closed first), › forward.
         [Test] public void TheBackArrowClosesSettingsFirstAndBacksTheQuestionsUp()
         {
             Assert.That(GuideTools.BackButton(WelcomePhase.Catalog, false, false, settingsOpen: true), Is.EqualTo(BackAction.CloseSettings));

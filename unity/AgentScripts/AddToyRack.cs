@@ -20,7 +20,7 @@ using UnityEngine.UI;
 public static class AddToyRack
 {
     const string ScenePath = "Assets/Airlift/Scenes/CargoCrew.unity", MatDir = "Assets/Airlift/Materials/Lounge/Toys";
-    // Owner 2026-09-29: "make it much bigger, it looks very small compared to the rest of the space".
+    // Headset test 2026-09-29: "make it much bigger, it looks very small compared to the rest of the space".
     const float RackWidth = 2.3f, ShelfDepth = 0.36f, ShelfThick = 0.04f, SlotStep = 0.46f, ToyScale = 1.7f, Uprights = 2.05f;
     static readonly float[] ShelfY = { 1.7f, 1.15f, 0.6f };   // Cargo on top, Café, Garden
     static NerdyStyle style;
@@ -63,7 +63,7 @@ public static class AddToyRack
             var colourMats = renderers.Select(r => r.sharedMaterial).ToArray();
             var bounds = renderers[0].bounds; foreach (var r in renderers) bounds.Encapsulate(r.bounds);
             var collider = toy.AddComponent<BoxCollider>(); collider.center = toy.transform.InverseTransformPoint(bounds.center); collider.size = (bounds.size + Vector3.one * 0.01f) / ToyScale;
-            // Owner 2026-09-29: walking to the wall leaves the Guardian, so the toy comes to the learner. Device log the same
+            // Headset test 2026-09-29: walking to the wall leaves the Guardian, so the toy comes to the learner. Device log the same
             // day: a cone (distance) grab on the toy outranks the ray in the hand's interactor group and switches the ray off
             // while it points at the toy (no cursor, no trigger). So: the ray alone takes a toy from afar, and its movement is
             // pull-to-hand; the near grab (grip) holds it once it is in the hand, and two near grabs resize it.
@@ -74,7 +74,7 @@ public static class AddToyRack
             rayInteractable.InjectOptionalMovementProvider(pull);
             foreach (var old in rayInteractable.GetComponents<MoveFromTargetProvider>()) UnityEngine.Object.DestroyImmediate(old);
             var grabbable = toy.GetComponentInChildren<Grabbable>(true) ?? throw new InvalidOperationException("SDK did not create Grabbable for " + m.Id);
-            // Owner 2026-09-29: "make it bigger or smaller by grabbing it with both controllers and expanding it".
+            // Headset test 2026-09-29: "make it bigger or smaller by grabbing it with both controllers and expanding it".
             grabbable.MaxGrabPoints = 2;
             var free = grabbable.GetComponent<GrabFreeTransformer>(); if (free == null) free = grabbable.gameObject.AddComponent<GrabFreeTransformer>();
             var axis = new TransformerUtils.ConstrainedAxis { ConstrainAxis = true, AxisRange = new TransformerUtils.FloatRange { Min = ToyPlacementRule.MinScale * ToyScale, Max = ToyPlacementRule.MaxScale * ToyScale } };

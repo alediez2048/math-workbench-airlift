@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-29: "the rack needs to be set against a wall with no window". The lounge is a 12-segment ring with
+    /// Headset test 2026-09-29: "the rack needs to be set against a wall with no window". The lounge is a 12-segment ring with
     /// glazed bays at segments 2, 3, 9 and 10; the rack snaps to the nearest solid segment on the learner's left of the board.
     public class ToyRackPlacementTests
     {
-        // Owner 2026-09-29: "the rack is overlapping the window". A 2.3 m rack is wider than one 1.75 m segment, so it
+        // Headset test 2026-09-29: "the rack is overlapping the window". A 2.3 m rack is wider than one 1.75 m segment, so it
         // only fits a segment whose two neighbours are solid too: segment 0 (between 11 and 1) and segments 5, 6, 7.
         [Test] public void SnapsToTheNearestSegmentWithSolidNeighbours()
         {

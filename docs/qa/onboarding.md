@@ -3,9 +3,7 @@
 ## September 16 regression notice
 
 Historical owner success below applies to earlier builds only. Current CargoCrew
-practice grabbing FAILS; no current acceptance implied. See
-[handoff](../00-build/HANDOFF-2026-09-16.md) for installed diagnostic, evidence and
-rollback artifact. Do not treat editor tests as physical interaction proof.
+practice grabbing FAILS; no current acceptance implied. Do not treat editor tests as physical interaction proof.
 
 September 14, 2026. Scene: `unity/Assets/Airlift/Scenes/Onboarding.unity`.
 Status: authored, editor-checked and Android build verified. Installed and launch

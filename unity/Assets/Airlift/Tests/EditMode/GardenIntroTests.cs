@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace Airlift.Tests
 {
-    /// Owner 2026-09-17: before chapter 1 of Community Garden a short concept intro, "What is multiplying?" (row, rows,
+    /// Headset test 2026-09-17: before chapter 1 of Community Garden a short concept intro, "What is multiplying?" (row, rows,
     /// times), runs once per app run after the briefing. The garden shows planted rows of 4 on the chapter 1 bed
     /// without touching GardenModel; nothing can be grabbed; every other action asks to finish the intro first.
     public class GardenIntroTests

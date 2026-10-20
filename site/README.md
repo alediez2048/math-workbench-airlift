@@ -23,7 +23,7 @@ The chapter buttons switch between the whole, quarters and equivalence previews.
 - cargo-equivalence.png: math-workbench-airlift/artifacts/dock7/4b-docked.png
 - cafe-sharing.png: math-workbench-airlift/artifacts/cafe/2b-placed.png
 - garden-arrays.png: math-workbench-airlift/artifacts/garden/3b-planted.png
-- illustration-coming-soon.jpg: generated with Higgsfield (gpt_image_2_5), see docs/plans/2026-09-28-higgsfield-visual-uplift/generation-log.md; labelled "Illustration" on the page
+- illustration-coming-soon.jpg: generated with Higgsfield (gpt_image_2_5); labelled "Illustration" on the page
 - coming-soon-loop.mp4: 5 s loop animated from illustration-coming-soon.jpg with Higgsfield (Kling 3.0); muted, pauses for reduced-motion visitors
 - dee-avatar.png: Dee character (owner-picked direction B), generated with Higgsfield from the approved character sheet
 - Fonts and licenses: math-workbench-airlift/unity/Assets/Airlift/Fonts/Nerdy/

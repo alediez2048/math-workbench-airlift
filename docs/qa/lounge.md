@@ -130,4 +130,4 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 ## F. Performance (recorded from the Mac while you sit in the lounge)
 
 `adb logcat -v time -s VrApi` for 60 s in the Nerdy lounge scenery, then 60 s in Your room, then inside Cargo
-chapter 1. Budget: app CPU/GPU time p95 ≤ 13.9 ms at 72 Hz, no stale frames. Numbers go in DEV-LOG.
+chapter 1. Budget: app CPU/GPU time p95 ≤ 13.9 ms at 72 Hz, no stale frames. Record the numbers with the run.
