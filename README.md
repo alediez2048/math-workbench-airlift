@@ -283,12 +283,12 @@ adb shell monkey -p com.nerdy.vr.lounge -c android.intent.category.LAUNCHER 1
 Voice needs Wi-Fi on the headset and a deployed guide proxy; see
 [services/guide-proxy/README.md](services/guide-proxy/README.md). Without it Dee is offline and the app runs
 on buttons and captions. Presses and tool calls are logged (`adb logcat -s Unity:I`, lines tagged `[Nerdy]`
-and `[Guide]`), which is how every headset report in the dev log was diagnosed.
+and `[Guide]`), which is how every headset report was diagnosed.
 
 ## How it was built in five days
 
 One person, a Quest 3S, Claude Code and Codex, and a rule: nothing counts until the owner accepts it on the
-headset. The [dev log](docs/00-build/DEV-LOG.md) has every step; the short version:
+headset. The short version:
 
 | Day | What landed |
 |---|---|
@@ -330,7 +330,6 @@ characterization test so nobody can change what Dee is told without a diff.
 | [docs/plans/](docs/plans), [docs/superpowers/specs/](docs/superpowers/specs) | Approved plans and design specs |
 | [docs/media/](docs/media) | Headset stills and the demo GIF |
 | [docs/history/](docs/history) | The first days' planning documents, unchanged |
-| [CLAUDE.md](CLAUDE.md), [AGENTS.md](AGENTS.md) | Working instructions and current state for the coding agents |
 | [scripts/](scripts) | `lounge-preview.sh` (build, install, launch) and the verification wrapper |
 
 ## Credits and license

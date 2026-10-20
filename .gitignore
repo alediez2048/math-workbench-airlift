@@ -45,3 +45,7 @@ mono_crash.*
 
 # Vercel CLI link + local env pulls
 .vercel/
+
+# Local AI tooling
+.cursor/
+.claude/
