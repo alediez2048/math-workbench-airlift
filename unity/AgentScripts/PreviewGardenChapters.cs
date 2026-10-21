@@ -21,7 +21,7 @@ public static class PreviewGardenChapters
         EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
         var n = UnityEngine.Object.FindAnyObjectByType<NerdyDirector>(FindObjectsInactive.Include);
         var station = UnityEngine.Object.FindAnyObjectByType<GardenStation>(FindObjectsInactive.Include);
-        if (n == null || n.onboarding == null || station == null) throw new InvalidOperationException("Nerdy director, onboarding or Garden workbench missing (run BuildGardenWorkbench first).");
+        if (n == null || n.onboarding == null || station == null) throw new InvalidOperationException("lounge director, onboarding or Garden workbench missing (run BuildGardenWorkbench first).");
         var d = n.onboarding;
         var card = LessonCatalog.Find(station.cardId);
         bool wasPlayable = card != null && card.Playable;

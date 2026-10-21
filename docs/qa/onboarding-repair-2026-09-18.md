@@ -26,7 +26,7 @@ Cargo voice golden differences have not been rewritten or resolved.
 - Final owner request: labels are simply Play/Stop in both companion and Settings; microphone disclosure is
   adjacent text, not part of the button label. Compiled/applied and 37 affected checks rerun successfully
   (ControlCleanup 14, ControlCleanupWiring 2, Rundown 5, RundownWiring 5, LoungeWiring 11).
-- Integrated APK `artifacts/lounge-preview/nerdy-lounge-control-cleanup-20260918.apk` built successfully,
+- Integrated APK `artifacts/lounge-preview/lounge-control-cleanup-20260918.apk` built successfully,
   zero errors and 367 warnings (not a warning-free build). Bounded credential scan passed; SHA-256
   `4115cf7f46e90e61b53e20615cbc14bd39e8e65c72f06027292a647e670c47bb`.
   APK package independently checked as `com.nerdy.vr.lounge`; install -r returned Success and cold launch
@@ -47,7 +47,7 @@ The requests below were captured before implementation; see the latest checkpoin
 
 - **Requested navigation simplification:** remove the bottom-right **Back / Next** pair and its onboarding steps/instructions. Keep the **left / right arrows directly beneath the dashboard** as the catalog paging controls. Tester reports the two pairs feel duplicative; their underlying behavior has not yet been compared. Update tour progression, narration, highlights, and completion checks so no step depends on the removed pair, including the introductory Next prompt. Retain onboarding coverage of the surviving paging controls. Verify the tour remains completable and lesson navigation is preserved. This supersedes earlier instructions to teach the bottom-right pair. Planned only; no app changes during this walkthrough.
 
-- **Requested tour addition:** introduce **Your room** and **Nerdy Lounge**. Tester reports these controls are absent from onboarding. Add a guided environment-choice step before final lesson selection, with matching narration and highlights explaining each mode. Confirm both controls work and that switching environments preserves the current tour step and progress. This is a missing explanation, not a confirmed broken-button report. Planned only; no implementation during this walkthrough.
+- **Requested tour addition:** introduce **Your room** and **Virtual lounge**. Tester reports these controls are absent from onboarding. Add a guided environment-choice step before final lesson selection, with matching narration and highlights explaining each mode. Confirm both controls work and that switching environments preserves the current tour step and progress. This is a missing explanation, not a confirmed broken-button report. Planned only; no implementation during this walkthrough.
 
 - **Confirmed by owner:** catalog tour started automatically on the installed autostart preview.
 - **Open, owner-reported:** pressing **Mic off** produced no apparent effect.
@@ -71,7 +71,7 @@ and a returning completed profile retain their previous behavior. Four new regre
 OnboardingRepair 5 and Rundown 5 all passed (26 total). In the real fresh-learner scene, set the stale seen flags
 in memory, answered all three questions through AnswerChip, and observed automatic Catalog / running step 0,
 both completion flags false, microphone off. No Replay action. Follow-up APK:
-`artifacts/lounge-preview/nerdy-lounge-tour-autostart-20260918.apk`, succeeded in 66 seconds, zero errors.
+`artifacts/lounge-preview/lounge-tour-autostart-20260918.apk`, succeeded in 66 seconds, zero errors.
 Credential scan passed; SHA-256 `d6a10f3e5de822b83bd5b2a9c1a83750684015a7a4c7eab1c6d7b8c5d5cf2f50`.
 Installed successfully with data retained; preview lastUpdateTime 2026-09-18 15:27:32 (device time).
 Launch request returned OK but Quest's controllers-required dialog took focus; owner must wake controllers
@@ -130,7 +130,7 @@ speech was still pending at preview stop; do not claim the full spoken tour acce
 This verifies transcript matching and playback routing, not subjective sound quality or headset latency.
 The long introductory caption is cramped in the compact desktop bar; readability remains an owner review item.
 
-Tester requested a fuller catalog introduction: welcome to the Nerdy AI plus VR math lounge, describe
+Tester requested a fuller catalog introduction: welcome to the VR Math Adventure lounge, describe
 hands-on fraction/division/multiplication adventures, explain the cards, then direct to highlighted Next.
 Updated first-step narration; gate and pointer unchanged. Compilation and structural tests passed; actual audio/caption fit still needs live verification.
 
@@ -154,17 +154,17 @@ update is still needed before calling the entire suite green.
 
 Actual spoken-command recognition, audio timing/quality, headset interaction, performance and final owner
 acceptance remain unverified. Tester subsequently authorized the headset build/install. APK:
-`artifacts/lounge-preview/nerdy-lounge-tour-sync-20260918.apk`; build succeeded in 94 seconds, zero errors,
+`artifacts/lounge-preview/lounge-tour-sync-20260918.apk`; build succeeded in 94 seconds, zero errors,
 367 warnings. Bounded credential scan passed; built IL2CPP metadata contains the new gear copy and narration
 guard. SHA-256: `ec258031953b23acda2e336eb0efb22b92c6b1ec296437bc52b40535906db0cb`.
 Preview update installed successfully with saved data retained. Package lastUpdateTime: 2026-09-18 15:19:54
 (device time); cold launch returned OK. Release app preserved; preview build settings restored to
-`com.nerdy.vr` / `Nerdy`. No commit/push. Use Settings → Replay the tour if previously completed.
+`com.nerdy.vr` / `VR Math Adventure`. No commit/push. Use Settings → Replay the tour if previously completed.
 
 ## Tester walkthrough — Unity Game view
 
 1. Welcome: one Let's begin button; greeting refers to it. Click it.
-2. Questions: answer or Skip; no competing tour arrows. Branding says Nerdy AI + VR.
+2. Questions: answer or Skip; no competing tour arrows. Branding says VR Math Adventure.
 3. Catalog: introduce cards, Next, choose a filter, page right, page left, Settings then Done.
 4. Only the final tour step opens a lesson. Check the arrow/caption/speech agree at each step.
 5. In the lesson, use Exit lesson to return. Native chapter progression must remain available.
@@ -172,7 +172,7 @@ Preview update installed successfully with saved data retained. Package lastUpda
 7. Separately, with an adult test profile, explicitly enable Mic and test filter/settings/lesson commands
    at their corresponding steps. Check listening/speaking status; disable mic afterward.
 
-Use Nerdy > Preview > Fresh learner after stopping Play to repeat without clearing the real profile/library.
+Use VR Math Adventure > Preview > Fresh learner after stopping Play to repeat without clearing the real profile/library.
 Do not use Clear saved data during fixture testing: that legacy action is not yet isolated by the preview helper.
 The fixtures suppress normal profile/library/settings saves, but are not a complete sandbox for destructive
 settings actions or global preferences. Do not save temporary Play-mode camera/input overrides into the scene.

@@ -1,4 +1,4 @@
-# nerdy-guide-proxy
+# Guide proxy
 
 The one server-side piece. A Vercel function that mints short-lived, budgeted OpenAI Realtime client secrets
 for the headset, so the provider key never leaves this environment. Dee's persona, her language and her tools

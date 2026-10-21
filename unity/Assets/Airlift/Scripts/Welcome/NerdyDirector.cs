@@ -23,7 +23,7 @@ namespace Airlift.Welcome
         public Transform head;
         public GameObject consentRoot, welcomeRoot, catalogRoot, hudRoot;
         public GameObject[] stationVisuals;
-        [Tooltip("The Nerdy lounge: the home the learner arrives in, is onboarded in and browses in. CC-FD-01.")]
+        [Tooltip("The virtual lounge: the home the learner arrives in, is onboarded in and browses in. CC-FD-01.")]
         public Airlift.Lounge.LoungeRoom lounge;
         [Tooltip("Toy rack (spec 2026-09-29): one toy per completed chapter, beside the whiteboard in the lounge.")]
         public Airlift.Lounge.ToyRack toyRack;

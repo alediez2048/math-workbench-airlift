@@ -25,7 +25,7 @@ gate is **open** until the fix or owner decision is recorded here.
 ## Secrets
 
 - Wrapper credential scan of APK strings and IL2CPP metadata passes on every build (last: 221238).
-- Provider key lives only in `~/.config/nerdy/openai.env` on the Mac; the repo contains one fake key string in the
+- Provider key lives only in `~/.config/<project>/openai.env` on the Mac; the repo contains one fake key string in the
   proxy test (`sk-live-should-not-leak`), which is intentional.
 
 ## Assets and licenses
@@ -36,7 +36,6 @@ gate is **open** until the fix or owner decision is recorded here.
 | Karla (Regular, Medium, Bold) | SIL OFL, `Fonts/Nerdy/OFL-Karla.txt` | ok |
 | Nunito, Nunito Sans | SIL OFL, `Fonts/Nunito-OFL.txt`, `Fonts/NunitoSans-OFL.txt` | ok |
 | LiberationSans SDF (TMP default) | SIL OFL via TextMesh Pro | ok |
-| Nerdy wordmark and name | owner confirmed rights (2026-09-16) | ok |
 | All 3D props (crates, trucks, pickups, vans, cranes, containers, table) | generated in-project by RoundedBoxMesh scripts | ok, no third-party art |
 | Ambient music | synthesized at runtime by AmbientMusic | ok, no audio asset |
 | Meta XR Core / Interaction SDK 205, Unity OpenXR 1.18, Meta OpenXR 2.6.1 | vendor licenses (Meta Platforms SDK license, Unity Companion License) | **open**: owner to confirm acceptable for the contest submission |
@@ -44,7 +43,7 @@ gate is **open** until the fix or owner decision is recorded here.
 
 ## Data and privacy
 
-- Adult testers only; consent card before any microphone use; no names, images or raw audio stored by Nerdy;
+- Adult testers only; consent card before any microphone use; no names, images or raw audio stored by the app;
   learner profile is tags only (LearnerProfile, PlayerPrefs). Child use stays blocked (PRIVACY-GATE.md).
 - Live audio goes to OpenAI for transcription and speech during the session (disclosed on the consent card).
 

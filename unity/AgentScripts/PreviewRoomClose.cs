@@ -2,7 +2,7 @@ using System.IO;
 using Airlift.Lounge;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-// Close-ups of the lounge finish (floor, wall panel and rail) in Nerdy lounge mode. Never saves.
+// Close-ups of the lounge finish (floor, wall panel and rail) in virtual lounge mode. Never saves.
 // Run: unity command run_script --file AgentScripts/PreviewRoomClose.cs --entry PreviewRoomClose.Run
 public static class PreviewRoomClose
 {

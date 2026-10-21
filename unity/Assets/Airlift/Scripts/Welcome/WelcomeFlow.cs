@@ -4,7 +4,7 @@ namespace Airlift.Welcome
     /// A returning learner — profile answered, rundown seen — goes from consent straight to the wall.
     public enum WelcomePhase { Consent, Welcome, Rundown, Catalog, Lesson }
 
-    /// Pure state machine for the Nerdy entry flow. The guide can only move it forward through
+    /// Pure state machine for the entry flow. The guide can only move it forward through
     /// validated tool calls; the learner can always skip to the catalog.
     public sealed class WelcomeFlow
     {

@@ -1,4 +1,4 @@
-"""Nerdy card polish sprites (owner 2026-09-17). Supersampled anti-aliased shapes, written into Assets/Airlift/Sprites.
+"""Card polish sprites (owner 2026-09-17). Supersampled anti-aliased shapes, written into Assets/Airlift/Sprites.
 Import settings (sprite borders, pixels per unit, mipmaps) are applied by AgentScripts/PolishCards.cs."""
 import sys
 from PIL import Image, ImageDraw, ImageFilter

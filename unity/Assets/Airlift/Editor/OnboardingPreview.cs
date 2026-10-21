@@ -13,13 +13,13 @@ namespace Airlift.Editor
     public static class OnboardingPreview
     {
         static OnboardingPreview() { EditorApplication.playModeStateChanged += OnPlayMode; }
-        [MenuItem("Nerdy/Preview/Fresh learner")]
+        [MenuItem("VR Math Adventure/Preview/Fresh learner")]
         public static void Fresh() => StartFixture("fresh");
-        [MenuItem("Nerdy/Preview/Answered profile, unseen tour")]
+        [MenuItem("VR Math Adventure/Preview/Answered profile, unseen tour")]
         public static void Answered() => StartFixture("answered");
-        [MenuItem("Nerdy/Preview/Returning learner")]
+        [MenuItem("VR Math Adventure/Preview/Returning learner")]
         public static void Returning() => StartFixture("returning");
-        [MenuItem("Nerdy/Preview/Skipped tour")]
+        [MenuItem("VR Math Adventure/Preview/Skipped tour")]
         public static void Skipped() => StartFixture("skipped");
         static void StartFixture(string fixture)
         {
@@ -33,7 +33,7 @@ namespace Airlift.Editor
             if (state == PlayModeStateChange.EnteredPlayMode && SessionState.GetString("Nerdy.PreviewFixture", "") != "") EditorApplication.delayCall += EnableMouse;
             if (state == PlayModeStateChange.EnteredEditMode) SessionState.EraseString("Nerdy.PreviewFixture");
         }
-        [MenuItem("Nerdy/Preview/Enable desktop mouse (Play only)")]
+        [MenuItem("VR Math Adventure/Preview/Enable desktop mouse (Play only)")]
         public static void EnableMouse()
         {
             if (!EditorApplication.isPlaying) return;

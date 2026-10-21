@@ -8,15 +8,15 @@ recording on September 18, 2026 (passthrough, adult tester). The full demo is th
 
 ![Dots fly in and the logo assembles on the board](media/01-arrival-dots.jpg)
 
-Put the headset on and launch **Nerdy Lounge (preview)**. A whiteboard stands in your room. Dots fly in and
-assemble into the Nerdy AI+VR logo while Dee connects; a slim progress bar shows only while something is
+Put the headset on and launch the preview app. A whiteboard stands in your room. Dots fly in and
+assemble into the app logo while Dee connects; a slim progress bar shows only while something is
 still loading.
 
 ![The logo and the loading bar](media/02-meet-dee.jpg)
 
 ## 2. Meet Dee
 
-Dee greets you by voice as soon as she is connected. The board shows *Meet Dee, your Nerdy AI + VR guide*
+Dee greets you by voice as soon as she is connected. The board shows *Meet Dee, your VR Math Adventure guide*
 and one button, **Let's begin**. Pressing it asks Android for the microphone once; the mic itself stays off
 until you have answered the age question.
 
@@ -38,11 +38,11 @@ the highlighted control. Skip is always top right.
 1. **Filters.** Featured, Newest, Most viewed sort the lessons. Press one.
 2. **Next page.** The right arrow under the wall.
 3. **Previous page.** The left arrow.
-4. **Scenery.** *Your room* keeps passthrough; *Nerdy lounge* puts you in a virtual room. Lessons always run in your room.
+4. **Scenery.** *Your room* keeps passthrough; *Virtual lounge* puts you in a virtual room. Lessons always run in your room.
 5. **Settings.** Open the gear, look around, press Done.
 6. **Pick a lesson.** The wall returns to Featured and the ring sits on Cargo Crew. Press any playable tile, or say "Dee, open Cargo Crew".
 
-![The Nerdy lounge scenery](media/05-nerdy-lounge.jpg)
+![The virtual lounge scenery](media/05-virtual-lounge.jpg)
 
 ## 5. The wall
 

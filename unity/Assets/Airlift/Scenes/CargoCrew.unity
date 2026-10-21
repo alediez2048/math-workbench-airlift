@@ -12768,7 +12768,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Nerdy lounge
+  m_text: Virtual lounge
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
   m_sharedMaterial: {fileID: -227747822308592786, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
@@ -182628,7 +182628,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Welcome to Nerdy AI + VR
+  m_text: Welcome to VR Math Adventure
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4200d01d730e546b5a5059618ff9ef3c, type: 2}
   m_sharedMaterial: {fileID: 4165305664211591463, guid: 4200d01d730e546b5a5059618ff9ef3c, type: 2}
@@ -195306,7 +195306,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Nerdy lounge
+  m_text: Virtual lounge
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
   m_sharedMaterial: {fileID: -227747822308592786, guid: ddc54262fa9ee45ee9bb821747a6da79, type: 2}
@@ -244281,7 +244281,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Meet Dee, your Nerdy AI + VR guide
+  m_text: Meet Dee, your VR Math Adventure guide
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4200d01d730e546b5a5059618ff9ef3c, type: 2}
   m_sharedMaterial: {fileID: 4165305664211591463, guid: 4200d01d730e546b5a5059618ff9ef3c, type: 2}
@@ -298582,7 +298582,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Nerdy AI+VR 0.2.0
+  m_text: VR Math Adventure 0.2.0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: acbb073ca613040b4b7262cd2ddaadf7, type: 2}
   m_sharedMaterial: {fileID: 6534644148923268937, guid: acbb073ca613040b4b7262cd2ddaadf7, type: 2}

@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Airlift.Presentation
 {
-    /// Nerdy design tokens from the owner's Live Learning Style Guide (September 2026).
+    /// Design tokens from the owner's Live Learning Style Guide (September 2026).
     /// Colors are exact; type sizes are canvas units at the 1 px = 1 unit lesson canvas scale.
-    [CreateAssetMenu(menuName = "Airlift/Nerdy Style")]
+    [CreateAssetMenu(menuName = "Airlift/Style")]
     public sealed class NerdyStyle : ScriptableObject
     {
         [Header("Type")]

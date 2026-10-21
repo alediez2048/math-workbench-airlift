@@ -6,13 +6,13 @@ GitHub release. Editor renders used elsewhere in the docs live under `artifacts/
 
 | File | Moment |
 |---|---|
-| demo.gif | Arrival: the Nerdy AI+VR logo assembles on the board, Dee's welcome card |
+| demo.gif | Arrival: the app logo assembles on the board, Dee's welcome card |
 | poster.jpg | The logo on the whiteboard (video poster) |
 | 01-arrival-dots.jpg | The room before the logo assembles |
 | 02-meet-dee.jpg | The logo and loading bar on the whiteboard |
 | 03-questions.jpg | The three profile questions |
 | 04-wall-tour.jpg | Pick a lesson, first tour stop |
-| 05-nerdy-lounge.jpg | The Nerdy lounge scenery |
+| 05-virtual-lounge.jpg | The virtual lounge scenery |
 | 06-settings.jpg | The settings card |
 | 07-dock7-arrive.jpg | Cargo Crew: Dock 7 crew training |
 | 08-dock7-crate-demo.jpg | Cargo Crew: the crate demonstration |

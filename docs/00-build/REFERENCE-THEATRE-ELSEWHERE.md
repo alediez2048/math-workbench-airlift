@@ -1,7 +1,7 @@
 # Reference: Theatre Elsewhere onboarding (transcript + what we take from it)
 
-Supplied by the owner 2026-09-17 as the structural reference for the Nerdy lounge, discovery wall and rundown.
-**Only the structure is borrowed.** The art, palette, wording, mascot and subject matter are Nerdy's own, from the
+Supplied by the owner 2026-09-17 as the structural reference for the virtual lounge, discovery wall and rundown.
+**Only the structure is borrowed.** The art, palette, wording, mascot and subject matter are this project's own, from the
 Live Learning Style Guide. Nothing here authorises copying assets, copy or branding.
 
 ## Transcript (owner-supplied, verbatim)
@@ -45,7 +45,7 @@ Live Learning Style Guide. Nothing here authorises copying assets, copy or brand
 
 ## What we take, and what it changes
 
-| Reference behaviour | Nerdy equivalent | Change it makes to our plan |
+| Reference behaviour | This project | Change it makes to our plan |
 |---|---|---|
 | Narrated tour, "skip anytime with Return to Browse" | Dee narrates the rundown; a named button skips it at any moment | The skip must be a **real, always-visible control**, not a Skip card on the first stop |
 | Discovery wall with a navigation bar **at the bottom** | Our toolbar under the wall: Featured · Newest · Most viewed | Confirms the owner's layout |
@@ -57,7 +57,7 @@ Live Learning Style Guide. Nothing here authorises copying assets, copy or brand
 | Show/Hide Panel button reveals playback controls | Our assistant bar (Pause, Mute, Music, Again, Help) | Teach the bar the same way: name the button, make them press it |
 | Blue **blinking** continue affordance on the bar and the controller | Our Next / continue on the lesson card | Borrow the blink: the continue affordance pulses until pressed |
 | Bookmarks into a Saved section | Not in the owner's toolbar (Featured / Newest / Most viewed) | Deliberately dropped; can return later without changing the layout |
-| Free fly mode, multiple viewpoints | **Nothing.** No locomotion, no camera angles | Explicit non-goals; the transcript's flying section has no Nerdy analogue |
+| Free fly mode, multiple viewpoints | **Nothing.** No locomotion, no camera angles | Explicit non-goals; the transcript's flying section has no equivalent here |
 | "Return to Browse" as a panic button for motion | "Back to the wall" available at all times, including mid-lesson | Ours is about leaving, not motion sickness — we have no locomotion — but the always-available exit is worth copying |
 
 ## Ordering lesson

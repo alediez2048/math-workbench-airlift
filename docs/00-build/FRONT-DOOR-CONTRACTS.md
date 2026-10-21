@@ -1,10 +1,10 @@
-# Nerdy lounge and onboarding — contracts (CC-FD-*)
+# Virtual lounge and onboarding — contracts (CC-FD-*)
 
 Structural reference:
 `docs/00-build/REFERENCE-THEATRE-ELSEWHERE.md`. Tickets: CC-FD-01…10 in TICKETS.md.
 Implementation starts **after the Friday 2026-09-18 submission**. Nothing here is authorized before then.
 
-**Shape, corrected by the owner on 2026-09-17:** one scene, one place. The app opens in the Nerdy lounge, the logo
+**Shape, corrected by the owner on 2026-09-17:** one scene, one place. The app opens in the virtual lounge, the logo
 animates, Dee appears beside the onboarding cards we already have, the learner picks AR or VR, gets a thorough
 rundown of how the experience works, and lands on the discovery wall that hangs in that same lounge. The lounge is
 the **home**: every session opens there and browsing happens there. It is hidden only while a lesson runs, and
@@ -46,7 +46,7 @@ frame budget is a release gate, not a nicety: it is on screen every session.
 public enum WelcomePhase
 {
     Arrival,     // logo animation and, only if real work is pending, a progress bar
-    Scenery,     // "your room" or "Nerdy lounge", one press
+    Scenery,     // "your room" or "Virtual lounge", one press
     Consent,     // existing
     Welcome,     // existing chip questions
     Rundown,     // how the experience works, five stops

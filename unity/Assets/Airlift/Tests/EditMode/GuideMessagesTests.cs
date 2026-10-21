@@ -11,8 +11,8 @@ namespace Airlift.Tests
             Assert.That(GuideMessages.Parse("{\"type\":\"response.output_audio.delta\",\"delta\":\"AAAA\"}").Delta, Is.EqualTo("AAAA"));
             var t = GuideMessages.Parse("{\"type\":\"response.output_audio_transcript.done\",\"transcript\":\"Hello \\\"you\\\"\"}");
             Assert.That(t.Transcript, Is.EqualTo("Hello \"you\""));
-            var u = GuideMessages.Parse("{\"type\":\"conversation.item.input_audio_transcription.completed\",\"transcript\":\"I want the nerdy lesson\"}");
-            Assert.That(u.Transcript, Is.EqualTo("I want the nerdy lesson"));
+            var u = GuideMessages.Parse("{\"type\":\"conversation.item.input_audio_transcription.completed\",\"transcript\":\"I want the fractions lesson\"}");
+            Assert.That(u.Transcript, Is.EqualTo("I want the fractions lesson"));
             var tool = GuideMessages.Parse("{\"type\":\"response.function_call_arguments.done\",\"name\":\"record_profile\",\"call_id\":\"call_1\",\"arguments\":\"{\\\"ageBand\\\":\\\"adult\\\"}\"}");
             Assert.That(tool.ToolName, Is.EqualTo("record_profile")); Assert.That(tool.CallId, Is.EqualTo("call_1"));
             Assert.That((string)JObject.Parse(tool.ArgumentsJson)["ageBand"], Is.EqualTo("adult"));

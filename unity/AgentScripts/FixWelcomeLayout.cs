@@ -45,7 +45,7 @@ public static class FixWelcomeLayout
         // The logo is a mark, not a headline: it holds a fixed share of the card however large the card gets.
         if (logo != null)
         {
-            // Headset test 2026-09-17: the Nerdy AI + VR mark replaces the green wordmark everywhere in the app.
+            // Headset test 2026-09-17: the VR Math Adventure mark replaces the green wordmark everywhere in the app.
             var sprite = LogoSprite();
             var image = logo.GetComponent<Image>();
             if (image != null && sprite != null) { image.sprite = sprite; image.preserveAspect = true; }

@@ -2,7 +2,7 @@
 
 ## September 16 (evening): voice un-deferred; Realtime two-way audio is the baseline
 
-Decision: the Nerdy guide is a live OpenAI Realtime voice agent, two-way, for adult
+Decision: the voice guide is a live OpenAI Realtime voice agent, two-way, for adult
 testers (PRIVACY-GATE.md). The proxy owns instructions and tools; the app pushes bounded
 context; math verdicts remain deterministic. Sections below that describe a recorded-first or
 output-only baseline are historical.

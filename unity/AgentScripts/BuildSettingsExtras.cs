@@ -78,7 +78,7 @@ public static class BuildSettingsExtras
         var done = panel.Find("Done") as RectTransform; if (done != null) done.anchoredPosition = new Vector2(0f, -240f);
         var version = new GameObject("Version", typeof(RectTransform)).AddComponent<TextMeshProUGUI>(); version.transform.SetParent(extras, false);
         version.font = style.altFont; version.fontSize = NerdySpace.Micro; version.color = style.textMuted; version.alignment = TextAlignmentOptions.Center; version.raycastTarget = false;
-        version.text = "Nerdy AI+VR " + Application.version; version.rectTransform.anchoredPosition = new Vector2(0f, -300f); version.rectTransform.sizeDelta = new Vector2(600f, 22f);
+        version.text = "VR Math Adventure " + Application.version; version.rectTransform.anchoredPosition = new Vector2(0f, -300f); version.rectTransform.sizeDelta = new Vector2(600f, 22f);
         sp.versionText = version;
 
         foreach (var o in new UnityEngine.Object[] { n, sp, settings }) EditorUtility.SetDirty(o);

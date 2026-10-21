@@ -139,10 +139,10 @@ test('inside a lesson the guide calls only tools_now, and each story stays in it
   assert.match(cfg.instructions, /never give real gardening, plant safety or pesticide advice/);
 });
 
-test('the guide is Dee, the Nerdy AI+VR assistant, and opens with the owner-approved introduction', () => {
+test('the guide is Dee, the VR Math Adventure assistant, and opens with the owner-approved introduction', () => {
   const cfg = buildSessionConfig().session;
-  assert.match(cfg.instructions, /You are Dee, the AI assistant of Nerdy AI\+VR/);
-  assert.doesNotMatch(cfg.instructions, /You are Nerdy,/);
+  assert.match(cfg.instructions, /You are Dee, the AI assistant of VR Math Adventure/);
+  assert.doesNotMatch(cfg.instructions, /Nerdy/);
   assert.match(cfg.instructions, /If asked your name, say you are Dee/);
   assert.match(cfg.instructions, /When the app gives you exact words to say, say them word for word/);
 });

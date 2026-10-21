@@ -1,4 +1,4 @@
-"""Fit Higgsfield outputs to Nerdy's art slots. Pure Pillow; no network."""
+"""Fit Higgsfield outputs to the app's art slots. Pure Pillow; no network."""
 import sys
 
 from PIL import Image

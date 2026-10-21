@@ -66,7 +66,7 @@ public sealed class RealtimeSpike : MonoBehaviour
         while (!connect.IsCompleted) yield return null;
         if (connect.IsFaulted) { Set("connect failed: " + connect.Exception?.GetBaseException().Message); Log("connect failed " + connect.Exception?.GetBaseException()); yield break; }
         Set("connected");
-        Send("{\"type\":\"session.update\",\"session\":{\"type\":\"realtime\",\"instructions\":\"You are Nerdy, a warm, brief learning guide. Keep replies to one or two short sentences.\",\"audio\":{\"input\":{\"format\":{\"type\":\"audio/pcm\",\"rate\":24000},\"turn_detection\":{\"type\":\"server_vad\",\"silence_duration_ms\":500},\"transcription\":{\"model\":\"gpt-4o-mini-transcribe\"}},\"output\":{\"format\":{\"type\":\"audio/pcm\",\"rate\":24000},\"voice\":\"marin\"}}}}");
+        Send("{\"type\":\"session.update\",\"session\":{\"type\":\"realtime\",\"instructions\":\"You are Dee, a warm, brief learning guide. Keep replies to one or two short sentences.\",\"audio\":{\"input\":{\"format\":{\"type\":\"audio/pcm\",\"rate\":24000},\"turn_detection\":{\"type\":\"server_vad\",\"silence_duration_ms\":500},\"transcription\":{\"model\":\"gpt-4o-mini-transcribe\"}},\"output\":{\"format\":{\"type\":\"audio/pcm\",\"rate\":24000},\"voice\":\"marin\"}}}}");
         Send("{\"type\":\"response.create\",\"response\":{\"instructions\":\"Greet the tester in one sentence and ask how their day is going.\"}}");
         StartMic();
         _ = ReceiveLoop();
@@ -108,7 +108,7 @@ public sealed class RealtimeSpike : MonoBehaviour
             Handle(msg);
         }
         if (status != null) status.text = "state: " + state + "\nexchanges: " + exchanges + "  last latency: " + (lastLatencyMs < 0 ? "-" : lastLatencyMs.ToString("0") + " ms") + "\nsocket: " + (socket != null ? socket.State.ToString() : "none");
-        if (transcript != null) transcript.text = "You: " + Tail(userText, 160) + "\n\nNerdy: " + Tail(guideText, 220);
+        if (transcript != null) transcript.text = "You: " + Tail(userText, 160) + "\n\nDee: " + Tail(guideText, 220);
     }
 
     readonly HashSet<string> seenTypes = new HashSet<string>();

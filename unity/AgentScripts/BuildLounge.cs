@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// CC-FD-01. Builds the Nerdy lounge: the room the app opens in, where onboarding happens and where the learner
+// CC-FD-01. Builds the virtual lounge: the room the app opens in, where onboarding happens and where the learner
 // browses. Not a box with cubes in it — a round room with a sky beyond its windows, a lit ceiling cove, a rug, two
 // couches, plants, a lamp, a shelf and the card framed into the wall, in the rounded toy vocabulary the workbenches
 // use and entirely from NerdyStyle tokens (value shifts only, no new hues).
@@ -231,7 +231,7 @@ public static class BuildLounge
         rowLabel.rectTransform.sizeDelta = label.rectTransform.sizeDelta;
 
         string[] names = { "Scenery your room", "Scenery nerdy lounge" };
-        string[] copy = { "Your room", "Nerdy lounge" };
+        string[] copy = { "Your room", "Virtual lounge" };
         string[] methods = { "ChooseYourRoom", "ChooseNerdyLounge" };
         var languagePills = languageRow.GetComponentsInChildren<Button>(true).Where(b => b.name.StartsWith("Language ")).OrderBy(b => b.name).ToArray();
         for (int i = 0; i < 2; i++)
@@ -348,7 +348,7 @@ public static class BuildLounge
 
     // ---- the arrival: the logo, before anything else -------------------------------------------------------------
 
-    /// CC-FD-03. A world-space canvas on the panel: dots converge, the Nerdy logo assembles, a pill bar reports
+    /// CC-FD-03. A world-space canvas on the panel: dots converge, the app logo assembles, a pill bar reports
     /// whatever is genuinely still loading. LoungeArrival animates it; this only builds it.
     static LoungeArrival BuildArrival(LoungeRoom room)
     {
@@ -367,7 +367,7 @@ public static class BuildLounge
         var arrival = go.AddComponent<LoungeArrival>();
         arrival.group = go.GetComponent<CanvasGroup>();
 
-        // The Nerdy AI + VR mark. Each AgentScript compiles alone, so the import is made safe here as well.
+        // The VR Math Adventure mark. Each AgentScript compiles alone, so the import is made safe here as well.
         const string logoPath = "Assets/Airlift/Branding/nerdy-ai-vr-logo.png";
         var logoImporter = AssetImporter.GetAtPath(logoPath) as TextureImporter;
         if (logoImporter != null && (logoImporter.textureType != TextureImporterType.Sprite || !logoImporter.alphaIsTransparency))

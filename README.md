@@ -1,6 +1,6 @@
-# Nerdy AI + VR — Math Workbench: Airlift
+# VR Math Adventure — Math Workbench: Airlift
 
-A mixed-reality math lounge for Meta Quest 3 and 3S, built in Unity in five days for the Nerdy AI Hackathon
+A mixed-reality math lounge for Meta Quest 3 and 3S, built in Unity in five days for an AI hackathon
 (September 13 to 18, 2026). You arrive in a lounge in your own room. Dee, a live voice guide, shows you around.
 Three hands-on lessons wait on the wall: fractions at a harbor dock, division in a café, multiplication in a
 garden. The math is checked by deterministic code; the AI explains, never grades.
@@ -9,29 +9,29 @@ garden. The math is checked by deterministic code; the AI explains, never grades
 
 ## Watch it
 
-[![Nerdy AI + VR — the full walkthrough on YouTube](docs/media/04-wall-tour.jpg)](https://youtu.be/Qgww5PVUSKo)
+[![VR Math Adventure — the full walkthrough on YouTube](docs/media/04-wall-tour.jpg)](https://youtu.be/Qgww5PVUSKo)
 
 - **Full demo on YouTube** (every screen on the headset): [youtu.be/Qgww5PVUSKo](https://youtu.be/Qgww5PVUSKo)
 - **Headset cut, 80 seconds**, no talking, straight from a Quest 3S recording:
-  [nerdy-ai-vr-demo.mp4](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-demo.mp4)
-- **Landing page:** [nerdy-vr-landing.vercel.app](https://nerdy-vr-landing.vercel.app)
+  [download the MP4](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-demo.mp4)
+- **Landing page:** [VR Math Adventure on the web](https://nerdy-vr-landing.vercel.app)
 - **Walkthrough with pictures:** [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md)
 
-![Arrival in the lounge: the Nerdy AI+VR logo assembles on the board and Dee's welcome card appears](docs/media/demo.gif)
+![Arrival in the lounge: the app logo assembles on the board and Dee's welcome card appears](docs/media/demo.gif)
 
 ## Try it on your Quest
 
 No Unity needed. You need a Meta Quest 3 or 3S with developer mode on (Meta Horizon app › Headset settings ›
 Developer mode) and either [SideQuest](https://sidequestvr.com) or `adb` on your computer.
 
-1. Download [nerdy-ai-vr-preview-v0.2.apk](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-preview-v0.2.apk) (84 MB).
+1. Download [the preview APK, v0.2](https://github.com/alediez2048/math-workbench-airlift/releases/download/v0.2-hackathon/nerdy-ai-vr-preview-v0.2.apk) (84 MB).
 2. Install it: drop it onto SideQuest, or plug the headset in and run
 
    ```bash
    adb install -r nerdy-ai-vr-preview-v0.2.apk
    ```
 
-3. In the headset, open the App Library, switch the filter to **Unknown Sources**, and launch **Nerdy Lounge (preview)**.
+3. In the headset, open the App Library, switch the filter to **Unknown Sources**, and launch the preview app.
 
 Wi-Fi on the headset gives you Dee's voice; without it she is offline and everything works by buttons and
 captions. The first card asks for the microphone once. Voice listens only after you answer *adult* on the age
@@ -77,12 +77,12 @@ Three decisions shaped everything:
 
 | | |
 |---|---|
-| ![Meet Dee](docs/media/02-meet-dee.jpg) | **Arrive.** The board in front of you lights up with the logo, then *Meet Dee, your Nerdy AI + VR guide*. One press on *Let's begin*. Three chip questions (age band, interests, goal) or Skip. |
-| ![The wall](docs/media/04-wall-tour.jpg) | **Take the tour.** Dee walks you through the lesson wall in six stops: filters, next page, previous page, the Nerdy lounge scenery, settings, and your first lesson. Everything she is not talking about dims until you press the highlighted control. |
+| ![Meet Dee](docs/media/02-meet-dee.jpg) | **Arrive.** The board in front of you lights up with the logo, then *Meet Dee, your VR Math Adventure guide*. One press on *Let's begin*. Three chip questions (age band, interests, goal) or Skip. |
+| ![The wall](docs/media/04-wall-tour.jpg) | **Take the tour.** Dee walks you through the lesson wall in six stops: filters, next page, previous page, the virtual lounge scenery, settings, and your first lesson. Everything she is not talking about dims until you press the highlighted control. |
 | ![Cargo Crew](docs/media/10-dock7-quarters.jpg) | **Cargo Crew · Fractions.** You are the load planner at Dock 7. Split one container into halves and quarters with the splitter, load trucks, pickups and vans, and see 2/4 = 1/2 on the ruler under the beds. |
 | ![Neighborhood Café](docs/media/11-cafe-plates.jpg) | **Neighborhood Café · Division.** Deal pastries onto plates a round at a time, pack orders into full boxes, and check the order when you think it is fair. |
 | ![Community Garden](docs/media/13-garden-sunflowers.jpg) | **Community Garden · Multiplication.** Plant seedling strips row by row, turn the bed to see 3 × 4 become 4 × 3, and split a bed with a fence. Accepted rows sprout. |
-| ![Settings](docs/media/06-settings.jpg) | **Make it yours.** Your room (passthrough) or the Nerdy lounge, English or Español, captions, volumes, Play/Stop for Dee, replay the tour, and an Age pill that gates the microphone. |
+| ![Settings](docs/media/06-settings.jpg) | **Make it yours.** Your room (passthrough) or the virtual lounge, English or Español, captions, volumes, Play/Stop for Dee, replay the tour, and an Age pill that gates the microphone. |
 
 ## The three lessons
 
@@ -232,7 +232,7 @@ editor scripts under `unity/AgentScripts` (102 of them: `BuildLounge`, `BuildDas
 board from the player's head for review). Rebuilding a surface is a script run, not hand editing, which is what
 let several agents work on one scene.
 
-**Design system.** Nerdy's palette (indigo #202344 base, #161C2C surfaces, #6C6E87 lines, lavender #9E97FF,
+**Design system.** The palette (indigo #202344 base, #161C2C surfaces, #6C6E87 lines, lavender #9E97FF,
 amber #FFC32B, magenta #FB43DA, orchid #D684FF, cyan #17E2EA), Poppins and Karla, capsule pills and rounded
 cards, all as `NerdyStyle` tokens; spatial standards (board distance, pill height, tile size) as `NerdySpace`
 constants; tests assert both.
@@ -295,7 +295,7 @@ headset. The short version:
 | Sep 13 | Plan vetted; Unity 6, OpenXR and the Meta SDK chosen; the device-proof scene |
 | Sep 14 | Passthrough, controllers and grabbing confirmed on the Quest; onboarding scene (briefing, demo, practice) |
 | Sep 15 | Cargo environment, typography and the baseline APK; a disappearing station traced to the gravity locomotor |
-| Sep 16 | Grabbing fixed, whole and halves accepted, the toy look, the carry handle; the Nerdy welcome with two-way voice; Dock 7 accepted with five chapters and cranes |
+| Sep 16 | Grabbing fixed, whole and halves accepted, the toy look, the carry handle; the welcome flow with two-way voice; Dock 7 accepted with five chapters and cranes |
 | Sep 17 | Café and Garden built by a six-agent team against written contracts on a shared lesson platform; the voice proxy deployed; concept intros and the splitter |
 | Sep 18 | The lounge, the wall, the host tour, settings; an onboarding repair after the first headset review; the afternoon's fixes; docs, video and the landing page |
 
@@ -332,6 +332,6 @@ characterization test so nobody can change what Dee is told without a diff.
 
 ## Credits and license
 
-Built by Alejandro Diez with Claude Code and Codex for the Nerdy AI Hackathon. Not an official Nerdy or Meta
+Built by Alejandro Diez with Claude Code and Codex for an AI hackathon. Not an official Meta
 product. Fonts Poppins and Karla under the SIL Open Font License (`unity/Assets/Airlift/Fonts`). Code and
 documents under the [MIT License](LICENSE).

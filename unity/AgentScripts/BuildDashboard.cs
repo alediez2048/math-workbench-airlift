@@ -298,6 +298,6 @@ public static class BuildDashboard
         scenery.font = style.altFont; scenery.fontSize = NerdySpace.Label; scenery.color = style.textMuted; scenery.alignment = TextAlignmentOptions.Right; scenery.text = "Scenery"; scenery.raycastTarget = false;
         scenery.rectTransform.anchoredPosition = new Vector2(230f, 0f); scenery.rectTransform.sizeDelta = new Vector2(110f, 30f);
         Pill("Your room", "Your room", 365f, 130f, lounge, "ChooseYourRoom");
-        Pill("Nerdy lounge", "Nerdy lounge", 515f, 150f, lounge, "ChooseNerdyLounge");
+        Pill("Nerdy lounge", "Virtual lounge", 515f, 150f, lounge, "ChooseNerdyLounge");
     }
 }

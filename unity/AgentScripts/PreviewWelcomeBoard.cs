@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 // The welcome board exactly as the app arranges it at runtime: panel placed from the head the way
 // PlaceWhenTracked does, consent phase showing, assistant bar on the welcome canvas at its saved position, arrival
-// finished, lounge in the Nerdy scenery. Renders it from the seated head and dumps every element's rect and every
+// finished, lounge in the virtual lounge scenery. Renders it from the seated head and dumps every element's rect and every
 // button's wiring, so a layout is judged before it is built, not on the owner's face.
 // Run: unity command run_script --file AgentScripts/PreviewWelcomeBoard.cs --entry PreviewWelcomeBoard.Run
 public static class PreviewWelcomeBoard

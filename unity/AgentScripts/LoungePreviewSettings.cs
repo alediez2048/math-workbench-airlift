@@ -6,8 +6,8 @@ using UnityEditor.Build;
 //      unity command run_script --file AgentScripts/LoungePreviewSettings.cs --entry LoungePreviewSettings.Restore
 public static class LoungePreviewSettings
 {
-    const string PreviewId = "com.nerdy.vr.lounge", PreviewName = "Nerdy Lounge (preview)";
-    const string ReleaseId = "com.nerdy.vr", ReleaseName = "Nerdy";
+    const string PreviewId = "com.nerdy.vr.lounge", PreviewName = "VR Math Adventure (preview)";
+    const string ReleaseId = "com.nerdy.vr", ReleaseName = "VR Math Adventure";
 
     public static string Apply() => Set(PreviewId, PreviewName);
     public static string Restore() => Set(ReleaseId, ReleaseName);

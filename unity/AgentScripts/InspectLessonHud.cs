@@ -6,7 +6,7 @@ using Airlift.Welcome;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-// Diagnostic (2026-09-16): drive the Nerdy flow to the Lesson phase in the editor, report where the
+// Diagnostic (2026-09-16): drive the welcome flow to the Lesson phase in the editor, report where the
 // Guide HUD ends up, and render from the head. Reloads the scene from disk afterwards; saves nothing.
 public static class InspectLessonHud
 {

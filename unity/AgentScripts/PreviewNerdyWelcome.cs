@@ -18,7 +18,7 @@ public static class PreviewNerdyWelcome
         try
         {
             Show(n, true, false, false, false); Shot(root, Path.Combine(dir, "nerdy-consent.png"));
-            Show(n, false, true, false, true); n.captionText.text = "Hi there! I'm Nerdy. Roughly how old are you?"; n.stateText.text = "live guide"; Shot(root, Path.Combine(dir, "nerdy-welcome.png"));
+            Show(n, false, true, false, true); n.captionText.text = "Hi there! I'm Dee. Roughly how old are you?"; n.stateText.text = "live guide"; Shot(root, Path.Combine(dir, "nerdy-welcome.png"));
             Show(n, false, false, true, true); n.captionText.text = "Here are your lessons. Cargo Crew is ready to play."; Shot(root, Path.Combine(dir, "nerdy-catalog.png"));
         }
         finally { Show(n, true, false, false, false); n.captionText.text = ""; n.stateText.text = ""; foreach (var go in n.stationVisuals) go.SetActive(true); }

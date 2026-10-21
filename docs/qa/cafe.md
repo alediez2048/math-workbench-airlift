@@ -1,6 +1,6 @@
 # Neighborhood Café (CC-CF-05) — headset check
 
-Prereqs: dev mint restarted after the café proxy config (`~/.config/nerdy/start-dev-mint.sh`) on the home Wi-Fi;
+Prereqs: dev mint restarted after the café proxy config (`~/.config/<project>/start-dev-mint.sh`) on the home Wi-Fi;
 Quest on the same network; controllers awake; build id and APK SHA-256 noted. On the Mac, clear the log first
 (`adb logcat -c`) and pull it afterwards (`adb logcat -d -s Unity`). Live guide, mic on, not muted or paused,
 unless a step says otherwise.

@@ -9,13 +9,13 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEditor.Events;
 
-// Headset test 2026-09-18: "replace the copy and CTAs from the Meet your Nerdy guide section ... just talk about the Nerdy AI
+// Headset test 2026-09-18: "replace the copy and CTAs from the Meet your guide section ... just talk about the AI guide
 // assistant, and for the buttons just have turn on mic or continue without voice." Copy only; positions stay
 // (FixWelcomeLayout owns them). Idempotent. Saves CargoCrew.
 // Run: unity command run_script --file AgentScripts/PatchConsentCopy.cs --entry PatchConsentCopy.Run
 public static class PatchConsentCopy
 {
-    public const string Heading = "Meet Dee, your Nerdy AI + VR guide";
+    public const string Heading = "Meet Dee, your VR Math Adventure guide";
     public const string Body = "Explore math with Dee. Select Let's begin to get started.\n\nUse buttons throughout, or enable the mic later to talk with Dee. This preview is for adult testers.";
     public const string AllowVoice = "Let's begin", NoVoice = "";
 
@@ -36,7 +36,7 @@ public static class PatchConsentCopy
         for (int i = button.onClick.GetPersistentEventCount() - 1; i >= 0; i--) UnityEventTools.RemovePersistentListener(button.onClick, i);
         UnityEventTools.AddPersistentListener(button.onClick, n.BeginWelcome);
         foreach (var text in n.welcomeRoot.GetComponentsInChildren<TMP_Text>(true))
-            if (text.name == "Heading" && text.text.Contains("Nerdy AI")) text.text = "Welcome to Nerdy AI + VR";
+            if (text.name == "Heading" && (text.text.Contains("Nerdy AI") || text.text.Contains("VR Math Adventure"))) text.text = "Welcome to VR Math Adventure";
         allow.sizeDelta = new Vector2(300f, allow.sizeDelta.y);
         var allowLabel = allow.GetComponentInChildren<TMP_Text>(true); if (allowLabel != null) allowLabel.rectTransform.sizeDelta = new Vector2(288f, allowLabel.rectTransform.sizeDelta.y);
         EditorSceneManager.MarkSceneDirty(scene);

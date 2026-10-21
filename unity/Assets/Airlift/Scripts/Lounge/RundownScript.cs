@@ -32,9 +32,9 @@ namespace Airlift.Lounge
         public static readonly IReadOnlyList<RundownStep> Steps = new[]
         {
             new RundownStep("wall", "1 OF 6",
-                "Welcome to the Nerdy AI plus VR math lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter, or say, Dee, show newest lessons.",
+                "Welcome to the VR Math Adventure lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter, or say, Dee, show newest lessons.",
                 RundownGate.FilterPressed, TourTarget.Filters,
-                "Welcome to the Nerdy AI plus VR math lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter."),
+                "Welcome to the VR Math Adventure lounge. Explore fractions, division, and multiplication through hands-on adventures. Each card opens a lesson. Featured, Newest and Most viewed sort the lessons. Try one highlighted filter."),
             new RundownStep("page-next", "2 OF 6",
                 "There are more lessons on the next page. Press the highlighted right arrow.",
                 RundownGate.PageNext, TourTarget.NextPage),
@@ -42,7 +42,7 @@ namespace Airlift.Lounge
                 "Now press the highlighted left arrow to return to the previous page.",
                 RundownGate.PageBack, TourTarget.PreviousPage),
             new RundownStep("scenery", "4 OF 6",
-                "Your room shows your surroundings. Nerdy Lounge shows our virtual room. Try the highlighted environment. Your lessons stay in place.",
+                "Your room shows your surroundings. Virtual lounge shows a virtual room. Try the highlighted environment. Your lessons stay in place.",
                 RundownGate.SceneryChanged, TourTarget.Scenery),
             new RundownStep("gear", "5 OF 6",
                 "Stop silences me and stops listening. Play resumes; the nearby notice tells you whether the microphone will turn on. You can keep using buttons while I'm stopped. Open the highlighted gear, or say, Dee, open settings.",

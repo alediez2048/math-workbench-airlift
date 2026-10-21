@@ -34,7 +34,7 @@ namespace Airlift.Guide
             Enabled = LoadEnabled();
             source = GetComponent<AudioSource>();
             const int rate = 24000;
-            var clip = AudioClip.Create("Nerdy ambient loop", rate * LoopSeconds, 1, rate, false);
+            var clip = AudioClip.Create("Ambient loop", rate * LoopSeconds, 1, rate, false);
             clip.SetData(Synthesize(rate), 0);
             source.clip = clip; source.loop = true; source.spatialBlend = 0f; source.playOnAwake = false; source.volume = 0f;
             source.Play();

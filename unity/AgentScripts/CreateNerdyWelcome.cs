@@ -14,7 +14,7 @@ using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-// CC-P0-05/06/07: builds the Nerdy entry flow into CargoCrew: consent card, voice welcome with
+// CC-P0-05/06/07: builds the app entry flow into CargoCrew: consent card, voice welcome with
 // answer chips, three lesson cards, guide HUD, and wiring into the existing Cargo workbench.
 public static class CreateNerdyWelcome
 {
@@ -58,7 +58,7 @@ public static class CreateNerdyWelcome
         // ---- Consent card ----
         var consent = Panel("Consent", uiT, Vector2.zero, new Vector2(760, 470), S.card, S.surface);
         Image(consent.transform, "Logo", logo, new Vector2(0, 170), new Vector2(220, 90));
-        Text(consent.transform, "Heading", "Meet your Nerdy guide", S.displayFont, 34, S.text, new Vector2(0, 86), new Vector2(680, 50), TextAlignmentOptions.Center);
+        Text(consent.transform, "Heading", "Meet your guide", S.displayFont, 34, S.text, new Vector2(0, 86), new Vector2(680, 50), TextAlignmentOptions.Center);
         Text(consent.transform, "Body", "Your guide talks with you. With the microphone on, what you say is sent to OpenAI for live transcription and is not stored by Nerdy. Nothing is saved except a few tags about what you like.\n\nThis preview is for adult testers.", S.bodyFont, 17, S.textMuted, new Vector2(0, -10), new Vector2(640, 150), TextAlignmentOptions.Center);
         Pill(consent.transform, "Allow voice", "I'm an adult tester · turn on the mic", true, new Vector2(-150, -170), new Vector2(360, 56), director.ConsentAllowVoice);
         Pill(consent.transform, "No voice", "Continue without voice", false, new Vector2(170, -170), new Vector2(260, 56), director.ConsentNoVoice);
@@ -68,7 +68,7 @@ public static class CreateNerdyWelcome
         // ---- Welcome (chips) ----
         var welcome = Panel("Welcome", uiT, new Vector2(0, 40), new Vector2(940, 440), S.card, S.surface);
         Eyebrow(welcome.transform, "WELCOME", new Vector2(0, 190));
-        Text(welcome.transform, "Heading", "Hello to <gradient=\"NerdySpectrum\">Nerdy AI</gradient>", S.displayFont, 36, S.text, new Vector2(0, 150), new Vector2(820, 50), TextAlignmentOptions.Center);
+        Text(welcome.transform, "Heading", "Hello to <gradient=\"NerdySpectrum\">VR Math Adventure</gradient>", S.displayFont, 36, S.text, new Vector2(0, 150), new Vector2(820, 50), TextAlignmentOptions.Center);
         Text(welcome.transform, "Hint", "Tap your answers below. Your guide talks with you inside the lesson.", S.altFont, 15, S.textMuted, new Vector2(0, 112), new Vector2(820, 30), TextAlignmentOptions.Center);
         ChipRow(welcome.transform, director, "Age", 60, new[] {
             ("Under 10", "I'm under ten.", "{\"ageBand\":\"under_10\"}"), ("10 to 13", "I'm between ten and thirteen.", "{\"ageBand\":\"10_to_13\"}"),

@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace Airlift.Tests
 {
-    /// CC-HF-03. The Nerdy lounge reads as a finished room: fluted acoustic wall panels, a herringbone floor (both
+    /// CC-HF-03. The virtual lounge reads as a finished room: fluted acoustic wall panels, a herringbone floor (both
     /// generated, grey, tinted by the tokens so the palette is unchanged) and a darker lower panel with a lavender rail
     /// on every solid wall. Same room, same size. Run AgentScripts/ApplyRoomFinish.cs after BuildLounge.
     public class RoomFinishTests

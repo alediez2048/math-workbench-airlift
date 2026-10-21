@@ -164,7 +164,7 @@ public static class BuildSettingsPanel
     }
 
     /// The gear sits on the assistant bar, beside Mute and Help, where the learner's attention already is.
-    /// It carries a drawn sprite: the Nerdy fonts have no gear glyph, and a missing character renders as a box.
+    /// It carries a drawn sprite: the app fonts have no gear glyph, and a missing character renders as a box.
     static string BuildGear(NerdyDirector n, LoungeSettings settings)
     {
         var bar = (RectTransform)n.hudRoot.transform;

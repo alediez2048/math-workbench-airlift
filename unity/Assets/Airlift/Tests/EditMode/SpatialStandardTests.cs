@@ -14,7 +14,7 @@ using UnityEngine.SceneManagement;
 namespace Airlift.Tests
 {
     /// Headset test 2026-09-17: panels stood at 1.85 m and 0.65 m, in six different sizes, with headings landing at four
-    /// different physical heights and the workbench cards still set in the pre-Nerdy font. This suite is what stops
+    /// different physical heights and the workbench cards still set in the old font. This suite is what stops
     /// that coming back: one distance, one panel size, one type ramp, everywhere.
     /// Run AgentScripts/ApplySpatialStandards.cs after any builder that makes a panel.
     public class SpatialStandardTests
@@ -85,12 +85,12 @@ namespace Airlift.Tests
                 if (heading == null) continue;
                 Assert.That(heading.fontSize, Is.EqualTo(NerdySpace.Heading).Within(0.5f), name + " heading size");
                 Assert.That(heading.font, Is.EqualTo(style.displayFont),
-                    name + " heading is set in " + (heading.font ? heading.font.name : "null") + ", not the Nerdy display font");
+                    name + " heading is set in " + (heading.font ? heading.font.name : "null") + ", not the display font");
             }
         }
 
         /// The old Cargo-era font never left the workbench cards, because the font rule only ever scanned the
-        /// welcome panel. Every text in the app now comes from the Nerdy families.
+        /// welcome panel. Every text in the app now comes from the app font families.
         [Test] public void NoTextAnywhereUsesThePreNerdyFonts()
         {
             var style = AssetDatabase.LoadAssetAtPath<NerdyStyle>("Assets/Airlift/Fonts/NerdyStyle.asset");

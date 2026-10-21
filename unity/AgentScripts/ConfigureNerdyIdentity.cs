@@ -5,7 +5,7 @@ using UnityEditor.Build;
 using UnityEditor.Android;
 using UnityEngine;
 
-// CC-P0-01: app identity "Nerdy", package com.nerdy.vr, owner logo as launcher icon.
+// CC-P0-01: app identity "VR Math Adventure", package com.nerdy.vr, owner logo as launcher icon.
 public static class ConfigureNerdyIdentity
 {
     const string Branding = "Assets/Airlift/Branding/";
@@ -26,7 +26,7 @@ public static class ConfigureNerdyIdentity
         var legacy = AssetDatabase.LoadAssetAtPath<Texture2D>(Branding + "icon-legacy.png");
         if (bg == null || fg == null || legacy == null) throw new InvalidOperationException("Icon textures did not import.");
 
-        PlayerSettings.productName = "Nerdy";
+        PlayerSettings.productName = "VR Math Adventure";
         PlayerSettings.companyName = "Nerdy";
         PlayerSettings.bundleVersion = "0.2.0";
         PlayerSettings.Android.bundleVersionCode = 2;
@@ -38,6 +38,6 @@ public static class ConfigureNerdyIdentity
         foreach (var icon in adaptive) icon.SetTextures(bg, fg);
         PlayerSettings.SetPlatformIcons(target, AndroidPlatformIconKind.Adaptive, adaptive);
         AssetDatabase.SaveAssets();
-        return "Identity: Nerdy / com.nerdy.vr / 0.2.0; icons set: adaptive " + adaptive.Length + ".";
+        return "Identity: VR Math Adventure / com.nerdy.vr / 0.2.0; icons set: adaptive " + adaptive.Length + ".";
     }
 }

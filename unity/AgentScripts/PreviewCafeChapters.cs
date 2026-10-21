@@ -23,7 +23,7 @@ public static class PreviewCafeChapters
         var n = UnityEngine.Object.FindAnyObjectByType<NerdyDirector>(FindObjectsInactive.Include);
         var d = UnityEngine.Object.FindAnyObjectByType<OnboardingDirector>(FindObjectsInactive.Include);
         var station = UnityEngine.Object.FindAnyObjectByType<CafeStation>(FindObjectsInactive.Include);
-        if (n == null || d == null || station == null) throw new InvalidOperationException("Nerdy director, onboarding or CafeStation missing; run BuildCafeWorkbench first.");
+        if (n == null || d == null || station == null) throw new InvalidOperationException("lounge director, onboarding or CafeStation missing; run BuildCafeWorkbench first.");
         var sb = new StringBuilder(); string dir = Path.GetFullPath("../artifacts/cafe"); Directory.CreateDirectory(dir);
         try
         {

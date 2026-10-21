@@ -1,9 +1,9 @@
-# Headset QA — the Nerdy lounge front door (CC-FD-01..10)
+# Headset QA — the virtual lounge front door (CC-FD-01..10)
 
 **September 18 repair:** the flow below is historical. Use [current repair QA](onboarding-repair-2026-09-18.md)
 for the single-button welcome and catalog-only tour. The repair is local/editor only until a new preview APK is built.
 
-Adult testers only. Preview app `com.nerdy.vr.lounge` ("Nerdy Lounge (preview)"), installed by
+Adult testers only. Preview app `com.nerdy.vr.lounge` ("VR Math Adventure (preview)"), installed by
 `bash scripts/lounge-preview.sh`. The release app `com.nerdy.vr` is untouched. Voice needs Wi-Fi: the guide mints
 from `https://nerdy-guide-proxy.vercel.app/session`.
 
@@ -13,10 +13,10 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 
 | # | Do | Expect |
 |---|---|---|
-| A1 | Put the headset on, launch the preview app | You are in a round room (Nerdy lounge) or your own room; dots fly in, the Nerdy AI+VR logo assembles on the board. A progress bar shows only while Dee is still connecting |
-| A2 | Wait | Dee greets you on sight (voice), the board shows *Meet Dee, your Nerdy AI assistant* with two pills: *Turn on the mic* and *Continue without voice*. Her bar (orb, gear, Help) is inside the board's lower band |
+| A1 | Put the headset on, launch the preview app | You are in a round room (Virtual lounge) or your own room; dots fly in, the app logo assembles on the board. A progress bar shows only while Dee is still connecting |
+| A2 | Wait | Dee greets you on sight (voice), the board shows *Meet Dee, your VR Math Adventure guide* with two pills: *Turn on the mic* and *Continue without voice*. Her bar (orb, gear, Help) is inside the board's lower band |
 | A3 | Press the gear | The settings card replaces the welcome card: Voice language, Where you learn, Dee (Pause/Again/Mute), Volume, four switches, Replay the rundown, Clear saved data, Reset settings, Done, a version line |
-| A4 | Press *Nerdy lounge*, then *Your room*, then *Done* | The room shell comes and goes; passthrough shows in Your room; Done brings the welcome card back, nothing else |
+| A4 | Press *Virtual lounge*, then *Your room*, then *Done* | The room shell comes and goes; passthrough shows in Your room; Done brings the welcome card back, nothing else |
 | A5 | Press *Turn on the mic* | The chip questions (age band, interests, goal) as before; the mic is still off here |
 
 ## B. The tour (first run, six stops on the wall)
@@ -36,7 +36,7 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 
 | # | Do | Expect |
 |---|---|---|
-| C1 | Look at the wall | *Pick a lesson*, 8 tiles: Cargo Crew, Neighborhood Café, Community Garden, then chapter tiles. Each has a picture of its table, a badge, a title, a muted line, minutes. Under the wall: Featured · Newest · Most viewed, ‹ 1 / 3 ›, Scenery: Your room / Nerdy lounge. The bar with the gear is under that |
+| C1 | Look at the wall | *Pick a lesson*, 8 tiles: Cargo Crew, Neighborhood Café, Community Garden, then chapter tiles. Each has a picture of its table, a badge, a title, a muted line, minutes. Under the wall: Featured · Newest · Most viewed, ‹ 1 / 3 ›, Scenery: Your room / Virtual lounge. The bar with the gear is under that |
 | C2 | Hover a tile | It lifts a touch; a short pulse in the controller |
 | C3 | Press › twice, ‹ once | Pages 2 and 3, then back; page 3 ends with six greyed *COMING SOON* tiles (Route 9, Ten & Trade, Corner Store, Platform Clock, The Tailor's Bench, Mile Marker) that do not press |
 | C4 | Press *Newest*, then *Most viewed*, then *Featured* | The order changes; Featured puts the three lessons first |
@@ -84,7 +84,7 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 | D4.2 | On the welcome card or during the questions (Voice guide on, Age adult, Play on), say "hello Dee" | She answers; the mic no longer waits for the wall or a lesson. She never listens while she is speaking. |
 | D4.3 | Gear → **Exit app** once | Label reads "Press again to exit" for five seconds. |
 | D4.4 | Press it again | The app closes to Quest Home; saved data stays. Mac log: `[Nerdy] exit app requested`. |
-| D4.5 | Library → filter → Unknown sources → Nerdy Lounge (preview) | The app starts (controllers prompt if they are asleep). |
+| D4.5 | Library → filter → Unknown sources → VR Math Adventure (preview) | The app starts (controllers prompt if they are asleep). |
 
 ## E2. The toy rack and progress board (added 2026-09-29)
 
@@ -129,5 +129,5 @@ Write down what you saw next to each step. "Works" is fine; anything else in a s
 
 ## F. Performance (recorded from the Mac while you sit in the lounge)
 
-`adb logcat -v time -s VrApi` for 60 s in the Nerdy lounge scenery, then 60 s in Your room, then inside Cargo
+`adb logcat -v time -s VrApi` for 60 s in the virtual lounge scenery, then 60 s in Your room, then inside Cargo
 chapter 1. Budget: app CPU/GPU time p95 ≤ 13.9 ms at 72 Hz, no stale frames. Record the numbers with the run.

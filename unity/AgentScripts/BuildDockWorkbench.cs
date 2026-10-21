@@ -60,7 +60,7 @@ public static class BuildDockWorkbench
         var lesson = d != null ? d.GetComponent<CargoLessonDirector>() : null;
         var n = UnityEngine.Object.FindAnyObjectByType<NerdyDirector>(FindObjectsInactive.Include);
         var terminal = d != null ? d.GetComponentInChildren<CargoTerminalView>(true) : null;
-        if (d == null || lesson == null || n == null || terminal == null) throw new InvalidOperationException("CargoCrew director, lesson, Nerdy director or terminal missing.");
+        if (d == null || lesson == null || n == null || terminal == null) throw new InvalidOperationException("CargoCrew director, lesson, lounge director or terminal missing.");
         if (lesson.chapterObjects == null || lesson.ruler == null || lesson.halfA?.piece == null || lesson.halfB?.piece == null) throw new InvalidOperationException("Fraction chapter objects missing.");
         style = AssetDatabase.LoadAssetAtPath<AirliftStyle>("Assets/Airlift/Fonts/AirliftStyle.asset");
         if (style == null || style.headingFont == null || style.bodyFont == null) throw new InvalidOperationException("Airlift style/fonts missing.");

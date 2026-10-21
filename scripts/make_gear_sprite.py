@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draw the settings gear as a PNG sprite.
 
-The Nerdy fonts have no gear glyph, and a missing character renders as a box, so the gear is a drawn sprite
+The app fonts have no gear glyph, and a missing character renders as a box, so the gear is a drawn sprite
 rather than a text label. Pure stdlib: the shape is rasterised with 4x supersampling and written as an RGBA PNG
 by hand, so this needs no image library on the build machine.
 

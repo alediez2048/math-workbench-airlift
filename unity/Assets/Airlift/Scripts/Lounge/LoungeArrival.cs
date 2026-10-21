@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Airlift.Lounge
 {
-    /// CC-FD-03. The first thing the learner sees: Nerdy's dots fly in, the logo assembles, and a pill bar fills
+    /// CC-FD-03. The first thing the learner sees: the dots fly in, the logo assembles, and a pill bar fills
     /// with whatever is genuinely still loading. Then it clears and the board takes over. Pure timing plus alpha,
     /// so it costs nothing and cannot get stuck: it always ends, even if the guide never connects.
     public sealed class LoungeArrival : MonoBehaviour

@@ -11,7 +11,7 @@ namespace Airlift.Tests
     {
         [Test] public void AppIsNamedNerdyWithItsOwnPackage()
         {
-            Assert.That(PlayerSettings.productName, Is.EqualTo("Nerdy"));
+            Assert.That(PlayerSettings.productName, Is.EqualTo("VR Math Adventure"));
             Assert.That(PlayerSettings.companyName, Is.EqualTo("Nerdy"));
             Assert.That(PlayerSettings.GetApplicationIdentifier(NamedBuildTarget.Android), Is.EqualTo("com.nerdy.vr"));
             Assert.That(PlayerSettings.bundleVersion, Is.EqualTo("0.2.0"));

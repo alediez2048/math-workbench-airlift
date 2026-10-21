@@ -38,7 +38,7 @@
 .navbar-wordmark .navbar-logo-crop img{display:block;width:var(--logo-width);height:auto;max-width:none;transform:translate(-5%,-16%)}
 @media(max-width:760px){.navbar-logo-crop{--logo-width:178px}}
 @media(max-width:390px){.navbar-logo-crop{--logo-width:153px}}
-.site-footer .wordmark img{width:210px}
+.site-footer .wordmark{font-size:1.4rem}
 @media(max-width:760px){.site-header .wordmark img{width:clamp(135px,34vw,220px)}.site-footer .wordmark img{width:180px}}
 @media(max-width:390px){.site-header .wordmark img{width:130px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}

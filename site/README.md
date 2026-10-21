@@ -1,4 +1,4 @@
-# Nerdy AI + VR landing page
+# VR Math Adventure landing page
 
 Standalone, static landing page for the Cargo Crew mixed-reality prototype. No Unity changes, backend, analytics, microphone access, signup collection, or embedded provider credentials.
 
@@ -7,7 +7,7 @@ Standalone, static landing page for the Cargo Crew mixed-reality prototype. No U
 Reference: https://claude.ai/artifact/5LwzYqPEPoXTJ4PcJv55mr (Live Learning Style Guide).
 Indigo #202344, surfaces #161C2C, glass borders #6C6E87, Poppins/Karla, brand and spectrum gradients, rounded cards and pill controls. Muted text increased from 64% to 72% for readability. Body text is 16px minimum. Fonts are locally hosted under their supplied OFL licenses.
 
-Imagery is copied from the project's own Unity scene previews; it is labeled accordingly and is not presented as headset footage. Voice dialogue is explicitly illustrative. No unverified learning-outcome claims. Generated artwork (Higgsfield, 2026-09-28) appears only as a labelled illustration of coming-soon worlds, never as product footage. The site is identified as an independent hackathon prototype, not an official Nerdy or Meta offering.
+Imagery is copied from the project's own Unity scene previews; it is labeled accordingly and is not presented as headset footage. Voice dialogue is explicitly illustrative. No unverified learning-outcome claims. Generated artwork (Higgsfield, 2026-09-28) appears only as a labelled illustration of coming-soon worlds, never as product footage. The site is identified as an independent hackathon prototype, not an official Meta offering.
 
 ## Preview and deploy
 
@@ -27,11 +27,9 @@ The chapter buttons switch between the whole, quarters and equivalence previews.
 - coming-soon-loop.mp4: 5 s loop animated from illustration-coming-soon.jpg with Higgsfield (Kling 3.0); muted, pauses for reduced-motion visitors
 - dee-avatar.png: Dee character (owner-picked direction B), generated with Higgsfield from the approved character sheet
 - Fonts and licenses: math-workbench-airlift/unity/Assets/Airlift/Fonts/Nerdy/
-- nerdy-ai-vr-logo.svg: vector trace of the logo supplied by the project owner in Downloads, with the wordmark gradients recreated as SVG fills. The original PNG remains untouched.
-- nerdy-ai-vr-navbar-supplied.svg: archival copy of the owner-supplied Navbar logo from Downloads/Nerdy_AI_VR_logo.svg. The file embeds a PNG with a dark background. The live navbar uses the transparent vector trace of this artwork instead.
 
 All lesson screenshots preserve their full source aspect ratio without cropping on desktop or mobile. Café and Garden snapshots link to their original-resolution images for closer inspection.
 
-The header follows the supplied navigation screenshot: wide translucent rounded bar, left-aligned project wordmark with spectrum badge, and a Lessons dropdown plus AI guide link on the right. The dropdown links to all three lesson sections and supports Escape and outside-click dismissal. The reference's Varsity Tutors logo is not reproduced.
+The header follows the supplied navigation screenshot: wide translucent rounded bar, left-aligned project wordmark with spectrum badge, and a Lessons dropdown plus AI guide link on the right. The dropdown links to all three lesson sections and supports Escape and outside-click dismissal.
 - lounge-arrival.jpg, lounge-tour.jpg, lounge-scenery.jpg, cargo-quarters-headset.jpg, cafe-plates-headset.jpg, garden-sunflowers-headset.jpg, demo-poster.jpg: frames from a Quest 3S recording of the preview app, September 18, 2026 (math-workbench-airlift/docs/media). Labeled "Quest 3S recording".
 - nerdy-ai-vr-demo.mp4: the 80-second demo cut from the same recording. Not tracked in git (36 MB); before deploying, copy it from the GitHub release v0.2-hackathon (or from artifacts/demo/) into dist/assets/.

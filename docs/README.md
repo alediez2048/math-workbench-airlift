@@ -14,7 +14,7 @@ grouped below, newest first within each group.
 
 | Document | Purpose |
 |---|---|
-| [00-build/STYLE-GUIDE.md](00-build/STYLE-GUIDE.md) and [00-build/VISUAL-DESIGN.md](00-build/VISUAL-DESIGN.md) | Nerdy design system: colours, type, pills, cards |
+| [00-build/STYLE-GUIDE.md](00-build/STYLE-GUIDE.md) and [00-build/VISUAL-DESIGN.md](00-build/VISUAL-DESIGN.md) | Design system: colours, type, pills, cards |
 | [00-build/AI-VOICE-GUIDE.md](00-build/AI-VOICE-GUIDE.md) | Dee: persona, tools, policy |
 | [00-build/PRIVACY-GATE.md](00-build/PRIVACY-GATE.md) | What must be true before children use it |
 | [00-build/RELEASE-GATES.md](00-build/RELEASE-GATES.md) | What must be true before a release |
@@ -28,7 +28,7 @@ grouped below, newest first within each group.
 | [qa/lounge.md](qa/lounge.md) | Headset script for the lounge, tour, wall and settings |
 | [qa/onboarding-repair-2026-09-18.md](qa/onboarding-repair-2026-09-18.md) | Evidence for the onboarding repair |
 | [qa/cafe.md](qa/cafe.md), [qa/garden.md](qa/garden.md) | Headset scripts for the two newer lessons |
-| [qa/nerdy-welcome.md](qa/nerdy-welcome.md), [qa/onboarding.md](qa/onboarding.md), [qa/device-proof.md](qa/device-proof.md) | Earlier headset scripts and the first device proof |
+| [qa/welcome.md](qa/welcome.md), [qa/onboarding.md](qa/onboarding.md), [qa/device-proof.md](qa/device-proof.md) | Earlier headset scripts and the first device proof |
 | [00-build/TESTING.md](00-build/TESTING.md) | Test strategy, suites, evidence rules |
 | [qa/toolchain.md](qa/toolchain.md) | The Unity Pipeline CLI and its traps |
 

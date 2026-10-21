@@ -204,7 +204,7 @@ namespace Airlift.Lounge
                     case "Exit": l.label.text = ExitArmed ? ExitArmedLabel : ExitLabel; break;
                 }
             }
-            if (versionText != null) versionText.text = "Nerdy AI+VR " + Application.version + " · build " + Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length));
+            if (versionText != null) versionText.text = "VR Math Adventure " + Application.version + " · build " + Application.buildGUID.Substring(0, Mathf.Min(8, Application.buildGUID.Length));
         }
     }
 }

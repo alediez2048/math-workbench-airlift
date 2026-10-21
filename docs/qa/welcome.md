@@ -1,9 +1,9 @@
-# Nerdy welcome flow (CC-P0-05/06/07) — headset check
+# Welcome flow (CC-P0-05/06/07) — headset check
 
-Prereqs: Mac mint server running (`~/.config/nerdy/start-dev-mint.sh`) on the home Wi-Fi until
+Prereqs: Mac mint server running (`~/.config/<project>/start-dev-mint.sh`) on the home Wi-Fi until
 the https proxy is deployed; Quest on the same network; controllers awake.
 
-1. Launch Nerdy from Library. You should see the consent card only (no table yet).
+1. Launch VR Math Adventure from the Library. You should see the consent card only (no table yet).
 2. Choose "I'm an adult tester · turn on the mic". Accept the Quest mic prompt.
    The HUD appears; state goes permission → minting → connecting → ready → live guide.
 3. The guide greets you and asks your rough age. Answer by voice OR tap a chip.
@@ -42,7 +42,7 @@ the cards, captions show app text, HUD state reads "offline guide".
 
 ## Dock 7 voice actions (Phase 1R, CC-D-02/D-03)
 
-Prereq: restart the dev mint after pulling the new proxy config (`~/.config/nerdy/start-dev-mint.sh`);
+Prereq: restart the dev mint after pulling the new proxy config (`~/.config/<project>/start-dev-mint.sh`);
 the session tools and rules are read when the mint starts. Live guide, mic on, not muted or paused.
 
 1. **Buttons hide while listening.** Open Cargo Crew by voice. The Begin briefing / Back row and, later,
@@ -75,7 +75,7 @@ the session tools and rules are read when the mint starts. Live guide, mic on, n
 
 1. **Consent card.** Logo shows. "Voice language" row: English (highlighted) and Español. Tap Español: it
    highlights; tap English again. Choose one, then turn on the mic.
-2. **Dee.** English: Dee says "Welcome to Nerdy AI plus VR! My name is Dee ..." Español: the same introduction in
+2. **Dee.** English: Dee says "Welcome to VR Math Adventure! My name is Dee ..." Español: the same introduction in
    Spanish. In the lessons Dee stays in the chosen language even if you say something in the other language.
    (Cards and lesson text stay English.)
 3. **Card edges.** Consent, welcome, catalog cards, assistant bar and each lesson card: smooth rounded corners, a

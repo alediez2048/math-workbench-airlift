@@ -4,7 +4,7 @@ Use a private GitHub repository for this project. Keep the baseline on `main` an
 
 Active checkout: `/Users/jad/Desktop/math-workbench-airlift`. Cloned from GitHub
 on September 14 at the owner's request after saving the progress log. The original
-`/Users/jad/Documents/Claude/Projects/Nerdy/hackathon_workbench` remains intact
+the original local workbench folder remains intact
 but is inactive; avoid editing both copies. Progress-log changes are on
 `unity-airlift`, not yet merged into `main`.
 

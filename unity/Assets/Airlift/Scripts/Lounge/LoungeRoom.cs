@@ -7,7 +7,7 @@ namespace Airlift.Lounge
     /// Where the learner is when they are not in a lesson. CC-FD-01.
     public enum Scenery { YourRoom, NerdyLounge }
 
-    /// What each scenery actually shows. The furniture and the glows belong to Nerdy either way; only the room
+    /// What each scenery actually shows. The furniture and the glows stay either way; only the room
     /// shell is the difference, so AR is the same lounge with the walls taken away rather than a separate design.
     public readonly struct SceneryState
     {

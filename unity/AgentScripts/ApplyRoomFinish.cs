@@ -7,7 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// CC-HF-03. The Nerdy lounge as a finished room: fluted acoustic panels on the solid walls and a herringbone floor
+// CC-HF-03. The virtual lounge as a finished room: fluted acoustic panels on the solid walls and a herringbone floor
 // (Higgsfield swatches made tileable by art_tools.detail_map, grey, so the token tints still set the palette), and a
 // darker lower panel with a lavender rail on every solid wall, echoing the board's rim. Sills, lintels, ceiling and
 // cove keep LoungeWall. Run after BuildLounge (which rebuilds the shell). Idempotent. Saves CargoCrew.

@@ -14,8 +14,8 @@ using UnityEngine.SceneManagement;
 // Headset test 2026-09-17: "we need to standardize spacial dimensons across the experience ... the whiteboard should be at
 // the same distance as the workbenches, titles should all be the same size and fonts, dashboards should be the same
 // size." Measured first: six panel sizes, 1.85 m vs 0.65 m, headings at 24/36/40/49 mm, and the workbench cards
-// still set in Nunito because the Nerdy font rule only ever scanned the welcome panel.
-// This applies NerdySpace to every panel: one size, one canvas scale, one distance, one type ramp, Nerdy fonts.
+// still set in Nunito because the app font rule only ever scanned the welcome panel.
+// This applies NerdySpace to every panel: one size, one canvas scale, one distance, one type ramp, one set of fonts.
 // The owner chose reading distance as the anchor, which moves the lesson card too — an approved exception to the
 // Cargo Crew lock, recorded in CARGO-CREW-LOCK.md. Idempotent. Saves CargoCrew and the onboarding asset.
 // Run: unity command run_script --file AgentScripts/ApplySpatialStandards.cs --entry ApplySpatialStandards.Run
@@ -76,7 +76,7 @@ public static class ApplySpatialStandards
         }
         log.Add("pointable canvas " + canvas.sizeDelta.x + "x" + canvas.sizeDelta.y + ", " + clippers + " clipper(s) resized");
 
-        // 3. One type ramp and the Nerdy families, everywhere — including the workbench cards the old font rule
+        // 3. One type ramp and the app font families, everywhere — including the workbench cards the old font rule
         //    never looked at.
         int retyped = 0, resized = 0;
         foreach (var t in scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<TMP_Text>(true)))
@@ -95,7 +95,7 @@ public static class ApplySpatialStandards
                 t.fontSize = size; resized++; EditorUtility.SetDirty(t);
             }
         }
-        log.Add(retyped + " texts moved to the Nerdy families, " + resized + " texts to the standard ramp");
+        log.Add(retyped + " texts moved to the app font families, " + resized + " texts to the standard ramp");
 
         // The workbenches bind fonts from AirliftStyle at build time; re-running that binding keeps the asset and
         // the scene saying the same thing.

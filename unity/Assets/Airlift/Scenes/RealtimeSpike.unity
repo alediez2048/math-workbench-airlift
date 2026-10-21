@@ -2749,7 +2749,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Nerdy voice spike
+  m_text: Voice spike
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f126d61d277048bda3e70d87e0ef5d5, type: 2}
   m_sharedMaterial: {fileID: 3342913372774657866, guid: 6f126d61d277048bda3e70d87e0ef5d5, type: 2}

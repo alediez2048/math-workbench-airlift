@@ -35,12 +35,12 @@ namespace Airlift.Tests
         [Test] public void DeeGreetsInTheChosenLanguage()
         {
             Assert.That(GuideIntro.PromptFor("en"), Does.Contain(GuideIntro.Spoken));
-            Assert.That(GuideIntro.SpokenFor("es"), Does.StartWith("¡Bienvenido a Nerdy AI plus VR! Me llamo Dee"));
+            Assert.That(GuideIntro.SpokenFor("es"), Does.StartWith("¡Bienvenido a VR Math Adventure! Me llamo Dee"));
             Assert.That(GuideIntro.PromptFor("es"), Does.Contain(GuideIntro.SpokenFor("es")));
             Assert.That(GuideIntro.PromptFor("es"), Does.Contain("word for word"));
         }
 
-        /// Nerdy is the app; the guide character in every story is Dee (owner 2026-09-17).
+        /// VR Math Adventure is the app; the guide character in every story is Dee (owner 2026-09-17).
         [Test] public void StoriesCallTheGuideDeeNotNerdy()
         {
             var copy = new List<string> { Airlift.Lessons.Cafe.CafeChapter.BriefingStory };

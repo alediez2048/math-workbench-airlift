@@ -29,7 +29,7 @@ namespace Airlift.Tests
         }
 
         // Owner 2026-09-18: "lessons only show in AR". Hiding the lounge for a lesson must also drop the sky, fog and
-        // passthrough-off that the Nerdy lounge scenery set, or the workbench floats in a blue void with no walls.
+        // passthrough-off that the virtual lounge scenery set, or the workbench floats in a blue void with no walls.
         [Test] public void LessonsAlwaysRunInArWhateverSceneryWasChosen()
         {
             var s = LoungeScenery.Lesson;

@@ -37,7 +37,7 @@ public static class CreateRealtimeSpike
         var spike = panel.AddComponent<RealtimeSpike>();
         spike.status = Make("Status", new Vector3(0, 0.16f, -0.01f), 0.6f, new Vector2(0.84f, 0.16f));
         spike.transcript = Make("Transcript", new Vector3(0, -0.02f, -0.01f), 0.5f, new Vector2(0.84f, 0.3f));
-        spike.status.text = "Nerdy voice spike"; spike.transcript.text = "";
+        spike.status.text = "Voice spike"; spike.transcript.text = "";
         EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
         return "RealtimeSpike.unity saved (CargoCrew copy, lesson hidden, panel + RealtimeSpike on head).";
     }

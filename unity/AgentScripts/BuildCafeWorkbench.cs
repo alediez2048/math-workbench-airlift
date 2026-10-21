@@ -52,7 +52,7 @@ public static class BuildCafeWorkbench
         var d = UnityEngine.Object.FindAnyObjectByType<OnboardingDirector>(FindObjectsInactive.Include);
         var n = UnityEngine.Object.FindAnyObjectByType<NerdyDirector>(FindObjectsInactive.Include);
         var cargo = d != null ? d.GetComponent<CargoLessonDirector>() : null;
-        if (d == null || n == null || cargo == null) throw new InvalidOperationException("CargoCrew onboarding, lesson or Nerdy director missing.");
+        if (d == null || n == null || cargo == null) throw new InvalidOperationException("CargoCrew onboarding, lesson or lounge director missing.");
         if (d.gameObject.name != "Onboarding workbench - world locked") throw new InvalidOperationException("Unexpected world-locked root: " + d.gameObject.name);
         var deckSource = d.transform.Find("Workbench")?.GetComponent<MeshFilter>();
         var frame = d.transform.Find("Lesson interface");
