@@ -37,4 +37,4 @@ grouped below, newest first within each group.
 | Document | Purpose |
 |---|---|
 | [mockups/index.html](mockups/index.html) | Schematic mockups from day one |
-| [skills-review.md](skills-review.md), [source-control.md](source-control.md) | Tooling notes |
+| [source-control.md](source-control.md) | Tooling notes |

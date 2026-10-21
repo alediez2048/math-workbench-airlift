@@ -2,14 +2,14 @@
 
 ## September 16 (evening): voice un-deferred; Realtime two-way audio is the baseline
 
-Owner decision: the Nerdy guide is a live OpenAI Realtime voice agent, two-way, for adult
+Decision: the Nerdy guide is a live OpenAI Realtime voice agent, two-way, for adult
 testers (PRIVACY-GATE.md). The proxy owns instructions and tools; the app pushes bounded
 context; math verdicts remain deterministic. Sections below that describe a recorded-first or
 output-only baseline are historical.
 
 ## September 16: deferred from immediate demo
 
-Owner explicitly prioritized working grabbing, labeled whole and labeled halves.
+Priority: working grabbing, labeled whole and labeled halves.
 Do not implement provider/speech/caption/replay/mute integration before that loop.
 The core-AI statements below describe the prior plan; no child/provider clearance
 or contest-compliance conclusion follows from this deferral.
@@ -28,8 +28,8 @@ and offers relevant help. It does not merely play a fixed recording and call it 
 The baseline interaction is **AI spoken output driven by structured lesson state**.
 Learner microphone input is not necessary: ray Help/Replay can request guidance.
 Optional spoken questions/conversation remain a separate capability in Phase 4.
-This separation is an implementation recommendation, not a claim the user requested
-an always-listening microphone or authorized collection of children's speech.
+The game never needs an always-listening microphone, and it does not collect
+children's speech.
 
 Preferred provider candidate: **OpenAI API**, not the ChatGPT consumer app.
 Baseline: live model selection of constrained guidance, followed by validated text

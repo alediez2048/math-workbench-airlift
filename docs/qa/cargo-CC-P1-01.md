@@ -16,7 +16,7 @@ September 15, 2026. In progress; not device accepted.
 - The wrapper originally exited at that false-positive scan; the successful rescan was
   separate, not claimed as an uninterrupted green wrapper run. No install/device review.
 
-- Owner explicitly approved a local APK from uncommitted files, leaving Git unchanged.
+- Tester explicitly approved a local APK from uncommitted files, leaving Git unchanged.
 - Repeat run returned zero PlayMode tests even though list_tests and a direct inspection
   of Pipeline's selection both found the exact test. Exact-name and explicit-filter
   changes did not resolve it. No vendor code was modified.
@@ -31,7 +31,7 @@ September 15, 2026. In progress; not device accepted.
 
 ## Earlier checkpoint
 
-- Owner authorized CC-P1-01 only and batched headset checks.
+- Tester authorized CC-P1-01 only and batched headset checks.
 - Unity 6000.6.0f1, existing package tuple, already-open official Pipeline connection.
 - Created CargoCrew with AssetDatabase.CopyAsset; reference hashes remained unchanged.
 - Compilation completed without errors.

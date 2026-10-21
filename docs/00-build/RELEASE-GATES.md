@@ -52,4 +52,4 @@ gate is **open** until the fix or owner decision is recorded here.
 
 1. `insecureHttpOption` still AlwaysAllowed (the proxy is deployed and the scene mints over https; the cleartext allowance stays for one build as the dev-mint fallback).
 2. BLUETOOTH permission still present (store submission only).
-3. Owner confirmation of vendor SDK and OpenAI terms for the contest.
+3. Confirmation of vendor SDK and OpenAI terms for the contest.

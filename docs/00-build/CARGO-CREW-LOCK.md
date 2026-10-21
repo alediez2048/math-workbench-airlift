@@ -1,12 +1,12 @@
 # Cargo Crew lock checklist (owner decision 2026-09-16 night)
 
-**Owner decision:** lock the Cargo Crew / Dock 7 lesson, finish the remaining work that keeps it in good shape,
+**Decision:** lock the Cargo Crew / Dock 7 lesson, finish the remaining work that keeps it in good shape,
 then move to planning the next two lessons (Neighborhood Café · division, Community Garden · multiplication).
 This supersedes the older product-contract lines "no third lesson" and "preview cards do not authorize
 additional implemented lessons": the owner now authorizes planning both. Implementation of those lessons still
 starts only after their plan is approved.
 
-**Owner-requested change 2026-09-17 (lock exception):** truck shapes and the drive-away route (load in the middle,
+**Requested change 2026-09-17 (lock exception):** truck shapes and the drive-away route (load in the middle,
 turn left, leave through a DOCK EXIT gate). Math, chapters, card copy and voice tools are unchanged; the golden Cargo
 voice recording still passes (only the shared no-voice welcome caption changed, for Dee).
 

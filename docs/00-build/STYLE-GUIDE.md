@@ -1,6 +1,6 @@
 # Cargo Crew — VR/AR and Unity style guide
 
-**Version:** draft 0.1 · September 15, 2026 · **Owner visual approval pending.**
+**Version:** draft 0.1 · September 15, 2026 · **Visual approval pending.**
 September 15 execution decision: owner delegated routine visual choices. Selected A,
 Nunito Bold headings with Nunito Sans Semibold body/math; final readability reviewed
 on headset. This supersedes the font-selection gate below, not device acceptance.
@@ -283,5 +283,5 @@ Neither is evidence of measured accessibility or learning efficacy.
 guidance; adopting a new UI kit is not required or authorized.
 Font sources above are references, not evidence of already downloaded assets.
 
-This guide is a draft design reference. Owner approves direction before implementation.
+This guide is a draft design reference. Direction gets approved before implementation.
 Keep a short dated change log here whenever selected fonts/tokens change.

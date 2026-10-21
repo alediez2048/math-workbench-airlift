@@ -1,6 +1,6 @@
 # Concept intros, Dock 7 splitter, bigger café/garden pieces — contracts (2026-09-17 afternoon)
 
-Owner requests after build 112858 ("starting to look incredibly good"):
+Requests after build 112858 ("starting to look incredibly good"):
 1. More voice onboarding once a lesson starts: elementary learners may need a basic intro to what fractions (and
    division, multiplication) are. **Decision: a short concept intro in all three lessons, before chapter 1.**
 2. Dock 7: the practice/demo crate is smaller than the lesson crates. **Make it the chunky size (28 x 11 x 12 cm).**

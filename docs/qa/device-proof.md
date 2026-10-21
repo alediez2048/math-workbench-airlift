@@ -39,11 +39,11 @@ MR splash background, input-polling latency, Meta/OpenXR requested API version
 difference. Remaining warnings concern disabled Pipeline and large TextMeshPro
 generated compilation units. Successful compilation is not release clearance.
 
-## Owner checks after a safe build succeeds
+## Tester checks after a safe build succeeds
 
 - [x] Fresh installation and launch on Quest 3S (ADB verified).
-- [x] Owner reports real room, blue workbench, orange cube and moving controllers visible.
-- [x] Owner reports successful cube grab after initially having trouble finding the interaction.
+- [x] Tester reports real room, blue workbench, orange cube and moving controllers visible.
+- [x] Tester reports successful cube grab after initially having trouble finding the interaction.
 - [ ] Explicit stereo/comfort assessment.
 - [ ] Ten grabs/releases; cube follows and releases without duplicate ownership.
 - [ ] Bench/cube reachable and legible without stepping toward unseen obstacles.
@@ -55,7 +55,7 @@ versions here. A saved scene or successful compilation does not check these boxe
 
 ## Milestone boundary and next work
 
-Owner requested closing this setup/basic-interaction checkpoint before proceeding.
+Tester requested closing this setup/basic-interaction checkpoint before proceeding.
 This does not mark all Phase 1 acceptance criteria complete. Ten grabs, reach,
 pause/resume and capture remain carry-forward checks before full device-proof signoff.
 The approved next product slice is cargo-role briefing, a guided grab interaction,

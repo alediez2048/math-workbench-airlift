@@ -20,7 +20,7 @@
 
 ### Result 2026-09-16 (owner)
 
-- Owner heard the greeting; three exchanges logged at 415/430/445 ms; transcripts correct
+- Tester heard the greeting; three exchanges logged at 415/430/445 ms; transcripts correct
   after the first (first utterance came back empty and the model replied in Portuguese).
 - Quest showed a "controllers required" dialog until a controller was woken; one early
   instance died with an ANR behind that dialog.

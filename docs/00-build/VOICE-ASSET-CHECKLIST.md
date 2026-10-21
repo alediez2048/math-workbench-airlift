@@ -2,7 +2,7 @@
 
 This checklist covers rights-cleared audio acquisition. Reviewed speech assets
 can serve the live AI-selected catalog or the labeled local fallback; audio alone
-does not satisfy the core live-model requirement in AI-VOICE-GUIDE.md. Owner decision required before fallback asset
+does not satisfy the core live-model requirement in AI-VOICE-GUIDE.md. Decision required before fallback asset
 acceptance in CC-P1-03. Suggested provider-independent route:
 the adult owner supplies their own recordings, or authorizes another adult narrator
 with written redistribution permission. The coding agent integrates and validates
@@ -15,7 +15,7 @@ those clips; it cannot invent delivery or rights clearance.
    ASSET-LICENSES.md when assets actually arrive.
 5. Agent imports, trims silence if authorized, sets appropriate audio import settings,
    maps clips to GuideCueCatalog and verifies every required cue for that milestone.
-6. Owner listens on Quest at comfortable volume, checks captions/replay and approves.
+6. A tester listens on Quest at comfortable volume, checks captions/replay and approves.
 7. For the live AI catalog, record exact textHash/audioHash, locale, voice/version,
    approved contexts and adult listening approval in VerifiedSpeechManifest.json.
    Runtime rejects unreviewed or mismatched assets; no dynamic synthesis is implied.

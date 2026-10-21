@@ -127,7 +127,7 @@ and legal successful traces; validate every fixture for solvability.
 
 ## D7 — core state-aware AI voice guide
 
-Owner-confirmed requirement: live AI spoken guidance belongs in P1 and accompanies
+Confirmed requirement: live AI spoken guidance belongs in P1 and accompanies
 all activities. OpenAI is the preferred evaluation candidate, not cleared deployment.
 AI-VOICE-GUIDE.md owns the detailed contract: committed state → server-validated
 context → live AI fact/action/variant selection → semantic validation → deterministic

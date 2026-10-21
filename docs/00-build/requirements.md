@@ -2,7 +2,7 @@
 
 ## September 16 immediate-demo scope
 
-Owner deferred live AI/spoken guidance and associated audio controls. Existing F-*
+Deferred: live AI/spoken guidance and associated audio controls. Existing F-*
 requirements remain traceable future scope, not acceptance gates for the immediate
 whole/halves demo. Physical grabbing, stable placement, exact fractions and readable
 labels remain essential.

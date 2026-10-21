@@ -1,6 +1,6 @@
 # Future lesson concepts — preview cards only
 
-September 14, 2026. Owner requested two options with different subjects and
+September 14, 2026. The brief asked for two options with different subjects and
 settings, explicitly without committing to implement them during this build.
 
 | Concept | Context and interaction | Mathematical idea |

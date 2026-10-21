@@ -287,7 +287,7 @@ and `[Guide]`), which is how every headset report was diagnosed.
 
 ## How it was built in five days
 
-One person, a Quest 3S, Claude Code and Codex, and a rule: nothing counts until the owner accepts it on the
+One person, a Quest 3S, Claude Code and Codex, and a rule: nothing counts until it works on the
 headset. The short version:
 
 | Day | What landed |

@@ -57,7 +57,7 @@ This is not the completed arithmetic lesson or hackathon release.
   is not a comprehensive security audit.
 - ADB listed no devices after the build; no installation or launch attempted.
 - September 15: after repeated unauthorized connections, the owner toggled
-  Developer Mode off/on with USB connected and saw the debugging prompt. Owner
+  Developer Mode off/on with USB connected and saw the debugging prompt. Tester
   approved access; ADB then reported an authorized device. `adb install -r`
   succeeded and the app launch command succeeded. Subsequently the owner confirmed
   catalog visibility, Cargo Crew briefing, successful grab/place and replay.

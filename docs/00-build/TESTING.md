@@ -73,7 +73,7 @@ adult AI-output feasibility now belongs to P1-03 and has its own early gates.
 
 ## Cadence
 
-Owner-approved refinement: batch physical review around cargo environment/controls,
+Approved refinement: batch physical review around cargo environment/controls,
 AI-guided onboarding and complete whole/halves checkpoints. Automated checks remain
 per-ticket; affected tickets can be code-complete/awaiting device review, never
 accepted without the relevant batch results. Stop for an interaction regression

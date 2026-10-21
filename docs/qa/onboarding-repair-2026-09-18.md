@@ -2,7 +2,7 @@
 
 ## Latest implementation — control cleanup (installed; headset acceptance pending)
 
-Owner authorized implementation after the consolidated plan. Source and CargoCrew scene changes are saved.
+Tester authorized implementation after the consolidated plan. Source and CargoCrew scene changes are saved.
 133 focused EditMode checks pass across ControlCleanup (14), ControlCleanupWiring (2), Rundown (5),
 RundownWiring (5), OnboardingRepair (5), TourSettingsSpeech (1), TourAutostart (4), LoungeWiring (11),
 Recovery (4), FrontDoorTool (7), TourSpeechRegression (6), GuidePolicy (10), PromptGate (8), Café wiring (25),
@@ -45,9 +45,9 @@ The requests below were captured before implementation; see the latest checkpoin
 
 - **Requested lesson exit simplification:** remove the **Back to lessons** button from **Cargo Crew**, **Community Garden**, and **Neighborhood Café**. Keep the top-right **X — Exit lesson** as the single visible return-to-catalog control. Verify the X works throughout each lesson, returns to Pick a lesson, and preserves the existing exit cleanup/progress behavior; keep activity-specific controls intact. Update any guidance referring to the removed button. Planned only; no app changes during this walkthrough.
 
-- **Requested navigation simplification:** remove the bottom-right **Back / Next** pair and its onboarding steps/instructions. Keep the **left / right arrows directly beneath the dashboard** as the catalog paging controls. Owner reports the two pairs feel duplicative; their underlying behavior has not yet been compared. Update tour progression, narration, highlights, and completion checks so no step depends on the removed pair, including the introductory Next prompt. Retain onboarding coverage of the surviving paging controls. Verify the tour remains completable and lesson navigation is preserved. This supersedes earlier instructions to teach the bottom-right pair. Planned only; no app changes during this walkthrough.
+- **Requested navigation simplification:** remove the bottom-right **Back / Next** pair and its onboarding steps/instructions. Keep the **left / right arrows directly beneath the dashboard** as the catalog paging controls. Tester reports the two pairs feel duplicative; their underlying behavior has not yet been compared. Update tour progression, narration, highlights, and completion checks so no step depends on the removed pair, including the introductory Next prompt. Retain onboarding coverage of the surviving paging controls. Verify the tour remains completable and lesson navigation is preserved. This supersedes earlier instructions to teach the bottom-right pair. Planned only; no app changes during this walkthrough.
 
-- **Requested tour addition:** introduce **Your room** and **Nerdy Lounge**. Owner reports these controls are absent from onboarding. Add a guided environment-choice step before final lesson selection, with matching narration and highlights explaining each mode. Confirm both controls work and that switching environments preserves the current tour step and progress. This is a missing explanation, not a confirmed broken-button report. Planned only; no implementation during this walkthrough.
+- **Requested tour addition:** introduce **Your room** and **Nerdy Lounge**. Tester reports these controls are absent from onboarding. Add a guided environment-choice step before final lesson selection, with matching narration and highlights explaining each mode. Confirm both controls work and that switching environments preserves the current tour step and progress. This is a missing explanation, not a confirmed broken-button report. Planned only; no implementation during this walkthrough.
 
 - **Confirmed by owner:** catalog tour started automatically on the installed autostart preview.
 - **Open, owner-reported:** pressing **Mic off** produced no apparent effect.
@@ -56,14 +56,14 @@ The requests below were captured before implementation; see the latest checkpoin
 
 Reported during the onboarding walkthrough; precise tour stage, enabled/disabled appearance, and whether
 labels changed were not established. No root cause or fix claimed. Expected: available controls produce
-their stated action and clear feedback; intentional unavailability must be apparent. Owner explicitly
+their stated action and clear feedback; intentional unavailability must be apparent. Tester explicitly
 requested notes only: do not interrupt the walkthrough, change the app, or restart to investigate these reports.
 
 ## Verified locally
 
 ### Follow-up: automatic tour after questions (installed; owner confirms autostart)
 
-Owner's headset log reported onboarding enabled, incomplete profile, and `rundownSeen=True` at startup.
+The tester's headset log reported onboarding enabled, incomplete profile, and `rundownSeen=True` at startup.
 The pure transition reproduced Welcome → Catalog while retaining that flag, suppressing TourDue.
 Changed EndWelcome to clear the flag only when actually leaving questions; ShowCatalog also persists the
 library flag as false. Finishing or skipping questions now requests the catalog tour; returning from a lesson
@@ -94,7 +94,7 @@ Running CargoCrew with the fresh-learner editor fixture:
 
 ## Known test discrepancy / not release acceptance
 
-**Owner-reported voice drift — repaired locally, headset acceptance pending:** after filters/paging, the highlight points at the gear but Dee says
+**Tester-reported voice drift — repaired locally, headset acceptance pending:** after filters/paging, the highlight points at the gear but Dee says
 "Great, you've seen how to move around" and asks for a green Done button to pick a lesson. At capture time
 the owner had already advanced to step 6; that later screenshot is not evidence the reported step worked.
 The configured gear narration correctly says open Settings first, then Done. The reported wording is not
@@ -130,20 +130,20 @@ speech was still pending at preview stop; do not claim the full spoken tour acce
 This verifies transcript matching and playback routing, not subjective sound quality or headset latency.
 The long introductory caption is cramped in the compact desktop bar; readability remains an owner review item.
 
-Owner requested a fuller catalog introduction: welcome to the Nerdy AI plus VR math lounge, describe
+Tester requested a fuller catalog introduction: welcome to the Nerdy AI plus VR math lounge, describe
 hands-on fraction/division/multiplication adventures, explain the cards, then direct to highlighted Next.
 Updated first-step narration; gate and pointer unchanged. Compilation and structural tests passed; actual audio/caption fit still needs live verification.
 
-Owner also flagged the welcome's mouse reference as inappropriate for VR. Removed it from the spoken
+Tester also flagged the welcome's mouse reference as inappropriate for VR. Removed it from the spoken
 English greeting; retained controller pointing/trigger wording. Added a no-mouse regression assertion.
 This copy correction compiled and GuidePolicyTests passed; verify actual greeting audio at the next restart.
 
-Owner walkthrough found a missed visual conflict: first catalog step pointed to Cargo Crew while Dee
+Tester walkthrough found a missed visual conflict: first catalog step pointed to Cargo Crew while Dee
 requested Next. Live inspection reproduced `FirstTile` with `ContinuePressed`. The first target and wording
 are corrected to the highlighted Next arrow, and the scene test now asserts the actual ring center and
 interactability against each step's required control. This supersedes the earlier visual-readiness claim;
 the owner did not accept the first tour presentation. Follow-up compilation completed without errors;
-RundownTests 5/5 and strengthened RundownWiringTests 5/5 passed. Owner retest remains pending.
+RundownTests 5/5 and strengthened RundownWiringTests 5/5 passed. Tester retest remains pending.
 
 CargoVoiceCharacterizationTests is still failing against the historical golden. Do not silently regenerate it.
 A structured diff found only welcome-caption differences, mic enabled flags, manual fallback-control
@@ -153,7 +153,7 @@ and hidden manual buttons; the repair intentionally changes those boundaries. A 
 update is still needed before calling the entire suite green.
 
 Actual spoken-command recognition, audio timing/quality, headset interaction, performance and final owner
-acceptance remain unverified. Owner subsequently authorized the headset build/install. APK:
+acceptance remain unverified. Tester subsequently authorized the headset build/install. APK:
 `artifacts/lounge-preview/nerdy-lounge-tour-sync-20260918.apk`; build succeeded in 94 seconds, zero errors,
 367 warnings. Bounded credential scan passed; built IL2CPP metadata contains the new gear copy and narration
 guard. SHA-256: `ec258031953b23acda2e336eb0efb22b92c6b1ec296437bc52b40535906db0cb`.
@@ -161,7 +161,7 @@ Preview update installed successfully with saved data retained. Package lastUpda
 (device time); cold launch returned OK. Release app preserved; preview build settings restored to
 `com.nerdy.vr` / `Nerdy`. No commit/push. Use Settings → Replay the tour if previously completed.
 
-## Owner walkthrough — Unity Game view
+## Tester walkthrough — Unity Game view
 
 1. Welcome: one Let's begin button; greeting refers to it. Click it.
 2. Questions: answer or Skip; no competing tour arrows. Branding says Nerdy AI + VR.

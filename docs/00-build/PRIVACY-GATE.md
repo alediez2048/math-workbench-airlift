@@ -1,6 +1,6 @@
 # Privacy gate — Nerdy voice guide (CC-P0-08)
 
-**Status:** draft, September 16, 2026 · Owner review required · Adult testers only.
+**Status:** draft, September 16, 2026 · Review required · Adult testers only.
 
 ## Decision record
 

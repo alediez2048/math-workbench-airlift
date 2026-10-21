@@ -3,7 +3,7 @@
 ## September 16 (late evening, 3) — duplicate grab interactor fix: owner-reported PASS
 
 - CURRENT installed APK: artifacts/qa/cargo-20260916-144706/airlift-cargo.apk, SHA-256 9f69a09c... (build.json); 57 checks + scan passed; md5 6929c4fe verified on device. Supersedes 143730.
-- Owner reported 143730 felt identical. Cause: two grab interactors per hand → one squeeze
+- Tester reported 143730 felt identical. Cause: two grab interactors per hand → one squeeze
   = two grab points → two-hand transformer with coincident points. Extras disabled.
 - Check: 1. One-hand carry: handle glued to hand, table turns to face you as you carry it
   around, no jump on release. 2. Two-hand: twist to any angle, stretch to resize.
@@ -12,7 +12,7 @@
 ## September 16 (late evening, 2) — carry fix build
 
 - CURRENT installed APK: artifacts/qa/cargo-20260916-143730/airlift-cargo.apk, SHA-256 ce1860e3... (build.json); 56 checks + scan passed; md5 8de8b9ab verified on device. Supersedes 142801.
-- Owner reported on 142801: handle works; one-hand move jumps; cannot turn the table.
+- Tester reported on 142801: handle works; one-hand move jumps; cannot turn the table.
 - Fix under check: one hand now carries with the grabbed point glued to the hand and the
   table turning to face you as you move it around yourself (wrist tilt ignored). Two hands
   still turn freely and resize. Check: 1. Carry to your left and right: the table should
@@ -23,7 +23,7 @@
 ## September 16 (late evening) — table handle build for owner check
 
 - CURRENT installed APK: artifacts/qa/cargo-20260916-142801/airlift-cargo.apk, SHA-256 96818c56... (see build.json); 54 checks + scan passed; md5 345dd783 verified on device 14:31. Supersedes 140241.
-- Owner check: 1. Yellow handle visible on the table's front edge. 2. Grab it with one hand
+- Tester check: 1. Yellow handle visible on the table's front edge. 2. Grab it with one hand
   and carry the table left/right, closer/farther, higher/lower; it should turn to face you
   and stay level when released. 3. Grab it with both hands and pull apart / push together:
   table grows/shrinks (limits 0.5x-2x); everything including the card scales together.
@@ -38,7 +38,7 @@
 - Changes: pad/ruler centred, tray forward, station buttons gone, rounded blocks, satin
   materials, shadows, pill buttons, sticker labels, navy ruler marks on the front rim,
   cream cut faces on halves, pieces resting on surfaces. Math/colliders unchanged.
-- Owner check: 1. Board appears at desk height, pad in the middle of the board. 2. No
+- Tester check: 1. Board appears at desk height, pad in the middle of the board. 2. No
   Raise/Lower/Recenter buttons; card and buttons rounded. 3. Practice grab still works
   (report grip vs trigger if possible). 4. Start fractions: read 0 / 1/2 / 1 on the pad's
   front rim; whole docks and snaps; Split shows the cream cut faces; Submit reads
@@ -47,7 +47,7 @@
 
 ## September 16 (afternoon, later) — owner-reported PASS on grab and halves loop
 
-- Build 18273ac6 (below). Owner: practice strap grabs and moves; Start fractions, Split
+- Build 18273ac6 (below). Tester: practice strap grabs and moves; Start fractions, Split
   into halves, dock and Submit produce "1/2 + 1/2 = 1". Simple but working.
 - Steps 5-9 numbers (OVR/XR/SDK grip and trigger) NOT reported; unknown whether the grab
   used grip or the temporary trigger override. Steps 2, 10, 12 (snap), Reset and Back not
@@ -65,7 +65,7 @@
 - Contains: tracked-head startup placement fix; temporary practice-panel input readout;
   temporary grip-or-trigger practice grab override (CargoCrew only).
 - Still unverified on device: board height at start, grab with grip, grab with trigger,
-  release-on-pad completion. Owner script:
+  release-on-pad completion. Tester script:
   1. Wear headset, both controllers awake; launch Airlift from Library > Unknown sources.
   2. Note where the board appears (desk height expected, not floor).
   3. Cargo Crew > Begin briefing > Watch demo > wait for "Your turn".
@@ -84,7 +84,7 @@
 
 ## September 16 physical evidence — NOT accepted
 
-Owner confirms gravity fix keeps station still and cargo props look correct.
+Tester confirms gravity fix keeps station still and cargo props look correct.
 Board initially too low; system recenter helps. Free movement is not implemented.
 Practice strap fails to grab after demo; actual practice instructions confirmed.
 Diagnostic build passed 25 checks and scan, but still fails physically: active
@@ -93,7 +93,7 @@ Vendor control APK replaced CargoCrew: platform visible, cube missing, controlle
 GrabInteractable absent on supplied cube. Invalid comparison, not a tested fallback.
 Reset control/notation specimens and other ticket gaps remain. Older entries follow.
 
-September 15, 2026. Owner authorized continuation and batched baseline/device review.
+September 15, 2026. Tester authorized continuation and batched baseline/device review.
 
 ## Device failure — blocks acceptance
 
@@ -102,7 +102,7 @@ September 15, 2026. Owner authorized continuation and batched baseline/device re
   Await physical observation and diagnostic samples before declaring resolved.
 
 - Diagnostic samples reproduced stationary root (y=0.35) with head y falling from
-  approximately -3 to -176 over six seconds; no adjustment call occurred. Owner
+  approximately -3 to -176 over six seconds; no adjustment call occurred. Tester
   reported apparent table ascent during the same run.
 - Found enabled FirstPersonLocomotor in Meta comprehensive rig. Its Update applies
   gravity and LastUpdate moves the player origin. Stationary-scene guard failed
@@ -113,7 +113,7 @@ September 15, 2026. Owner authorized continuation and batched baseline/device re
 
 - Installation and launch succeeded but owner reports the table rises out of view,
   leaving no usable catalog/onboarding. Repeated cold restarts did not recover it.
-- Owner explicitly requested diagnosis/fix. Do not count Android launch success or
+- Tester explicitly requested diagnosis/fix. Do not count Android launch success or
   passing editor tests as device acceptance. Stop further lesson work until resolved.
 - Root station has no Rigidbody; custom movement is startup placement and explicit
   ComfortPlacement actions. Logs show tracking acquired seconds after launch.
@@ -123,9 +123,9 @@ September 15, 2026. Owner authorized continuation and batched baseline/device re
 
 ## Typography and controls continuation
 
-- Owner toggled Developer Mode and approved Always allow USB debugging. ADB reported
+- Tester toggled Developer Mode and approved Always allow USB debugging. ADB reported
   device authorized; install -r returned Success for the visual-checkpoint APK.
-  Launch requested. Owner-visible behavior and physical acceptance still pending.
+  Launch requested. Tester-visible behavior and physical acceptance still pending.
 
 - Visual checkpoint APK built successfully: artifacts/qa/cargo-20260915-182240/airlift-cargo.apk.
   SHA-256 71aa75bebcf44bf481b3e5171534862c1ef3b38762e776ee32f524c05e7dd919.
@@ -134,7 +134,7 @@ September 15, 2026. Owner authorized continuation and batched baseline/device re
 - Quest reports unauthorized at handoff. APK not installed. This is a visual-review
   checkpoint, not completion of all P1-02 acceptance criteria listed below.
 
-- Owner delegated routine design decisions; selected direction A without further font
+- Tester delegated routine design decisions; selected direction A without further font
   approval prompts. Imported static Nunito Bold and Nunito Sans Semibold with OFL
   notices and source/hash records in Assets/Airlift/Fonts/SOURCES.md.
 - Applied explicit static SDF assets, shared AirliftStyle/TypographyBindings, button

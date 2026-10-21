@@ -13,7 +13,7 @@ full physical QA and release acceptance are still pending.
 | Java | Bundled OpenJDK 17.0.18 |
 | ADB | Bundled platform-tools 36.0.0, ADB 1.0.41 |
 | Headset | ADB identifies Quest 3S; authorized `device` state observed |
-| Developer onboarding | Owner reports team creation, verification, Developer Mode, and USB approval complete |
+| Developer onboarding | Tester reports team creation, verification, Developer Mode, and USB approval complete |
 | Automation | Official Unity CLI 1.0.0-beta.9; Pipeline 0.7.0-exp.1 configured in project |
 | XR packages | Core/Interaction/OVR integration 205.0.0, OpenXR 1.18.0, Meta OpenXR 2.6.1 resolved; editor reports ready |
 | Proof scene | `Assets/Airlift/Scenes/DeviceProof.unity` generated successfully by versioned builder |
@@ -57,7 +57,7 @@ The scene builder refuses to overwrite an existing proof or discard dirty scene 
 
 Meta's registry metadata for Core 205.0.0 says adding or using the package accepts
 the [Meta SDK license](https://developers.meta.com/horizon/licenses/oculussdk/).
-Owner explicitly authorized acceptance and import in the September 14 voice
+Tester explicitly authorized acceptance and import in the September 14 voice
 conversation. This does not authorize purchases. Submission rights remain separate.
 
 ## First physical acceptance checklist
@@ -65,7 +65,7 @@ conversation. This does not authorize purchases. Submission rights remain separa
 - [x] XR package tuple resolves and compiles without errors.
 - [x] One rig, passthrough, controllers, and one reusable SDK-grabbable cube created.
 - [x] ARM64 APK builds and fresh-installs on the owned Quest 3S.
-- [ ] Owner sees passthrough, completes ten grabs, and checks reachable placement.
+- [ ] Tester sees passthrough, completes ten grabs, and checks reachable placement.
 - [ ] Pause/resume restores a usable scene.
 - [ ] Readable ten-second capture saved with private surroundings excluded.
 
