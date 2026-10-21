@@ -6,8 +6,8 @@ using UnityEngine;
 
 namespace Airlift.Editor
 {
-    // CC-P0-03 THROWAWAY build: development build of the spike scene only, cleartext HTTP allowed
-    // for the LAN mint server. Never used for release; restores the HTTP setting afterwards.
+    // Development build of the voice spike scene only. Cleartext HTTP is allowed in development builds
+    // so it can reach a local dev mint; release builds still require HTTPS. Restores the setting afterwards.
     public static class SpikeBuild
     {
         public static string Run()
@@ -15,7 +15,7 @@ namespace Airlift.Editor
             var prior = PlayerSettings.insecureHttpOption;
             try
             {
-                PlayerSettings.insecureHttpOption = InsecureHttpOption.AlwaysAllowed;
+                PlayerSettings.insecureHttpOption = InsecureHttpOption.DevelopmentOnly;
                 string dir = Path.GetFullPath("../artifacts/spike"); Directory.CreateDirectory(dir);
                 string output = Path.Combine(dir, "nerdy-spike.apk");
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions

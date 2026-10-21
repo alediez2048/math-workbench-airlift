@@ -115,13 +115,19 @@ namespace Airlift.Guide
             bool micOk = Permission.HasUserAuthorizedPermission(Permission.Microphone);
             SetState("minting");
             string secret = null;
-            if (!string.IsNullOrEmpty(mintUrl))
+            // Editor and development builds may point at a local dev mint (LocalGuideConfig); release builds cannot.
+            string devMint = LocalGuideConfig.DevMintUrl;
+            string url = string.IsNullOrEmpty(devMint) ? mintUrl : devMint;
+            if (!string.IsNullOrEmpty(url))
             {
                 var body = GuideMessages.MintRequestBody(Guid.NewGuid().ToString("N"), build, language);
-                using (var req = new UnityWebRequest(mintUrl, "POST"))
+                using (var req = new UnityWebRequest(url, "POST"))
                 {
                     req.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(body)); req.downloadHandler = new DownloadHandlerBuffer();
-                    req.SetRequestHeader("Content-Type", "application/json"); req.SetRequestHeader("x-nerdy-client", clientMarker); req.timeout = 12;
+                    req.SetRequestHeader("Content-Type", "application/json"); req.SetRequestHeader("x-nerdy-client", clientMarker);
+                    var clientKey = LocalGuideConfig.ClientKey;
+                    if (!string.IsNullOrEmpty(clientKey)) req.SetRequestHeader(LocalGuideConfig.ClientKeyHeader, clientKey);
+                    req.timeout = 12;
                     yield return req.SendWebRequest();
                     if (epoch != generation || stopped) yield break;
                     if (req.result == UnityWebRequest.Result.Success)

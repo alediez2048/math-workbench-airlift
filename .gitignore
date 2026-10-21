@@ -49,3 +49,7 @@ mono_crash.*
 # Local AI tooling
 .cursor/
 .claude/
+
+# Per-machine guide settings (client key, dev mint URL); see LocalGuideConfig.cs
+unity/Assets/Airlift/Resources/LocalGuideConfig/
+unity/Assets/Airlift/Resources/LocalGuideConfig.meta

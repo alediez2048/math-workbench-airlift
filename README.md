@@ -227,7 +227,7 @@ Quest 3S ── Unity app (com.nerdy.vr.lounge) ── WSS ──▶ OpenAI Real
 | `Onboarding/` | The original Cargo briefing, demonstration and grab practice. |
 
 **Scenes are built by scripts.** Everything in `CargoCrew.unity` beyond the XR rig is created by idempotent
-editor scripts under `unity/AgentScripts` (about sixty of them: `BuildLounge`, `BuildDashboard`, `BuildTour`,
+editor scripts under `unity/AgentScripts` (102 of them: `BuildLounge`, `BuildDashboard`, `BuildTour`,
 `BuildSettingsPanel`, `AddAgeRow`, the three workbench builders, and preview renderers that screenshot the
 board from the player's head for review). Rebuilding a surface is a script run, not hand editing, which is what
 let several agents work on one scene.

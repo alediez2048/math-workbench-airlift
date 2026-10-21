@@ -44,7 +44,7 @@ told results and never grades. Footage uses entrant-only testers.
 
 ## Temporary development exceptions (must be closed before release)
 
-- `insecureHttpOption = AlwaysAllowed` so the headset can mint sessions from the Mac over
-  LAN HTTP; revert to NotAllowed when `GuideEndpoints.MintUrl` becomes the https proxy.
+- Closed: `insecureHttpOption` is DevelopmentOnly. Only development builds can reach a LAN
+  dev mint over HTTP; release builds use the https proxy.
 - Proxy rate limits are best-effort per serverless instance; the hard ceiling is the OpenAI
   project spend cap the owner sets.

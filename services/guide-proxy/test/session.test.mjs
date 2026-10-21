@@ -1,19 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSessionRequest, createLimiter, CLIENT_MARKER } from '../lib/validate.js';
+import { validateSessionRequest, createLimiter, CLIENT_MARKER, CLIENT_KEY_HEADER, loadClientKey, clientKeyMatches } from '../lib/validate.js';
 import { buildSessionConfig, LANGUAGES, TOOLS, AGE_BANDS, CARD_IDS, LESSON_TOOL_NAMES, CAFE_TOOL_NAMES, GARDEN_TOOL_NAMES } from '../lib/sessionConfig.js';
 import { createHandler } from '../api/session.js';
 
-const good = { method: 'POST', headers: { 'x-nerdy-client': CLIENT_MARKER }, body: { launchNonce: 'abc12345-nonce', build: '0.2.0' } };
+const v = (m, h, b) => validateSessionRequest(m, h, b, TEST_KEY);
+const TEST_KEY = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718';
+const good = { method: 'POST', headers: { 'x-nerdy-client': CLIENT_MARKER, [CLIENT_KEY_HEADER]: TEST_KEY }, body: { launchNonce: 'abc12345-nonce', build: '0.2.0' } };
 function res() { const r = { code: 0, body: null, status(c) { r.code = c; return r; }, json(b) { r.body = b; return r; } }; return r; }
 const okFetch = async () => ({ ok: true, status: 200, json: async () => ({ value: 'ek_test_secret', expires_at: 123, session: {} }) });
 
 test('validation rejects wrong method, client marker, nonce and build', () => {
-  assert.equal(validateSessionRequest('GET', good.headers, good.body).status, 405);
-  assert.equal(validateSessionRequest('POST', {}, good.body).status, 403);
-  assert.equal(validateSessionRequest('POST', good.headers, { launchNonce: 'x', build: '1' }).status, 400);
-  assert.equal(validateSessionRequest('POST', good.headers, { launchNonce: 'abc12345-nonce', build: 'x'.repeat(50) }).status, 400);
-  assert.equal(validateSessionRequest('POST', good.headers, good.body).ok, true);
+  assert.equal(v('GET', good.headers, good.body).status, 405);
+  assert.equal(v('POST', {}, good.body).status, 403);
+  assert.equal(v('POST', good.headers, { launchNonce: 'x', build: '1' }).status, 400);
+  assert.equal(v('POST', good.headers, { launchNonce: 'abc12345-nonce', build: 'x'.repeat(50) }).status, 400);
+  assert.equal(v('POST', good.headers, good.body).ok, true);
 });
 
 test('session config is server-authored: English, no surroundings, tools present, VAD tuned', () => {
@@ -166,15 +168,15 @@ test('the learner picks the voice language once and the session is locked to it'
   assert.doesNotMatch(es.instructions, /Speak only English/);
   assert.equal(es.audio.input.transcription.language, 'es');
   assert.equal(buildSessionConfig('fr').session.audio.input.transcription.language, 'en', 'unknown codes fall back to English');
-  assert.equal(validateSessionRequest('POST', good.headers, { ...good.body, language: 'es' }).ok, true);
-  assert.equal(validateSessionRequest('POST', good.headers, { ...good.body, language: 'fr' }).status, 400);
-  assert.equal(validateSessionRequest('POST', good.headers, good.body).ok, true, 'language is optional (English)');
+  assert.equal(v('POST', good.headers, { ...good.body, language: 'es' }).ok, true);
+  assert.equal(v('POST', good.headers, { ...good.body, language: 'fr' }).status, 400);
+  assert.equal(v('POST', good.headers, good.body).ok, true, 'language is optional (English)');
 });
 
 test('handler mints the session in the requested language', async () => {
   let sent = null;
   const fetchImpl = async (url, init) => { sent = JSON.parse(init.body); return { ok: true, status: 200, json: async () => ({ value: 'ek_test_secret', expires_at: 1 }) }; };
-  const h = createHandler({ apiKey: 'k', fetchImpl, limit: { allow: () => true }, log() {} });
+  const h = createHandler({ clientKey: TEST_KEY, apiKey: 'k', fetchImpl, limit: { allow: () => true }, log() {} });
   const r = res(); await h({ ...good, body: { ...good.body, language: 'es' } }, r);
   assert.equal(r.code, 200);
   assert.equal(sent.session.audio.input.transcription.language, 'es');
@@ -182,7 +184,7 @@ test('handler mints the session in the requested language', async () => {
 });
 
 test('handler returns only the ephemeral secret, never the API key', async () => {
-  const logs = []; const h = createHandler({ apiKey: 'sk-live-should-not-leak', fetchImpl: okFetch, limit: createLimiter(), log: (...a) => logs.push(a.join(' ')) });
+  const logs = []; const h = createHandler({ clientKey: TEST_KEY, apiKey: 'sk-live-should-not-leak', fetchImpl: okFetch, limit: createLimiter(), log: (...a) => logs.push(a.join(' ')) });
   const r = res(); await h(good, r);
   assert.equal(r.code, 200); assert.equal(r.body.value, 'ek_test_secret'); assert.equal(r.body.model, 'gpt-realtime');
   assert.ok(!JSON.stringify(r.body).includes('sk-live')); assert.ok(!logs.join('\n').includes('sk-live')); assert.ok(!logs.join('\n').includes('ek_test'));
@@ -190,14 +192,43 @@ test('handler returns only the ephemeral secret, never the API key', async () =>
 
 test('handler maps upstream failure to 502 and missing key to 503', async () => {
   const bad = async () => ({ ok: false, status: 401, json: async () => ({ error: { message: 'bad key' } }) });
-  const r1 = res(); await createHandler({ apiKey: 'k', fetchImpl: bad, limit: createLimiter(), log() {} })(good, r1); assert.equal(r1.code, 502);
-  const r2 = res(); await createHandler({ apiKey: '', fetchImpl: okFetch, limit: createLimiter(), log() {} })(good, r2); assert.equal(r2.code, 503);
+  const r1 = res(); await createHandler({ clientKey: TEST_KEY, apiKey: 'k', fetchImpl: bad, limit: createLimiter(), log() {} })(good, r1); assert.equal(r1.code, 502);
+  const r2 = res(); await createHandler({ clientKey: TEST_KEY, apiKey: '', fetchImpl: okFetch, limit: createLimiter(), log() {} })(good, r2); assert.equal(r2.code, 503);
 });
 
 test('limiter enforces per-minute and per-day caps', async () => {
   let t = 0; const lim = createLimiter({ perMinute: 2, perDay: 3, now: () => t });
   assert.equal(lim.allow(), true); assert.equal(lim.allow(), true); assert.equal(lim.allow(), false);
   t += 61000; assert.equal(lim.allow(), true); assert.equal(lim.allow(), false, 'daily cap');
-  const h = createHandler({ apiKey: 'k', fetchImpl: okFetch, limit: { allow: () => false }, log() {} });
+  const h = createHandler({ clientKey: TEST_KEY, apiKey: 'k', fetchImpl: okFetch, limit: { allow: () => false }, log() {} });
   const r = res(); await h(good, r); assert.equal(r.code, 429);
+});
+
+test('the client key gates every mint: missing or wrong keys are refused, the right one passes', () => {
+  const { [CLIENT_KEY_HEADER]: _, ...noKey } = good.headers;
+  assert.equal(v('POST', noKey, good.body).status, 401);
+  assert.equal(v('POST', { ...good.headers, [CLIENT_KEY_HEADER]: 'wrong-' + TEST_KEY }, good.body).status, 401);
+  assert.equal(v('POST', { ...good.headers, [CLIENT_KEY_HEADER]: TEST_KEY.slice(0, -1) }, good.body).status, 401);
+  assert.equal(v('POST', good.headers, good.body).ok, true);
+  assert.equal(validateSessionRequest('POST', good.headers, good.body, undefined).status, 401, 'no configured key never matches');
+  assert.equal(clientKeyMatches(TEST_KEY, TEST_KEY), true);
+  assert.equal(clientKeyMatches('', TEST_KEY), false);
+});
+
+test('a request without the key never reaches OpenAI', async () => {
+  let called = 0; const fetchImpl = async () => { called++; return okFetch(); };
+  const h = createHandler({ clientKey: TEST_KEY, apiKey: 'k', fetchImpl, limit: { allow: () => true }, log() {} });
+  const { [CLIENT_KEY_HEADER]: _, ...noKey } = good.headers;
+  const r = res(); await h({ ...good, headers: noKey }, r);
+  assert.equal(r.code, 401); assert.equal(called, 0);
+  const ok = res(); await h(good, ok);
+  assert.equal(ok.code, 200); assert.equal(called, 1);
+});
+
+test('the proxy refuses to start without a real client key', () => {
+  assert.throws(() => loadClientKey({}), /not set/);
+  assert.throws(() => loadClientKey({ GUIDE_CLIENT_KEY: 'short' }), /at least 32/);
+  assert.throws(() => loadClientKey({ GUIDE_CLIENT_KEY: 'change-me-change-me-change-me-change-me' }), /placeholder/);
+  assert.throws(() => createHandler({ clientKey: loadClientKey({}) }), /not set/);
+  assert.equal(loadClientKey({ GUIDE_CLIENT_KEY: ' ' + TEST_KEY + ' ' }), TEST_KEY);
 });

@@ -9,7 +9,7 @@
 
 ## Voice spike (development build nerdy-spike.apk; Mac mint server must be running)
 
-1. Mac: `~/.config/nerdy/start-dev-mint.sh` (or confirm http://192.168.86.20:8787/health).
+1. Mac: `~/.config/nerdy/start-dev-mint.sh` (or open `<dev mint URL>/health`). The spike reads the URL and client key from the gitignored `LocalGuideConfig` folder.
 2. Wear the headset; launch Nerdy (the spike build). Accept the microphone permission.
 3. Panel in front of you shows state, exchange count, last latency and transcripts.
    The guide should greet you within a few seconds without you speaking.

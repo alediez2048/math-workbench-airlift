@@ -10,12 +10,13 @@ using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Networking;
 
-// CC-P0-03 THROWAWAY: two-way voice with the OpenAI Realtime API on the Quest.
-// Mints an ephemeral client secret from the LAN dev proxy, streams mic PCM16 24 kHz,
+// Voice spike: two-way voice with the OpenAI Realtime API on the Quest, kept for latency testing.
+// Mints an ephemeral client secret from the local dev mint (LocalGuideConfig), streams mic PCM16 24 kHz,
 // plays guide audio, shows transcripts, and logs latency as [SPIKE] lines.
 public sealed class RealtimeSpike : MonoBehaviour
 {
-    public string mintUrl = "http://192.168.86.20:8787/session";
+    [Tooltip("Leave empty to use LocalGuideConfig.DevMintUrl.")]
+    public string mintUrl = "";
     public TMP_Text status;
     public TMP_Text transcript;
     const int Rate = 24000;
@@ -49,8 +50,12 @@ public sealed class RealtimeSpike : MonoBehaviour
         Log("mic permission=" + Permission.HasUserAuthorizedPermission(Permission.Microphone));
         Set("minting session");
         string secret = null;
-        using (var req = UnityWebRequest.PostWwwForm(mintUrl, ""))
+        string url = string.IsNullOrEmpty(mintUrl) ? Airlift.Guide.LocalGuideConfig.DevMintUrl : mintUrl;
+        if (string.IsNullOrEmpty(url)) { Set("no dev mint URL: add LocalGuideConfig/dev-mint-url.txt"); yield break; }
+        using (var req = UnityWebRequest.PostWwwForm(url, ""))
         {
+            req.SetRequestHeader("x-nerdy-client", "nerdy-quest");
+            req.SetRequestHeader(Airlift.Guide.LocalGuideConfig.ClientKeyHeader, Airlift.Guide.LocalGuideConfig.ClientKey);
             req.timeout = 15; yield return req.SendWebRequest();
             if (req.result != UnityWebRequest.Result.Success) { Set("mint failed: " + req.error); Log("mint failed " + req.error + " " + req.responseCode); yield break; }
             secret = Extract(req.downloadHandler.text, "value");

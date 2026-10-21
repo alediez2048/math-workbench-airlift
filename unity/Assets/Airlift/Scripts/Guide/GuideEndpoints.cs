@@ -1,12 +1,11 @@
 namespace Airlift.Guide
 {
     /// Where the app mints guide sessions. The deployed proxy owns the provider key; the app never holds it.
-    /// Deployed 2026-09-17 to Vercel (project nerdy-guide-proxy); /session rewrites to the api/session function,
-    /// so dev and production differ only by host. The Mac dev mint (http://192.168.86.20:8787/session) stays as
-    /// the offline fallback while insecureHttpOption is still AlwaysAllowed; bake it with AgentScripts/SetMintUrl.cs.
+    /// The proxy is the Vercel project nerdy-guide-proxy; /session rewrites to the api/session function.
+    /// A local dev mint (services/guide-proxy/dev-mint.mjs) is configured per machine through
+    /// LocalGuideConfig, never here, and only editor and development builds can use it.
     public static class GuideEndpoints
     {
         public const string MintUrl = "https://nerdy-guide-proxy.vercel.app/session";
-        public const string DevMintUrl = "http://192.168.86.20:8787/session";
     }
 }

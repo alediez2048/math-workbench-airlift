@@ -2092,7 +2092,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b94e3be88ed45450fbe9bf41bf2fca82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RealtimeSpike
-  mintUrl: http://192.168.86.20:8787/session
+  mintUrl: 
   status: {fileID: 119938707}
   transcript: {fileID: 229975123}
 --- !u!1 &93553263
